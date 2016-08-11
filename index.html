@@ -46,6 +46,7 @@
 			var name = msg['name'];
 			var content = msg['message'];
 			$('#messages').append($('<li>').text(name+": "+content));
+			window.scrollTo(0,document.body.scrollHeight);
 		});
 	</script>
 </html>
