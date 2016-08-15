@@ -24,7 +24,36 @@ module.exports = {
 
 
 		});
-
-
+	},
+	db_push : function(db,table, data, value, callback){
+		var collection = db.collection(table);
+		collection.update(
+			data,
+			{ $push: value},
+			function(err){
+				if (err){
+					callback({fail: true, error: err})
+				}
+				else{
+					callback({fail: false})
+				}
+			});
+			
+	},
+	db_set : function(db,table, data, value, callback){
+		var collection = db.collection(table);
+		collection.update(
+			data,
+			{ $set: value},
+			function(err){
+				if (err){
+					callback({fail: true, error: err})
+				}
+				else{
+					callback({fail: false})
+				}
+			});
+			
 	}
+	
 };

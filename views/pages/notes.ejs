@@ -1,0 +1,240 @@
+<html>
+	<head>
+		<% include ../partials/head %>
+		  <!-- Compiled and minified CSS -->
+		  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css">
+
+		  <!-- Compiled and minified JavaScript -->
+		  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
+		<style>
+			body{
+				position: relative;
+				height: 100%;
+			}
+			.center{
+				margin: auto;
+				position: absolute;
+			  	top: 50%;
+			    left: 50%; 
+				transform: translate(-35%, -50%);
+				width: 70%;
+				height: 70%;
+
+				overflow: auto;
+			}
+			.save{
+				margin: auto;
+				position: absolute;
+			  	top: 90%;
+			  	left: 75%;
+
+				width: 15%;
+				height: 5%;
+
+			} 
+			.logout {
+				margin: auto;
+				position: absolute;
+			  	top: 2%;
+			  	left: 85%;
+
+				width: 10%;
+				height: 5%;
+				color: red;
+
+
+			}
+
+			.logout-button{
+				width: 100%;
+				height: 100%;
+				background-color: #4CAF50;
+			}
+
+			.save-button{
+				width: 100%;
+				height: 100%;
+			}
+			.side{
+				width: 15%;
+				font-size: 200%;
+				background-color: white;
+			}
+			.list{
+
+				cursor: pointer;
+				cursor: hand;
+			}
+			.input-field{
+
+				background-color: white;
+			}
+			li:hover {
+			    background-color: pink;
+			}
+			.current{
+
+				background-color: #4DD0E1;
+			}
+
+		</style>
+	</head>
+	<body class="bg-blue-a100">
+
+		<div class="sidemenu side">
+			<ul id="notelist" class="list">
+			</ul>
+			<br>
+			<input type="text" class="text-input" id="title" placeholder="Note Title"/>
+
+			<button id="create" class="button raised bg-blue-500">Create</button>
+		</div>
+		<div id="edit_area" hidden>
+			<div class="center">
+				<div class="row">
+			    	<form class="col s12">
+			      		<div class="row">
+			       			<div class="input-field col s12">
+								<textarea  id="textarea" class="materialize-textarea"></textarea>
+								<label  id="note-title" for="textarea1"></label>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+			<div class="save">
+				<button id="save" class="save-button button raised bg-blue-500">Save</button>
+			</div>
+		</div>
+		<div class="logout">
+			<button id="logout" class="logout-button button raised">Logout</button>
+		</div>
+	</body>
+	<script>
+
+		var last_save = null
+		function updateSaveButton(){
+
+			if (!(last_save == null)){
+
+				current_time = new Date().getTime();
+				mili_dif = current_time - last_save;
+				var vhourdiff = Math.floor(mili_dif/1000/60/60);  
+			    mili_dif -= vhourdiff*1000*60*60;
+
+			    var vmindiff = Math.floor(mili_dif/1000/60);
+			    mili_dif -= vmindiff*1000*60;
+
+			    var vsecdiff= Math.floor(mili_dif/1000); 
+
+			 	$("#save").text('Time Since Save: '+vhourdiff+":"+vmindiff+":"+vsecdiff);
+			}
+
+		};
+		setInterval(updateSaveButton,1000);
+		$(document).ready(function(){
+			var selected = null;
+			$.ajax({
+				type: "GET",
+				url: "notes/request/notelist",
+				success: function(msg){
+					request = msg['request'];
+					if (request == "success"){
+						notes = msg['notes'];
+						for (var note in notes){
+
+							$('#notelist').append($('<li id="note:'+notes[note]+'" ><span class="item-text">'+notes[note]+'</span>'));
+						}
+
+					}
+					else{
+						alert(msg['error']);
+					}
+				}
+			});
+			$('#create').click(function(){
+				$.ajax({
+					type: "POST",
+					url: "notes/request/create",
+					data: {title: $('#title').val()},
+					success: function(msg){
+						request = msg['request'];
+						if (request == "success"){
+							$('#notelist').append($('<li id="note:'+$('#title').val()+'"><span class="item-text">'+$('#title').val()+'</span>'));
+							$('#title').val('')
+						}
+						else{
+							alert(msg['error']);
+						}
+					}
+				});
+			});
+			$('#save').click(function(){
+				$.ajax({
+					type: "POST",
+					url: "notes/request/save",
+					data: {title: $('#note-title').text(), content: $('#textarea').val()},
+					success: function(msg){
+						request = msg['request'];
+						if (request == "success"){
+							last_save = new Date().getTime();
+						}
+						else{
+							alert(msg['error']);
+						}
+					}
+				});
+				
+
+			});
+
+
+			$('#logout').click(function(){
+				document.cookie = 'token' + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+				window.location.replace("/notes/login");
+
+
+			});
+
+			var ul = document.getElementById('notelist'); // Parent
+
+			ul.addEventListener('click', function (e) {
+			    var target = e.target; // Clicked element
+			    while (target && target.parentNode !== ul) {
+			        target = target.parentNode; // If the clicked element isn't a direct child
+			        if(!target) { return; } // If element doesn't exist
+			    }
+			    if (target.tagName === 'LI'){
+
+			     	selected = target.id;
+			      	$('#edit_area').show();
+			      	$('#note-title').text(target.id.substring(5));
+			      	$('#textarea').val('');
+			      	$(target).addClass('current').siblings().removeClass('current');
+			      	last_save = null;
+			      	$("#save").text('Save');
+
+					$.ajax({
+						type: "POST",
+						url: "notes/request/note",
+						data: {title: target.id.substring(5)},
+						success: function(msg){
+							request = msg['request'];
+							if (request == "success"){
+								$('#textarea').val(msg['note']);
+								$('#textarea').focus();
+							}
+							else{
+								alert(msg['error']);
+							}
+						}
+					});
+
+			    }
+			});
+
+		});
+
+		
+	</script>
+</html>

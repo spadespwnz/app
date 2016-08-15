@@ -7,7 +7,7 @@ var fs = require('fs');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var MongoClient = require('mongodb').MongoClient
-var url = 'mongodb://localhost:27017/app';
+var url =  process.env.MONGODB_URI || 'mongodb://localhost:27017/app';
 var data_base;
 var jwt = require('jsonwebtoken');
 MongoClient.connect(url, function(err,db){
