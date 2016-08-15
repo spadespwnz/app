@@ -1,13 +1,32 @@
 
 var express = require('express');
-var app = express();
+app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var fs = require('fs');
+var bodyParser = require('body-parser');
+var cookieParser = require('cookie-parser');
+var MongoClient = require('mongodb').MongoClient
+var url = 'mongodb://localhost:27017/app';
+var data_base;
+var jwt = require('jsonwebtoken');
+MongoClient.connect(url, function(err,db){
+	console.log("Connected to DB");
+	data_base = db;
+});
+
 app.use(express.static(__dirname + '/public'));
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json())
+app.use(cookieParser())
 app.set('view engine', 'ejs');
 app.set('views', __dirname + '/views');
+app.set('jwt_secret', 'randosecretkey');
 
+app.use(function(req,res,next){
+    req.db = data_base;
+    next();
+});
 
 
 var routes = require('./routes/index');
@@ -19,15 +38,12 @@ fs.readdirSync(__dirname+'/routes').forEach(function(file){
 		name = file.slice(0,-3);
 		if (name !== 'socket'){
 			var temp = require('./routes/'+name)
-			console.log("name: "+name)
 			app.use('/'+name, temp)
 		}
 	}
 });
 
-var index = require('./routes/index')
-var users = require('./routes/users');
-var pretty = require('./routes/pretty');
+
 
 var socket_controller = require('./routes/socket');
 var chat = io
