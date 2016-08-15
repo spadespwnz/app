@@ -109,7 +109,7 @@ router.use(function(req,res,next){
 	if (token){
 		jwt.verify(token, app.get('jwt_secret'), function(err, decoded) {      
 		    if (err) {
-		        return res.redirect('notes/login');    
+		        return res.redirect('/notes/login');    
 		    } else {
 		        req.decoded = decoded;    
 		        next();
@@ -118,7 +118,7 @@ router.use(function(req,res,next){
 	}
 	else{
 
-		res.redirect('notes/login')
+		res.redirect('/notes/login')
 	}
 
 });
