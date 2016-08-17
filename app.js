@@ -45,11 +45,19 @@ fs.readdirSync(__dirname+'/routes').forEach(function(file){
 
 
 
-var socket_controller = require('./routes/socket');
+var chat_controller = require('./socket_controllers/chat');
+var stream_controller = require('./socket_controllers/stream');
 var chat = io
-	.of('/')
+	.of('/chat')
 	.on('connection', function(socket){
-		socket_controller.respond(chat, socket);
+
+		chat_controller.respond(chat, socket);
+	});
+var stream = io
+	.of('/stream')
+	.on('connection', function(socket){
+
+		stream_controller.respond(stream, socket);
 	});
 
 
