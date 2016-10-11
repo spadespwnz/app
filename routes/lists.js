@@ -202,7 +202,7 @@ router.post('/request/approve',function(req,res){
 			}
 			else{
 
-				dbutils.db_push(db, 'lists', {"title":list, "content.title":title}, {"content.$.checked":email}, function(push_result){
+				dbutils.db_add(db, 'lists', {"title":list, "content.title":title}, {"content.$.checked":email}, function(push_result){
 					if (push_result.fail == true){
 						//Error adding notelist for user
 						res.send({"request":"fail", "error":"failed to add to list."});
