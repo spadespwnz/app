@@ -4,14 +4,18 @@
 	</head>
 
 
-		<% for(var i=0; i<json.access.length; i++) {%>
- 			<%= json.access[i] %>  <input type="checkbox" onclick=clickRadio("<%= json.access[i] %>") id=<%= json.access[i] %> value=<%= json.access[i]  %>><br>
+		<% for(var i=0; i<json.access.length; i++) {
+
+			%>
+ 			<%= json.access[i] %>  <input type="checkbox" onclick=clickRadio(this) id="<%= json.access[i] %>" value=<%= json.access[i]  %>><br>
  		 <% } %>
 
 	<% for(var i=0; i<json.content.length; i++) {
 	var checklist = [];
 	var title = json.content[i].title
 	checklist.push(JSON.stringify(json.content[i].checked))
+
+	console.log(checklist);
 	%>
 	   <li class="content" check_list= <%= checklist %>  ><%=JSON.stringify(json.content[i].title) %>
 	   <%=JSON.stringify(json.content[i].text) %>
@@ -54,21 +58,22 @@
 		});
 
 		function clickRadio(user){
-			user = user.replace(".","\.");
+			username=user.getAttribute("value");
 			
-			if ($("#"+user).is(':checked')){
-				filter_list.push(user);
-
-			}
-			else{
-				var index = filter_list.indexOf(user);
+			if (user.checked == false){
+				var index = filter_list.indexOf(username);
 				if (index > -1){
 					filter_list.splice(index,1);
 				}
-			
+
 			}
+			else{
+				filter_list.push(username);
+			}
+			
+
 			$(".content").each(function() {
-				var checked = JSON.parse($( this ).attr('check_list'));
+				var checked = JSON.parse(($( this ).attr('check_list')));
 
 
 				$(this).show();
