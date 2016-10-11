@@ -1,0 +1,28 @@
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-2">
+			<p>
+				Search: <input ng-model="$ctrl.query" />
+			</p>
+			<p>
+				Sort By:
+				<select ng-model="$ctrl.orderProp">
+					<option value="name">Alphabetical</option>
+					<option value="cost">Cost</option>
+				</select>
+			</p>
+		</div>
+
+		<div class="col-md-10">
+			<ul class="buildings">
+				<li ng-repeat="building in $ctrl.buildings | filter:$ctrl.query | orderBy: $ctrl.orderProp">
+				<a href="/net/#!/buildings/{{building.id}}/" class="thumb">
+					<img ng-src="{{building.imageUrl}}" alt="{{building.name}}"  width=100 height=100/>
+				</a>
+					<a href="/net/#!/buildings/{{building.id}}/">{{building.name}}</a>
+					<p>{{building.snippet}}</p>
+				</li>
+			</ul>
+		</div>
+	</div>
+</div>

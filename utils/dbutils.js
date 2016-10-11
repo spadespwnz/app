@@ -40,6 +40,21 @@ module.exports = {
 			});
 			
 	},
+	db_pull : function(db,table, data, value, callback){
+		var collection = db.collection(table);
+		collection.update(
+			data,
+			{ $pull: value},
+			function(err){
+				if (err){
+					callback({fail: true, error: err})
+				}
+				else{
+					callback({fail: false})
+				}
+			});
+			
+	},
 	db_set : function(db,table, data, value, callback){
 		var collection = db.collection(table);
 		collection.update(

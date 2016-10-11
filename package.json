@@ -3,7 +3,10 @@
   "version": "0.0.1",
   "description": "Heroku app-example",
   "dependencies": {
+    "angular-route": "^1.5.8",
+    "bootstrap": "^3.3.7",
     "cookie-parser": "^1.4.3",
+    "easyrtc": "^1.0.15",
     "express": "^4.10.2",
     "fs": "0.0.2",
     "hjs": "0.0.6",

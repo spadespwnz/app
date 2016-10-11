@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en" ng-app="netApp">
+    <head>
+      
+        <meta charset="utf-8">
+        <title>Net Battle Game</title>
+        <link rel="stylesheet" href="../bower_components/bootstrap/dist/css/bootstrap.css" />
+        <script src="../bower_components/jquery/dist/jquery.js"></script>
+        <script src="../bower_components/angular/angular.js"></script>
+        <script src="../bower_components/angular-animate/angular-animate.js"></script>
+        <script src="../bower_components/angular-resource/angular-resource.js"></script>
+        <script src="../bower_components/angular-route/angular-route.js"></script>
+
+
+        <script src='/net/app.module.js'></script>
+        <script src='/net/app.config.js'></script>
+        
+        <script src='/net/building-list/building-list.module.js'></script>
+        <script src='/net/building-list/building-list.component.js'></script>
+        <script src='/net/building-detail/building-detail.module.js'></script>
+        <script src='/net/building-detail/building-detail.component.js'></script>
+
+    </head>
+    <body>
+        <div ng-view></div>
+    </body>
+</html>

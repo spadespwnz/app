@@ -1,0 +1,36 @@
+<html>
+	<head>
+		<% include ../partials/head %>
+	</head>
+
+	<%- userlist %>
+	<br>
+	<input type="text" class="text-input" id="user" placeholder="Add"/>
+	<button id="create" class="button raised bg-blue-500">Add user</button>
+
+
+	<script>
+		$(document).ready(function(){
+			var list = "<%= list %>"
+
+			$('#create').click(function(){
+				$.ajax({
+					type: "POST",
+					url: "/lists/request/add_access",
+					data: {user: $('#user').val(), list: list},
+					success: function(msg){
+						request = msg['request'];
+						if (request == "success"){
+							//$('#list').append($('<li id="list:'+$('#title').val()+'"><span class="item-text">'+$('#title').val()+'</span>'));
+							//$('#title').val('')
+							alert("Success");
+						}
+						else{
+							alert(msg['error']);
+						}
+					}
+				});
+			});
+		});
+	</script>
+</head>

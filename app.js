@@ -3,6 +3,7 @@ var express = require('express');
 app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var easyrtc = require('easyrtc');
 var fs = require('fs');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
@@ -61,12 +62,10 @@ var stream = io
 	});
 
 
-
-
-
-
-
-
-http.listen((process.env.PORT || 3000), function(){
+var webServer = http.listen((process.env.PORT || 3000), function(){
   console.log('listening on *:3000');
 });
+
+var socketServer = io.listen(webServer);
+
+var rtcServer = easyrtc.listen(app, socketServer);

@@ -1,0 +1,125 @@
+<html>
+	<head>
+		<% include ../partials/head %>
+	</head>
+
+
+		<% for(var i=0; i<json.access.length; i++) {%>
+ 			<%= json.access[i] %>  <input type="checkbox" onclick=clickRadio("<%= json.access[i] %>") id=<%= json.access[i] %> value=<%= json.access[i]  %>><br>
+ 		 <% } %>
+
+	<% for(var i=0; i<json.content.length; i++) {
+	var checklist = [];
+	var title = json.content[i].title
+	checklist.push(JSON.stringify(json.content[i].checked))
+	%>
+	   <li class="content" check_list= <%= checklist %>  ><%=JSON.stringify(json.content[i].title) %>
+	   <%=JSON.stringify(json.content[i].text) %>
+	   <%=json.content[i].checked %>
+	   <button onclick=approve("<%-encodeURIComponent(json.content[i].title)%>")>Approve</button>
+	   <button onclick=decline("<%-encodeURIComponent(json.content[i].title)%>")>Decline</button>
+	   </li>
+
+	<% } %>
+
+	<input type="text" class="text-input" id="title" placeholder="Title"/>
+	<input type="text" class="text-input" id="text" placeholder="Comment"/>
+	<button id="create" class="button raised bg-blue-500">Create</button>
+
+	<script>
+		var filter_list = [];
+		var list;
+		$(document).ready(function(){
+			list = "<%= list %>"
+			
+			$('#create').click(function(){
+				$.ajax({
+					type: "POST",
+					url: "/lists/request/add",
+					data: {title: $('#title').val(), text: $('#text').val(), list: list},
+					success: function(msg){
+						request = msg['request'];
+						if (request == "success"){
+							//$('#list').append($('<li id="list:'+$('#title').val()+'"><span class="item-text">'+$('#title').val()+'</span>'));
+							//$('#title').val('')
+							alert("Success");
+						}
+						else{
+							alert(msg['error']);
+						}
+					}
+				});
+			});
+
+		});
+
+		function clickRadio(user){
+			
+			if ($("#"+String(user)).is(':checked')){
+				filter_list.push(user);
+
+			}
+			else{
+				var index = filter_list.indexOf(user);
+				if (index > -1){
+					filter_list.splice(index,1);
+				}
+			
+			}
+			$(".content").each(function() {
+				var checked = JSON.parse($( this ).attr('check_list'));
+
+
+				$(this).show();
+				for (var filter = 0; filter<filter_list.length; filter++ ){
+					
+					if (checked.indexOf(filter_list[filter]) < 0){
+						$(this).hide();
+						break;
+					}
+				}
+			});
+		}
+
+		function approve(title){
+			title = decodeURIComponent(title);
+			$.ajax({
+				type: "POST",
+				url: "/lists/request/approve",
+				data: {title: title, list: list},
+				success: function(msg){
+					request = msg['request'];
+					if (request == "success"){
+						//$('#list').append($('<li id="list:'+$('#title').val()+'"><span class="item-text">'+$('#title').val()+'</span>'));
+						//$('#title').val('')
+						alert("Success");
+					}
+					else{
+						alert(msg['error']);
+					}
+				}
+			});
+		}
+		
+
+		function decline(title){
+			title = decodeURIComponent(title);
+			$.ajax({
+				type: "POST",
+				url: "/lists/request/decline",
+				data: {title: title, list: list},
+				success: function(msg){
+					request = msg['request'];
+					if (request == "success"){
+						//$('#list').append($('<li id="list:'+$('#title').val()+'"><span class="item-text">'+$('#title').val()+'</span>'));
+						//$('#title').val('')
+						alert("Success");
+					}
+					else{
+						alert(msg['error']);
+					}
+				}
+			});
+		}
+	</script>
+</html>

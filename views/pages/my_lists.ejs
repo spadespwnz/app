@@ -1,0 +1,52 @@
+<html>
+	<head>
+		<% include ../partials/head %>
+	</head>
+	<ul id="list" class="list">
+				</ul>
+
+	<input type="text" class="text-input" id="title" placeholder="New List"/>
+	<button id="create" class="button raised bg-blue-500">Create</button>
+
+	<script>
+		$(document).ready(function(){
+			var selected = null;
+			$.ajax({
+				type: "GET",
+				url: "../lists/request/user_lists",
+				success: function(msg){
+					request = msg['request'];
+					if (request == "success"){
+						list = msg['list'];
+						for (var listElement in list){
+
+							$('#list').append($('<li id="list:'+list[listElement]+'" ><span>'+list[listElement]+'</span>'));
+						}
+
+					}
+					else{
+						alert(msg['error']);
+					}
+				}
+			});
+
+			$('#create').click(function(){
+				$.ajax({
+					type: "POST",
+					url: "../lists/request/create",
+					data: {title: $('#title').val()},
+					success: function(msg){
+						request = msg['request'];
+						if (request == "success"){
+							$('#list').append($('<li id="list:'+$('#title').val()+'"><span class="item-text">'+$('#title').val()+'</span>'));
+							$('#title').val('')
+						}
+						else{
+							alert(msg['error']);
+						}
+					}
+				});
+			});
+		});
+	</script>
+</html>

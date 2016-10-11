@@ -3,10 +3,11 @@ var fs = require('fs');
 module.exports.respond = function(endpoint,socket){
 
     // this function now expects an endpoint as argument
-    var file = fs.createReadStream('public/stream/song.mp3');
+    var file = fs.createReadStream('public/stream/testfile.txt');
     var stream = ss.createStream();
     ss(endpoint).emit('file',stream);
-    stream.pipe(file)
+    file.pipe(stream);
+    file.pipe(process.stdout);
 	socket.on('disconnect', function(){
 
 	});

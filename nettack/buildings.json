@@ -1,0 +1,21 @@
+[
+        {
+          "id": "modem-1",
+          "name": "Modem",
+          "snippet": "Small DDOS Power",
+          "cost":10,
+          "imageUrl":"img/modem"
+        }, {
+          "id":"router-1",
+          "name": "Router",
+          "snippet": "Medium DDOS Power",
+          "cost":20,
+          "imageUrl":"img/router"
+        }, {
+          "id":"isp-1",
+          "name": "ISP",
+          "snippet": "Large DDOS Power",
+          "cost":50,
+          "imageUrl":"img/isp"
+        }
+]
