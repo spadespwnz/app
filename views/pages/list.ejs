@@ -54,8 +54,9 @@
 		});
 
 		function clickRadio(user){
+			user = user.replace(".","\.");
 			
-			if ($("#"+String(user)).is(':checked')){
+			if ($("#"+user).is(':checked')){
 				filter_list.push(user);
 
 			}
