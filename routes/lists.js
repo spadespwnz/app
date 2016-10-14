@@ -48,7 +48,7 @@ router.get('/:list', function(req, res) {
 				access_list = list.access;
 				console.log(list)
 				if (access_list.indexOf(email) >= 0){
-					res.render('pages/list', {json: list, list: list_title});
+					res.render('pages/list', {email: email,json: list, list: list_title});
 
 				}
 				else{

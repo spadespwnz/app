@@ -39,7 +39,7 @@ router.post('/request/login', function(req, res) {
 				if (hash == correct_hash){
 
 					var token = jwt.sign({"email":email}, app.get('jwt_secret'), {
-						expiresIn: '24h'
+						expiresIn: '72h'
 					});
 					res.cookie('token', token);
 					res.send({"login":"success"});

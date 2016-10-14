@@ -9,7 +9,20 @@
 		.input-new-item{
 			width: 500px;
 		}
+		.red{
+			background-color: red;
+		}
+		.green{
+			background-color: green;
+		}
+		.title{
+			font-size: 125%;
 
+		}
+		.text{
+			font-size: 75%;
+
+		}
 	</style>
 
 	<br><br><br>
@@ -22,17 +35,33 @@
  	<br><br>
 	<% for(var i=0; i<json.content.length; i++) {
 	var checklist = [];
+	var checked = false;
 	var title = json.content[i].title
+	if (json.content[i].checked.indexOf(email) >= 0){
+		checked = true;
+	}
 	checklist.push(JSON.stringify(json.content[i].checked))
 	%>
 	<ul class="list-group">
 		 <li class="content list-group-item" check_list= <%= checklist %>   data-toggle="tooltip" data-placement="bottom" title="<%=json.content[i].checked %>" >
-		 	<%=json.content[i].title %> ||
-		 	<%=json.content[i].text %>
+		 	<div style="display: inline-block;">
+		 		<div class="title">
+		 			<%=json.content[i].title %> <br>
+		 		</div>
+		 		<div class="text">
+		 			<%=json.content[i].text %>
+		 		</div>
+		 	</div>
+			<div style="display: inline-block;">
 
-		    <button class="btn btn-default" onclick=approve("<%-encodeURIComponent(json.content[i].title)%>")>Approve</button>
-		    <button class="btn btn-default" onclick=decline("<%-encodeURIComponent(json.content[i].title)%>")>Decline</button>
-		    <button class="btn btn-default" onclick=remove("<%-encodeURIComponent(json.content[i].title)%>")>Remove</button>
+			  	<% if (checked == false){ %>
+				    <button class="btn btn-default green" onclick=approve("<%- encodeURIComponent(json.content[i].title)%>")>Approve</button>
+				<% } else { %>
+			  		<button class="btn btn-default red" onclick=decline("<%- encodeURIComponent(json.content[i].title)%>")>Decline</button>
+			  	<% } %>
+			    <button class="btn btn-default" onclick=remove("<%-encodeURIComponent(json.content[i].title)%>")>Remove</button>
+		    </div>
+
 		 </li>
 	 </ul>
 	<% } %>
@@ -61,7 +90,7 @@
 						if (request == "success"){
 							//$('#list').append($('<li id="list:'+$('#title').val()+'"><span class="item-text">'+$('#title').val()+'</span>'));
 							//$('#title').val('')
-							alert("Success");
+							location.reload();
 						}
 						else{
 							alert(msg['error']);
@@ -113,7 +142,7 @@
 					if (request == "success"){
 						//$('#list').append($('<li id="list:'+$('#title').val()+'"><span class="item-text">'+$('#title').val()+'</span>'));
 						//$('#title').val('')
-						alert("Success");
+						location.reload();
 					}
 					else{
 						alert(msg['error']);
@@ -134,7 +163,7 @@
 					if (request == "success"){
 						//$('#list').append($('<li id="list:'+$('#title').val()+'"><span class="item-text">'+$('#title').val()+'</span>'));
 						//$('#title').val('')
-						alert("Success");
+						location.reload();
 					}
 					else{
 						alert(msg['error']);
@@ -154,7 +183,7 @@
 					if (request == "success"){
 						//$('#list').append($('<li id="list:'+$('#title').val()+'"><span class="item-text">'+$('#title').val()+'</span>'));
 						//$('#title').val('')
-						alert("Success");
+						location.reload();
 					}
 					else{
 						alert(msg['error']);
