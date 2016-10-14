@@ -184,6 +184,49 @@ router.post('/request/add',function(req,res){
 });
 
 
+router.post('/request/remove',function(req,res){
+	email = req.decoded.email;
+	var list = req.body.list;
+	var title = req.body.title;
+	var db=req.db;
+	dbutils.db_find(db, 'lists', {"title":list}, function(set_result){
+		if (set_result.fail == true){
+			//Error changing note text
+			console.log("Error"+set_result.error)
+			res.send({"request":"fail", "error":"Failed to load list."});
+		}
+		else{
+			records = set_result['records'];
+			if (records.length != 1){
+				res.send({"request":"fail", "error":"List does not exist."});
+			}
+			else{
+				access_list = records[0].access;
+
+				if (access_list.indexOf(email) >= 0){
+
+					dbutils.db_pull(db, 'lists', {"title":list}, {"content":{title: title}}, function(push_result){
+						if (push_result.fail == true){
+							//Error adding notelist for user
+							res.send({"request":"fail", "error":"failed to Remove from list."});
+							console.log("Error"+push_result.error)
+
+						}
+						else{
+
+							res.send({"request":"success"});
+						}
+					});
+				}
+				else{
+					res.send({"request":"fail", "error":"You do not have access to this list."});
+				}
+			}
+		}
+	});
+
+});
+
 router.post('/request/approve',function(req,res){
 	email = req.decoded.email;
 	var list = req.body.list;
@@ -201,24 +244,27 @@ router.post('/request/approve',function(req,res){
 				res.send({"request":"fail", "error":"List does not exist."});
 			}
 			else{
+				access_list = records[0].access;
 
-				dbutils.db_add(db, 'lists', {"title":list, "content.title":title}, {"content.$.checked":email}, function(push_result){
-					if (push_result.fail == true){
-						//Error adding notelist for user
-						res.send({"request":"fail", "error":"failed to add to list."});
-						console.log("Error"+push_result.error)
+				if (access_list.indexOf(email) >= 0){
 
-					}
-					else{
+					dbutils.db_add(db, 'lists', {"title":list, "content.title":title}, {"content.$.checked":email}, function(push_result){
+						if (push_result.fail == true){
+							//Error adding notelist for user
+							res.send({"request":"fail", "error":"failed to add to list."});
+							console.log("Error"+push_result.error)
 
-						res.send({"request":"success"});
-						console.log("Push success");
-					}
-				});
+						}
+						else{
 
-				
-
-
+							res.send({"request":"success"});
+							console.log("Push success");
+						}
+					});
+				}
+				else{
+					res.send({"request":"fail", "error":"You do not have access to this list."});
+				}
 			}
 		}
 	});
@@ -244,23 +290,27 @@ router.post('/request/decline',function(req,res){
 				res.send({"request":"fail", "error":"List does not exist."});
 			}
 			else{
+				access_list = records[0].access;
 
-				dbutils.db_pull(db, 'lists', {"title":list, "content.title":title}, {"content.$.checked":email}, function(push_result){
-					if (push_result.fail == true){
-						//Error adding notelist for user
-						res.send({"request":"fail", "error":"failed to add to list."});
-						console.log("Error"+push_result.error)
+				if (access_list.indexOf(email) >= 0){
+					dbutils.db_pull(db, 'lists', {"title":list, "content.title":title}, {"content.$.checked":email}, function(push_result){
+						if (push_result.fail == true){
+							//Error adding notelist for user
+							res.send({"request":"fail", "error":"failed to add to list."});
+							console.log("Error"+push_result.error)
 
-					}
-					else{
+						}
+						else{
 
-						res.send({"request":"success"});
-						console.log("Push success");
-					}
-				});
+							res.send({"request":"success"});
+							console.log("Push success");
+						}
+					});
+				}
 
-				
-
+				else{
+					res.send({"request":"fail", "error":"You do not have access to this list."});
+				}
 
 			}
 		}
