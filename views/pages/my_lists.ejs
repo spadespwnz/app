@@ -20,7 +20,7 @@
 						list = msg['list'];
 						for (var listElement in list){
 
-							$('#list').append($('<li id="list:'+list[listElement]+'" ><span>'+list[listElement]+'</span>'));
+							$('#list').append($('<li id="list:'+list[listElement]+'" ><a href="/lists/'+list[listElement]+'/"><span>'+list[listElement]+'</span></a>'));
 						}
 
 					}
