@@ -227,6 +227,52 @@ router.post('/request/remove',function(req,res){
 
 });
 
+
+router.post('/request/comment',function(req,res){
+	email = req.decoded.email;
+	var list = req.body.list;
+	var title = req.body.title;
+	var comment = req.body.comment;
+	var db=req.db;
+	dbutils.db_find(db, 'lists', {"title":list}, function(set_result){
+		if (set_result.fail == true){
+			//Error changing note text
+			console.log("Error"+set_result.error)
+			res.send({"request":"fail", "error":"Failed to load list."});
+		}
+		else{
+			records = set_result['records'];
+			if (records.length != 1){
+				res.send({"request":"fail", "error":"List does not exist."});
+			}
+			else{
+				access_list = records[0].access;
+
+				if (access_list.indexOf(email) >= 0){
+					var comment_to_add = {email: email, comment: comment};
+					dbutils.db_push(db, 'lists', {"title":list, "content.title":title}, {"content.$.comments":comment_to_add}, function(push_result){
+						if (push_result.fail == true){
+							//Error adding notelist for user
+							res.send({"request":"fail", "error":"failed to add to list."});
+							console.log("Error"+push_result.error)
+
+						}
+						else{
+
+							res.send({"request":"success"});
+							console.log("Push success");
+						}
+					});
+				}
+				else{
+					res.send({"request":"fail", "error":"You do not have access to this list."});
+				}
+			}
+		}
+	});
+
+});
+
 router.post('/request/approve',function(req,res){
 	email = req.decoded.email;
 	var list = req.body.list;

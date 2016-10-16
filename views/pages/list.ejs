@@ -50,6 +50,31 @@
 			z-index: 1;
 			background-color: white;
 		}
+		.comment_button{
+			width: 30px;
+			height: 30px;
+			border-radius: 50%;
+			border: 2px solid;
+			
+		}
+		.comment {
+			display: none;
+		}
+		.individual-comment{
+			padding-top: 10px;
+			padding-bottom: 10px;
+		}
+		.comment-email{
+			font-size: 150%;
+		}
+		.comment-text{
+			padding-left: 20px;
+			
+		}
+		.comment-input{
+			padding-top: 20px;
+			
+		}
 	</style>
 	<div class="filters">
 		<% for(var i=0; i<json.access.length; i++) {
@@ -79,7 +104,8 @@
 		%>
 		<ul class="list-group">
 
-			 <li class="content list-group-item" check_list= <%= checklist %>   data-toggle="tooltip" data-placement="bottom" title="<%=json.content[i].checked %>" >
+			 <li class="content list-group-item" check_list= <%= checklist %>  title="<%=json.content[i].checked %>" >
+			 <!-- <li class="content list-group-item" check_list= <%= checklist %>   data-toggle="tooltip" data-placement="bottom" title="<%=json.content[i].checked %>" > -->
 			 	<div style="display: inline-block;" class="list_buttons">
 
 				  	<% if (checked == false){ %>
@@ -88,6 +114,7 @@
 				  		<button class="btn btn-default red" onclick=decline("<%- encodeURIComponent(json.content[i].title)%>")>Decline</button>
 				  	<% } %>
 				    <button class="btn btn-default" onclick=remove("<%-encodeURIComponent(json.content[i].title)%>")>Remove</button>
+				    <button class="comment_button" onclick=toggleComment(this)>▼</button>
 			    </div>
 			 	<div style="display: inline-block;" class="list_content">
 			 		<div class="title">
@@ -97,13 +124,30 @@
 			 			<%=json.content[i].text %>
 			 		</div>
 			 	</div>
+			 	<div class="comment">
+			 		<div class="comment-list">
+				 		<% if (json.content[i].comments){ for (var j = 0; j<json.content[i].comments.length;j++) { %>
+				 			<div class="individual-comment">
+				 				<div class="comment-email">
+				 					<%= json.content[i].comments[j].email %>
+				 				</div>
+				 				<div class="comment-text">
+				 					<%- json.content[i].comments[j].comment %>
+				 				</div>
+				 			</div>
+				 		<% } } %>
+			 		</div>
+			 		<div class="comment-input">
+			 			<input type="text" class="form-control comment-form" id="text" placeholder="Comment" />
+						<button id="post_comment" class="btn btn-default" onclick=comment(this,"<%-encodeURIComponent(json.content[i].title)%>") >Post</button>
+			 		</div>
+			 	</div>
 
 
 			 </li>
 		 </ul>
 		<% } %>
 		<div class="input-new-item">
-			<input type="text" class="form-control" id="title" placeholder="Title"/>
 			<input type="text" class="form-control" id="text" placeholder="Comment"/>
 			<button id="create" class="btn btn-default">Create</button>
 		</div>
@@ -138,6 +182,17 @@
 			});
 
 		});
+		function toggleComment(clickedItem){
+			var commentSection = $(clickedItem.parentNode.parentNode.getElementsByClassName("comment")[0])
+			if (commentSection.is(":visible")){
+
+				$(clickedItem.parentNode.parentNode.getElementsByClassName("comment")[0]).hide();
+			}
+			else{
+
+				$(clickedItem.parentNode.parentNode.getElementsByClassName("comment")[0]).show();
+			}
+		}
 
 		function clickRadio(user){
 			username=user.getAttribute("value");
@@ -164,6 +219,31 @@
 					if (checked.indexOf(filter_list[filter]) < 0){
 						$(this).hide();
 						break;
+					}
+				}
+			});
+		}
+		function comment(button, title){
+			
+			var comment = $(button.parentNode.getElementsByClassName("comment-form")[0]).val();
+			var commentsList = $(button.parentNode.parentNode.getElementsByClassName("comment-list")[0]);
+			
+			title = decodeURIComponent(title);
+			$.ajax({
+				type: "POST",
+				url: "/lists/request/comment",
+				data: {title: title, list: list, comment: comment},
+				success: function(msg){
+					request = msg['request'];
+					if (request == "success"){
+						//$('#list').append($('<li id="list:'+$('#title').val()+'"><span class="item-text">'+$('#title').val()+'</span>'));
+						//$('#title').val('')
+						commentsList.append(
+							'<div class="individual-comment"><div class="comment-email"><%- email %></div><div class="comment-text">'+comment+'</div></div>'
+						);
+					}
+					else{
+						alert(msg['error']);
 					}
 				}
 			});
