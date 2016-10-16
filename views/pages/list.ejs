@@ -11,9 +11,11 @@
 			width: 500px;
 		}
 		.red{
+			width: 100px;
 			background-color: red;
 		}
 		.green{
+			width: 100px;
 			background-color: green;
 		}
 		.title{
@@ -111,10 +113,10 @@
 				  	<% if (checked == false){ %>
 					    <button class="btn btn-default green" onclick=approve("<%- encodeURIComponent(json.content[i].title)%>")>Approve</button>
 					<% } else { %>
-				  		<button class="btn btn-default red" onclick=decline("<%- encodeURIComponent(json.content[i].title)%>")>Decline</button>
+				  		<button class="btn btn-default red" onclick=decline("<%- encodeURIComponent(json.content[i].title)%>")>Unapprove</button>
 				  	<% } %>
 				    <button class="btn btn-default" onclick=remove("<%-encodeURIComponent(json.content[i].title)%>")>Remove</button>
-				    <button class="comment_button" onclick=toggleComment(this)>▼</button>
+				    <button class="comment_button" onclick=toggleComment(this)> <% if (json.content[i].comments){ %> <%-json.content[i].comments.length %> <%} else { %>  0 <% } %> </button>
 			    </div>
 			 	<div style="display: inline-block;" class="list_content">
 			 		<div class="title">
