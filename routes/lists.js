@@ -139,7 +139,6 @@ router.post('/request/add',function(req,res){
 
 	var title = req.body.title;
 	var text = req.body.text;
-
 	var db = req.db;
 
 	dbutils.db_find(db, 'lists', {"title":list}, function(set_result){

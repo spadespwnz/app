@@ -52,6 +52,7 @@
 			position: fixed;
 			z-index: 1;
 			background-color: white;
+			width: 100%;
 		}
 		.comment_button{
 			width: 30px;
@@ -153,7 +154,7 @@
 		<div class="input-new-item">
 
 			 <input type="text" class="form-control comment-form" id="title" placeholder="Title" />
-			<input type="text" class="form-control" id="text" placeholder="Comment"/>
+			<input type="text" class="form-control" id="new-item-text" placeholder="Comment"/>
 			<button id="create" class="btn btn-default">Create</button>
 		</div>
 	</div>
@@ -171,7 +172,7 @@
 				$.ajax({
 					type: "POST",
 					url: "/lists/request/add",
-					data: {title: $('#title').val(), text: $('#text').val(), list: list},
+					data: {title: $('#title').val(), text: $('#new-item-text').val(), list: list},
 					success: function(msg){
 						request = msg['request'];
 						if (request == "success"){
