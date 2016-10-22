@@ -4,6 +4,7 @@
   "description": "Heroku app-example",
   "dependencies": {
     "angular-route": "^1.5.8",
+    "async-series": "0.0.1",
     "bootstrap": "^3.3.7",
     "cookie-parser": "^1.4.3",
     "easyrtc": "^1.0.15",
@@ -11,6 +12,7 @@
     "fs": "0.0.2",
     "hjs": "0.0.6",
     "jsonwebtoken": "^7.1.9",
+    "prompt": "^1.0.0",
     "socket.io": "^1.4.8",
     "socket.io-stream": "^0.9.0"
   },

@@ -4,6 +4,8 @@
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 		<link rel="stylesheet" type="text/css" href="/css/slider.css">
+		<link rel="stylesheet" type="text/css" href="/css/sweetalert.css">
+		<script src="/scripts/sweetalert.min.js"></script>
 
 	</head>
 	<style>
@@ -96,7 +98,6 @@
 	 	<br><br>
 	</div>
 	<div class="page_content">
-
 		<% for(var i=0; i<json.content.length; i++) {
 		var checklist = [];
 		var checked = false;
@@ -113,11 +114,11 @@
 			 	<div style="display: inline-block;" class="list_buttons">
 
 				  	<% if (checked == false){ %>
-					    <button class="btn btn-default green" onclick=approve("<%- encodeURIComponent(json.content[i].title)%>")>Approve</button>
+					    <button class="btn btn-default green" onclick=approve("<%- encodeURIComponent(json.content[i].id)%>")>Approve</button>
 					<% } else { %>
-				  		<button class="btn btn-default red" onclick=decline("<%- encodeURIComponent(json.content[i].title)%>")>Unapprove</button>
+				  		<button class="btn btn-default red" onclick=decline("<%- encodeURIComponent(json.content[i].id)%>")>Unapprove</button>
 				  	<% } %>
-				    <button class="btn btn-default" onclick=remove("<%-encodeURIComponent(json.content[i].title)%>")>Remove</button>
+				    <button class="btn btn-default" onclick=remove("<%-encodeURIComponent(json.content[i].id)%>")>Remove</button>
 				    <button class="comment_button" onclick=toggleComment(this)> <% if (json.content[i].comments){ %> <%-json.content[i].comments.length %> <%} else { %>  0 <% } %> </button>
 			    </div>
 			 	<div style="display: inline-block;" class="list_content">
@@ -143,7 +144,7 @@
 			 		</div>
 			 		<div class="comment-input">
 			 			<input type="text" class="form-control comment-form" id="text" placeholder="Comment" />
-						<button id="post_comment" class="btn btn-default" onclick=comment(this,"<%-encodeURIComponent(json.content[i].title)%>") >Post</button>
+						<button id="post_comment" class="btn btn-default" onclick=comment(this,"<%-encodeURIComponent(json.content[i].id)%>") >Post</button>
 			 		</div>
 			 	</div>
 
@@ -229,7 +230,7 @@
 				}
 			});
 		}
-		function comment(button, title){
+		function comment(button, id){
 			
 			var comment = $(button.parentNode.getElementsByClassName("comment-form")[0]).val();
 			var commentsList = $(button.parentNode.parentNode.getElementsByClassName("comment-list")[0]);
@@ -238,7 +239,7 @@
 			$.ajax({
 				type: "POST",
 				url: "/lists/request/comment",
-				data: {title: title, list: list, comment: comment},
+				data: {id: id, list: list, comment: comment},
 				success: function(msg){
 					request = msg['request'];
 					if (request == "success"){
@@ -255,12 +256,12 @@
 			});
 		}
 
-		function approve(title){
-			title = decodeURIComponent(title);
+		function approve(id){
+			id = decodeURIComponent(id);
 			$.ajax({
 				type: "POST",
 				url: "/lists/request/approve",
-				data: {title: title, list: list},
+				data: {id: id, list: list},
 				success: function(msg){
 					request = msg['request'];
 					if (request == "success"){
@@ -276,12 +277,12 @@
 		}
 		
 
-		function decline(title){
-			title = decodeURIComponent(title);
+		function decline(id){
+			id = decodeURIComponent(id);
 			$.ajax({
 				type: "POST",
 				url: "/lists/request/decline",
-				data: {title: title, list: list},
+				data: {id: id, list: list},
 				success: function(msg){
 					request = msg['request'];
 					if (request == "success"){
@@ -296,24 +297,38 @@
 			});
 		}
 
-		function remove(title){
+		function remove(id){
+			swal({
+			 	title: "Are you sure?",
+				text: "This item will be removed from the list.",
+				type: "warning",
+				showCancelButton: true,
+				confirmButtonColor: "#DD6B55",
+				confirmButtonText: "Yes, delete it!",
+				closeOnConfirm: false },
+				function(){
+					removeConfirmed();
+				   //swal("Deleted!", "Your imaginary file has been deleted.", "success");
+				});
+			function removeConfirmed(){
 			title = decodeURIComponent(title);
-			$.ajax({
-				type: "POST",
-				url: "/lists/request/remove",
-				data: {title: title, list: list},
-				success: function(msg){
-					request = msg['request'];
-					if (request == "success"){
-						//$('#list').append($('<li id="list:'+$('#title').val()+'"><span class="item-text">'+$('#title').val()+'</span>'));
-						//$('#title').val('')
-						location.reload();
+				$.ajax({
+					type: "POST",
+					url: "/lists/request/remove",
+					data: {id: id, list: list},
+					success: function(msg){
+						request = msg['request'];
+						if (request == "success"){
+							//$('#list').append($('<li id="list:'+$('#title').val()+'"><span class="item-text">'+$('#title').val()+'</span>'));
+							//$('#title').val('')
+							location.reload();
+						}
+						else{
+							alert(msg['error']);
+						}
 					}
-					else{
-						alert(msg['error']);
-					}
-				}
-			});
+				});
+			}
 		}
 	</script>
 </html>

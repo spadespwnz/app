@@ -8,11 +8,13 @@ var fs = require('fs');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var MongoClient = require('mongodb').MongoClient
+var uid = require('mongodb').ObjectID;
 var url =  process.env.MONGODB_URI || 'mongodb://localhost:27017/app';
 var data_base;
 var jwt = require('jsonwebtoken');
+var prompt = require('prompt');
+var dbutils = require('./utils/dbutils');
 MongoClient.connect(url, function(err,db){
-	console.log("Connected to DB");
 	data_base = db;
 });
 
@@ -48,12 +50,14 @@ fs.readdirSync(__dirname+'/routes').forEach(function(file){
 
 var chat_controller = require('./socket_controllers/chat');
 var stream_controller = require('./socket_controllers/stream');
+
 var chat = io
 	.of('/chat')
 	.on('connection', function(socket){
 
 		chat_controller.respond(chat, socket);
 	});
+
 var stream = io
 	.of('/stream')
 	.on('connection', function(socket){
@@ -63,9 +67,111 @@ var stream = io
 
 
 var webServer = http.listen((process.env.PORT || 3000), function(){
-  console.log('listening on *:3000');
+  //console.log('listening on *:3000');
+  prompt.start();
 });
 
 var socketServer = io.listen(webServer);
+//var rtcServer = easyrtc.listen(app, socketServer);
 
-var rtcServer = easyrtc.listen(app, socketServer);
+getCommand();
+function getCommand(){
+	prompt.get(['command', 'args'], function(err, result){
+		if (err){
+			console.log("Error: "+err)
+
+		}
+		else{
+			console.log("Running "+result.command+" with args: "+result.args);
+			runCommand(result.command, result.args);
+		}
+		getCommand();
+	});
+}
+function runCommand(command, args){
+	switch(command){
+		case 'print':
+			print(args);
+			break;
+		case 'exit':
+			process.exit();
+			break;
+
+		case 'restart':
+			webServer.close();
+			const exec = require('child_process');
+			const child = exec.spawn('cmd',['/c','nodemon start'],{detached: true, stdio: ['ignore', 'ignore', 'ignore']});
+			child.unref();
+			process.exit();
+			break;
+		case 'fix titles':
+			addIdsToTitles();
+			break;
+		case 'fix comments':
+			addIdsToComments();
+		default:
+			console.log("Command '"+command+"' not found.");
+	}
+}
+
+function print(args){
+	console.log(args);
+}
+
+function addIdsToTitles(){
+
+	/*
+	data_base.collection('lists').update({'title':'randolist3'}, {$set: {content:[]} }, false, true);
+	data_base.collection('lists').update({'title':'randolist3'}, {$push: {'content':{"id":"7"}} }, false, true);
+	data_base.collection('lists').updateMany({'content.id':{$exists: true}}, {$set: {'content.$':{}} }, false, true);
+	data_base.collection('lists').updateMany({'content':{}}, {$pull: {'content':{$in:[{}]} }}, false, true);
+	dbutils.db_find(data_base, 'lists', {'content.id':{ $exists: 'true' }}, function(set_result){
+		if (set_result.fail == true){
+			//Error changing note text
+			console.log("Error"+set_result.error)
+		}
+		else{
+			for (var i = 0; i<set_result['records'].length;i++){
+
+				console.log(set_result['records'][i]);
+			}
+
+		}
+	});
+	*/
+
+	//data_base.collection('lists').updateMany({'content.title':{$exists: true}}, {$set: {'content.$.id':new uid() } }, {'multi':true});
+	data_base.collection('lists').find({}).forEach(function (doc){
+		if (doc.content){
+			doc.content.forEach(function (listItem){
+
+				listItem.id = new uid();
+				console.log(listItem);
+			});
+		}
+		data_base.collection('lists').save(doc, function(err, record){
+			console.log("Error:"+err)
+			console.log("Record:"+record)
+		});
+	});
+
+}
+function addIdsToComments(){
+	data_base.collection('lists').find({}).forEach(function (doc){
+
+		doc.content.forEach(function (listItem){
+			if (listItem.comments){
+				listItem.comments.forEach(function (comment){
+
+					comment.id = new uid(); 
+					console.log(comment);
+				})
+			}
+			
+		});
+		data_base.collection('lists').save(doc, function(err, record){
+			console.log("Error:"+err)
+			console.log("Record:"+record)
+		});
+	});
+}

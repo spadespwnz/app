@@ -3,7 +3,7 @@ var router = express.Router();
 var jwt = require('jsonwebtoken');
 var dbutils = require('../utils/dbutils');
 var utils = require('../utils/utils');
-
+var uid = require('mongodb').ObjectID;
 
 /* GET home page. */
 router.use(function(req,res,next){
@@ -156,7 +156,7 @@ router.post('/request/add',function(req,res){
 				access_list = records[0].access;
 
 				if (access_list.indexOf(email) >= 0){
-					data = {title:title, text:text, checked:[email]}
+					data = {title:title, text:text, checked:[email], id: new uid()}
 					dbutils.db_push(db, 'lists', {"title":list}, {"content":data}, function(push_result){
 					if (push_result.fail == true){
 						//Error adding notelist for user
@@ -186,7 +186,7 @@ router.post('/request/add',function(req,res){
 router.post('/request/remove',function(req,res){
 	email = req.decoded.email;
 	var list = req.body.list;
-	var title = req.body.title;
+	var id = req.body.id;
 	var db=req.db;
 	dbutils.db_find(db, 'lists', {"title":list}, function(set_result){
 		if (set_result.fail == true){
@@ -204,7 +204,7 @@ router.post('/request/remove',function(req,res){
 
 				if (access_list.indexOf(email) >= 0){
 
-					dbutils.db_pull(db, 'lists', {"title":list}, {"content":{title: title}}, function(push_result){
+					dbutils.db_pull(db, 'lists', {"title":list}, {"content":{id: new uid(id)}}, function(push_result){
 						if (push_result.fail == true){
 							//Error adding notelist for user
 							res.send({"request":"fail", "error":"failed to Remove from list."});
@@ -230,7 +230,7 @@ router.post('/request/remove',function(req,res){
 router.post('/request/comment',function(req,res){
 	email = req.decoded.email;
 	var list = req.body.list;
-	var title = req.body.title;
+	var id = req.body.id;
 	var comment = req.body.comment;
 	var db=req.db;
 	dbutils.db_find(db, 'lists', {"title":list}, function(set_result){
@@ -248,8 +248,11 @@ router.post('/request/comment',function(req,res){
 				access_list = records[0].access;
 
 				if (access_list.indexOf(email) >= 0){
-					var comment_to_add = {email: email, comment: comment};
-					dbutils.db_push(db, 'lists', {"title":list, "content.title":title}, {"content.$.comments":comment_to_add}, function(push_result){
+
+					var comment_to_add = {email: email, comment: comment, id: new uid() };
+					console.log("Data: "+comment_to_add);
+					console.log("id: "+id);
+					dbutils.db_push(db, 'lists', {"title":list, "content.id":new uid(id)}, {"content.$.comments":comment_to_add}, function(push_result){
 						if (push_result.fail == true){
 							//Error adding notelist for user
 							res.send({"request":"fail", "error":"failed to add to list."});
@@ -259,7 +262,7 @@ router.post('/request/comment',function(req,res){
 						else{
 
 							res.send({"request":"success"});
-							console.log("Push success");
+							console.log("Push success: "+JSON.stringify(push_result));
 						}
 					});
 				}
@@ -275,7 +278,7 @@ router.post('/request/comment',function(req,res){
 router.post('/request/approve',function(req,res){
 	email = req.decoded.email;
 	var list = req.body.list;
-	var title = req.body.title;
+	var id = req.body.id;
 	var db=req.db;
 	dbutils.db_find(db, 'lists', {"title":list}, function(set_result){
 		if (set_result.fail == true){
@@ -293,7 +296,7 @@ router.post('/request/approve',function(req,res){
 
 				if (access_list.indexOf(email) >= 0){
 
-					dbutils.db_add(db, 'lists', {"title":list, "content.title":title}, {"content.$.checked":email}, function(push_result){
+					dbutils.db_add(db, 'lists', {"title":list, "content.id":new uid(id)}, {"content.$.checked":email}, function(push_result){
 						if (push_result.fail == true){
 							//Error adding notelist for user
 							res.send({"request":"fail", "error":"failed to add to list."});
@@ -321,7 +324,7 @@ router.post('/request/approve',function(req,res){
 router.post('/request/decline',function(req,res){
 	email = req.decoded.email;
 	var list = req.body.list;
-	var title = req.body.title;
+	var id = req.body.id;
 	var db=req.db;
 	dbutils.db_find(db, 'lists', {"title":list}, function(set_result){
 		if (set_result.fail == true){
@@ -338,7 +341,7 @@ router.post('/request/decline',function(req,res){
 				access_list = records[0].access;
 
 				if (access_list.indexOf(email) >= 0){
-					dbutils.db_pull(db, 'lists', {"title":list, "content.title":title}, {"content.$.checked":email}, function(push_result){
+					dbutils.db_pull(db, 'lists', {"title":list, "content.id":new uid(id)}, {"content.$.checked":email}, function(push_result){
 						if (push_result.fail == true){
 							//Error adding notelist for user
 							res.send({"request":"fail", "error":"failed to add to list."});

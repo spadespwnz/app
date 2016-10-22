@@ -40,6 +40,21 @@ module.exports = {
 			});
 			
 	},
+	db_pushMany : function(db,table, data, value, callback){
+		var collection = db.collection(table);
+		collection.updateMany(
+			data,
+			{ $push: value},
+			function(err){
+				if (err){
+					callback({fail: true, error: err})
+				}
+				else{
+					callback({fail: false})
+				}
+			});
+			
+	},
 	db_add : function(db,table, data, value, callback){
 		var collection = db.collection(table);
 		collection.update(
@@ -60,12 +75,12 @@ module.exports = {
 		collection.update(
 			data,
 			{ $pull: value},
-			function(err){
+			function(err, results){
 				if (err){
 					callback({fail: true, error: err})
 				}
 				else{
-					callback({fail: false})
+					callback({fail: false, results: results})
 				}
 			});
 			
