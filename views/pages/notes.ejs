@@ -85,7 +85,7 @@
 			<ul id="notelist" class="list">
 			</ul>
 			<br>
-			<input type="text" class="text-input" id="title" placeholder="Note Title"/>
+			<input type="text" class="text-input" id="title" placeholder="Note List"/>
 
 			<button id="create" class="button raised bg-blue-500">Create</button>
 		</div>
@@ -190,8 +190,7 @@
 
 
 			$('#logout').click(function(){
-				document.cookie = 'token' + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-				window.location.replace("/notes/login");
+				window.location.replace("/users/logout");
 
 
 			});

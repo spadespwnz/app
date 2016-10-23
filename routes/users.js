@@ -6,6 +6,12 @@ var jwt = require('jsonwebtoken');
 
 /* GET users listing. */
 
+
+router.get('/logout', function(req,res){
+	res.clearCookie("token");
+	res.redirect('/users/login');
+
+});
 router.get('/login', function(req, res) {
   res.render('pages/login')
 });
@@ -103,8 +109,6 @@ router.post('/request/signup', function(req, res) {
 
 
 router.use(function(req,res,next){
-
-
 	var token = req.cookies.token || req.body.token || req.query.token || req.headers['x-access-token'];
 	if (token){
 		jwt.verify(token, app.get('jwt_secret'), function(err, decoded) {      

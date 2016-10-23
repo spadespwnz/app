@@ -1,0 +1,64 @@
+<style>
+	.top-bar{
+		background-color: red;
+		height: 120px;
+	}
+	.logout-button{
+		position: absolute;
+		left:90%;
+		top: 10px;
+	}
+	.links-bar{
+		position:absolute;
+		width:100%;
+		height: 30px;
+		background-color: pink;
+		top: 90px;
+		font-size: 150%;
+	}
+	.links-bar ul{
+		list-style-type: none;
+		margin: 0;
+		padding: 0;
+		overflow: hidden;
+		background-color: #333;
+	}
+	.links-bar li{
+		float: left;
+	}
+	.links-bar li a{
+		display: block;
+		color: white;
+		text-align: center;
+		padding: 0px 10px;
+		text-decoration: none;
+	}
+	.links-bar li a:hover{
+			background-color: #111;
+	}
+	.links-bar .active{
+		background-color: blue;
+	}
+</style>
+<script>
+	$(document).ready(function(){
+		$('#logout').click(function(){
+			window.location.replace("/users/logout");
+
+
+		});
+	});
+</script>
+<div class="top-bar">
+	<div class="logout-button">
+		<button type="button" id="logout" class="logout-button btn btn-primary btn-lg">Logout</button>
+	</div>
+	<div class="links-bar">
+		<ul class="list-inline">
+			<li><a href="/chat">Chat</a></li>
+			<li><a href="/lists">Lists</a></li>
+			<li><a href="/notes">Notes</a></li>
+
+		</ul>
+	</div>
+</div>
