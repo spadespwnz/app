@@ -4,8 +4,9 @@ var jwt = require('jsonwebtoken');
 var dbutils = require('../utils/dbutils');
 var utils = require('../utils/utils');
 var uid = require('mongodb').ObjectID;
+var active = 'lists';
 
-/* GET home page. */
+
 router.use(function(req,res,next){
 
 
@@ -48,7 +49,7 @@ router.get('/:list', function(req, res) {
 				access_list = list.access;
 				console.log(list)
 				if (access_list.indexOf(email) >= 0){
-					res.render('pages/list', {email: email,json: list, list: list_title});
+					res.render('pages/list', {email: email,json: list, list: list_title, active: active});
 
 				}
 				else{
@@ -79,7 +80,7 @@ router.get('/:list/admin', function(req, res) {
 			else{
 				list = records[0];
 				if (list.admin == email){
-					res.render('pages/list_admin', {userlist: list.access, list: list_title});
+					res.render('pages/list_admin', {userlist: list.access, list: list_title, active: active});
 
 				}
 				else{
@@ -386,6 +387,18 @@ router.post('/request/add_access',function(req,res){
 				access_list = records[0].access;
 
 				if (records[0].admin == email){
+					dbutils.db_upsert(db, 'user:'+user_to_add, {"type":"lists"}, {"list":list}, function(push_result){
+						if (push_result.fail == true){
+							//Error adding notelist for user
+							//console.log("Error"+push_result.error)
+
+						}
+						else{
+							//console.log("Push success");
+						}
+					});
+
+
 					dbutils.db_push(db, 'lists', {"title":list}, {"access":user_to_add}, function(push_result){
 					if (push_result.fail == true){
 						//Error adding notelist for user
@@ -506,7 +519,7 @@ router.post('/request/create',function(req,res){
 
 router.get('/', function(req, res) {
 	email = req.decoded.email;
-	res.render('pages/my_lists');
+	res.render('pages/my_lists', {email: email, active: active});
 });
 
 module.exports = router;

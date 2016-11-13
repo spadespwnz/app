@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var path = require('path');
-
+var active = 'net';
 router.get('/', function(req, res) {
   res.render('pages/net');
 });

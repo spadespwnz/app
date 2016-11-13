@@ -11,6 +11,7 @@ module.exports = {
 			}
 		});
 	},
+
 	db_find : function(db,table,data, callback){
 		var collection = db.collection(table);
 		collection.find(data).toArray(function(err, docs){
@@ -45,6 +46,22 @@ module.exports = {
 		collection.updateMany(
 			data,
 			{ $push: value},
+			function(err){
+				if (err){
+					callback({fail: true, error: err})
+				}
+				else{
+					callback({fail: false})
+				}
+			});
+			
+	},
+	db_upsert : function(db,table, data, value, callback){
+		var collection = db.collection(table);
+		collection.update(
+			data,
+			{ $addToSet: value},
+			{ upsert: true },
 			function(err){
 				if (err){
 					callback({fail: true, error: err})

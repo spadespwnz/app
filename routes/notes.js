@@ -4,8 +4,8 @@ var dbutils = require('../utils/dbutils');
 var utils = require('../utils/utils');
 var crypto = require('crypto');
 var jwt = require('jsonwebtoken');
-/* GET home page. */
 
+var active = 'notes';
 
 
 router.use(function(req,res,next){
@@ -93,7 +93,7 @@ router.post('/request/create',function(req,res){
 				data = {'type':'note', 'title':title, 'text':''};
 				dbutils.db_insert(db, 'user:'+email, data, function (insert_result){
 
-					if (find_result.fail == true){
+					if (insert_result.fail == true){
 						//Error adding notelist for user
 						console.log("Error"+insert_result.error)
 						res.send({"request":"fail", "error":"Failed to find notes."});

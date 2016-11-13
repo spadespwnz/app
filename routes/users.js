@@ -3,7 +3,7 @@ var router = express.Router();
 var dbutils = require('../utils/dbutils');
 var utils = require('../utils/utils');
 var jwt = require('jsonwebtoken');
-
+var active = 'users'
 /* GET users listing. */
 
 
@@ -21,7 +21,7 @@ router.post('/request/login', function(req, res) {
 	var pass = req.body.password;
 
 	dbutils.db_find(db, 'users', {"email":email},function(find_result){
-		console.log(find_result)
+
 
 		if (find_result.fail == true){
 			//Error checking if account already exists
@@ -84,7 +84,7 @@ router.post('/request/signup', function(req, res) {
 			if (find_result.records.length == 0){
 				//Account Name Not Taken
 				dbutils.db_insert(db, 'users', data, function (insert_result){
-					console.log(insert_result);
+
 					if (find_result.fail == true){
 						//Error checking if account already exists
 						res.send("Failed to create account.");
@@ -129,7 +129,7 @@ router.use(function(req,res,next){
 
 router.get('/', function(req, res) {
 	email = req.decoded.email;
-	res.render('pages/users', {email: email});
+	res.render('pages/users', {email: email, active: active});
 });
 
 

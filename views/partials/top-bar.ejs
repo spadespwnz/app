@@ -5,7 +5,7 @@
 	}
 	.logout-button{
 		position: absolute;
-		left:90%;
+		right:5%;
 		top: 10px;
 	}
 	.links-bar{
@@ -30,7 +30,7 @@
 		display: block;
 		color: white;
 		text-align: center;
-		padding: 0px 10px;
+		padding: 0px 20px;
 		text-decoration: none;
 	}
 	.links-bar li a:hover{
@@ -39,6 +39,18 @@
 	.links-bar .active{
 		background-color: blue;
 	}
+	.banner-text{
+		display: inline-block;
+		position: relative;
+		left: 5%;
+		font-size: 200%;
+		top: 20%;
+
+	}
+	.banner-text a{
+		color: white;
+	}
+
 </style>
 <script>
 	$(document).ready(function(){
@@ -53,11 +65,29 @@
 	<div class="logout-button">
 		<button type="button" id="logout" class="logout-button btn btn-primary btn-lg">Logout</button>
 	</div>
+	<div class="banner-text">
+		<a href="/users/">SPaDeS</a>
+	</div>
 	<div class="links-bar">
 		<ul class="list-inline">
-			<li><a href="/chat">Chat</a></li>
-			<li><a href="/lists">Lists</a></li>
-			<li><a href="/notes">Notes</a></li>
+
+			<li><a <% if (active == 'chat'){ %>
+						class =  active
+					<% } %>
+					href="/chat">Chat</a></li>
+			<li><a <% if (active == 'lists'){ %>
+ 						class = active
+					<% } %>
+					href="/lists">Lists</a></li>
+
+			<li><a <% if (active == 'notes'){ %>
+						class =  active
+					<% } %>
+					href="/notes">Notes</a></li>
+			<li><a <% if (active == 'friends'){ %>
+						class =  active
+					<% } %>
+					href="/friends">Friends</a></li>
 
 		</ul>
 	</div>

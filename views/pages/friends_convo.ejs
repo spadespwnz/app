@@ -1,0 +1,122 @@
+
+<% include ../partials/head.ejs %>
+
+<% include ../partials/top-bar.ejs %>
+
+<% include ../partials/friends-sidebar.ejs %>
+
+<style>
+	.message_area{
+		position: absolute;
+
+		width: 50%;
+		height: 65%;
+		background-color: lightblue;
+		margin-top: 2%;
+		left: 17%;
+	}
+	.chat_functions{
+		position: absolute;
+		width: 100%;
+		
+		bottom: 0%;
+	}
+	.chat_functions input{
+		width: 100%;
+	}
+	.email_part{
+		color: red;
+	}
+	.message_line{
+		display: inline-block;
+	}
+
+</style>
+<div class="message_area">
+	<div class="message_content" id='convo'>
+
+	</div>
+	<div class="chat_functions">
+		<form>
+			<input type="text" class="text-input" id="message" placeholder="Message"/>
+			<button type=submit id="send_message" class="button raised bg-blue-500">Send</button>
+		</form>
+	</div>
+</div>
+	<script src="/scripts/socket.io.js"></script>
+	<script>
+		$(document).ready(function(){
+			convo_id = "<%= convo_id %>"
+			var selected = null;
+			$.ajax({
+				type: "GET",
+				url: "../friends/request/convo/"+convo_id,
+				success: function(msg){
+					request = msg['request'];
+					messages = msg['convo']['msgs'];
+					if (request == "success"){
+						for (var line in messages){
+
+							$('#convo').append('<div class="message_line"><span class="email_part">'+messages[line].email+': </span>');
+
+							$('#convo').append('<span class="message_part">'+messages[line].content+'</span></div><br>');
+						}
+					}
+				}
+			});
+
+			$('#send_message').click(function(e){
+				e.preventDefault();
+				var message = $('#message').val();
+				if (message == ''){
+					event.preventDefault();
+					swal({title: "Problem",
+					text: "Cannot send a blank message."});
+				}
+				else{
+
+					$.ajax({
+						type: "POST",
+						url: "../friends/request/convo/send_message",
+						data: {convo_id: convo_id, message: message},
+						success: function(msg){
+							request = msg['request'];
+							if (request == "success"){
+								$('#message').val("");
+								//$('#list').append($('<li id="list:'+$('#title').val()+'"><span class="item-text">'+$('#title').val()+'</span>'));
+								//$('#title').val('')
+								//window.location.reload();
+							}
+							else{
+								alert(msg['error']);
+							}
+						}
+					});
+				}
+			});
+			var socket = io('/friends');
+			socket.on('connect',function()
+				{
+					socket.emit('setup', getCookie('token'));
+				});
+			socket.on('joined', function(msg){
+				alert(msg);
+			})
+			
+
+		});
+		function getCookie(cookie){
+			var name = cookie + "=";
+			var ca = document.cookie.split(';');
+			for (var i = 0; i<ca.length;i++){
+				var c = ca[i];
+				while (c.charAt(0) == ' '){
+					c = c.substring(1);
+				}
+				if (c.indexOf(name) == 0){
+					return c.substring(name.length, c.length)
+				}
+			}
+			return "";
+		}
+	</script>

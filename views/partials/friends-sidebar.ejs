@@ -1,0 +1,71 @@
+<style>
+	.friends-sidebar{
+		float: left;
+		position: absolute;
+		width: 15%;
+		height: 100%;
+		background-color: black;
+		font-size: 300%;
+	}
+	.friends-sidebar li{
+		font-size: 75%;
+		color: white;
+	}
+	.friends-list ul{
+		padding-left: 5%;
+	}
+
+	.convo-section{
+		padding-top: 5%;
+	}
+
+</style>
+<div class="friends-sidebar" id="friends-sidebar">
+	<div class="friends-section">
+		Friends
+		<ul id="friend_list" class="list">
+
+		</ul>
+	</div>
+
+	<div class="convo-section">
+		Convos
+		<ul id="convo_list" class="list">
+
+		</ul>
+	</div>
+
+</div>
+<script>
+		$(document).ready(function(){
+			
+			var selected = null;
+			$.ajax({
+				type: "GET",
+				url: "../friends/request/friends_list",
+				success: function(msg){
+					request = msg['request'];
+					if (request == "success"){
+						friends = msg['my_friends'];
+						out_pending = msg['out_pending']
+						in_pending = msg['in_pending']
+						for (var friend in out_pending){
+
+							$('#out_pending_list').append($('<li><span>'+out_pending[friend]+'</span></li>'));
+						}
+						for (var friend in in_pending){
+
+							$('#in_pending_list').append($('<li><span>'+in_pending[friend]+'</span><button class="approve-button">√</button><button class="decline-button">x</button></li>'));
+						}
+						for (var friend in friends){
+
+							$('#friend_list').append($('<li><span>'+friends[friend].email+'</span></li>'));
+						}
+
+					}
+
+				}
+			});
+		});
+
+</script>

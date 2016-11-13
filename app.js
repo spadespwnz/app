@@ -50,6 +50,7 @@ fs.readdirSync(__dirname+'/routes').forEach(function(file){
 
 var chat_controller = require('./socket_controllers/chat');
 var stream_controller = require('./socket_controllers/stream');
+var friends_controller = require('./socket_controllers/friends');
 
 var chat = io
 	.of('/chat')
@@ -64,6 +65,14 @@ var stream = io
 
 		stream_controller.respond(stream, socket);
 	});
+
+var friends = io
+	.of('/friends')
+	.on('connection', function(socket){
+
+		friends_controller.respond(friends, socket, data_base, io);
+	});
+
 
 
 var webServer = http.listen((process.env.PORT || 3000), function(){

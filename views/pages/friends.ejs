@@ -1,0 +1,126 @@
+<style>
+	.in_pending{
+		position: absolute;
+		left: 30%;
+		font-size: 150%;
+
+	}
+	.in_pending_list{
+		color: black;
+		font-size: 100%;
+
+	}
+	.in_pending_list button{
+		border: 0px;
+		background-color: white;
+	}
+	.in_pending_list .approve-button{
+		color: lightgreen;
+	}
+	.in_pending_list .decline-button{
+		color: red;
+	}
+	.out_pending{
+		position: absolute;
+		right: 30%;
+		font-size: 150%;
+	}
+	.out_pending_list{
+		color: red;
+		font-size: 100%;
+
+	}
+
+</style>
+
+<html>
+	<head>
+		<% include ../partials/head.ejs %>
+		<% include ../partials/top-bar.ejs %>
+	</head>
+
+		
+	<body>
+		<% include ../partials/friends-sidebar.ejs %>
+	<div class="in_pending">
+		Pending friend requests:
+		<ul class="list in_pending_list" id="in_pending_list">
+
+		</ul>
+	</div>
+
+	<div class="out_pending">
+		Outstanding Friend Requests
+		<ul class="list out_pending_list" id="out_pending_list">
+
+		</ul>
+		<input type="text" class="text-input" id="friend_to_add" placeholder="Add Friend"/>
+		<button id="add_friend" class="button raised bg-blue-500">Add</button>
+	</div>
+	</body>
+</html>
+	<script>
+		$(document).ready(function(){
+			
+			var selected = null;
+			
+			$(".in_pending").on('click', '.approve-button', function(){
+				var user = $(this).parent().find("span").text();
+				$.ajax({
+					type: "POST",
+					url: "../friends/request/approve_friend",
+					data: {friend_to_approve: user},
+					success: function(msg){
+						request = msg['request'];
+						if (request == "success"){
+							window.location.reload();
+						}
+						else{
+							alert(msg['error']);
+						}
+						
+					}
+				});
+
+			});
+			$(".in_pending").on('click', '.decline-button', function(){
+				var user = $(this).parent().find("span").text();
+				$.ajax({
+					type: "POST",
+					url: "../friends/request/decline_friend",
+					data: {friend_to_decline: user},
+					success: function(msg){
+						request = msg['request'];
+						if (request == "success"){
+							window.location.reload();
+						}
+						else{
+							alert(msg['error']);
+						}
+						
+					}
+				});
+			});
+
+
+
+			$('#add_friend').click(function(){
+				$.ajax({
+					type: "POST",
+					url: "../friends/request/add_friend",
+					data: {friend_to_add: $('#friend_to_add').val()},
+					success: function(msg){
+						request = msg['request'];
+						if (request == "success"){
+							//$('#list').append($('<li id="list:'+$('#title').val()+'"><span class="item-text">'+$('#title').val()+'</span>'));
+							//$('#title').val('')
+							window.location.reload();
+						}
+						else{
+							alert(msg['error']);
+						}
+					}
+				});
+			});
+		});
+	</script>

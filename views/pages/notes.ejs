@@ -51,6 +51,25 @@
 				background-color: #4CAF50;
 			}
 
+			.home {
+				margin: auto;
+				position: absolute;
+			  	top: 2%;
+			  	left: 74%;
+
+				width: 10%;
+				height: 5%;
+				color: red;
+
+
+			}
+
+			.home-button{
+				width: 100%;
+				height: 100%;
+				background-color: #4CAF50;
+			}
+
 			.save-button{
 				width: 100%;
 				height: 100%;
@@ -108,6 +127,9 @@
 		</div>
 		<div class="logout">
 			<button id="logout" class="logout-button button raised">Logout</button>
+		</div>
+		<div class="home">
+			<button id="home" class="home-button button raised">Home</button>
 		</div>
 	</body>
 	<script>
@@ -191,6 +213,11 @@
 
 			$('#logout').click(function(){
 				window.location.replace("/users/logout");
+
+
+			});
+			$('#home').click(function(){
+				window.location.replace("/users/");
 
 
 			});
