@@ -263,9 +263,25 @@ router.get('/request/convo/:convo_id', function(req,res){
 });
 
 router.post('/request/convo/send_message', function(req,res){
+	
 	email = req.decoded.email;
 	var db = req.db;	
-	var convo_id = req.body.convo_id;
+	var convo_id;
+	var message;
+	if (req.body.convo_id){
+		convo_id = req.body.convo_id;
+	}
+	else{
+		res.send({'request': 'fail', 'error':'bad request.'});
+		return;
+	}
+	if (req.body.message){
+		message = req.body.message;
+	}
+	else{
+		res.send({'request': 'fail', 'error':'bad request.'});
+		return;
+	}
 	var message = req.body.message;
 	dbutils.db_find(db, 'convos', {'id':new uid(convo_id)}, function(find_res){
 		if (find_res.fail == true){
@@ -287,7 +303,7 @@ router.post('/request/convo/send_message', function(req,res){
 
 						res.send({"request":"success"});
 					}
-					console.log(push_result);
+					
 				});
 				
 			

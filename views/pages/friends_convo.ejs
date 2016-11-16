@@ -5,21 +5,30 @@
 
 <% include ../partials/friends-sidebar.ejs %>
 
+<% include ../partials/friends-footbar.ejs %>
 <style>
+	.chat_wrapper{
+		width: 100%;
+		left: 50%;
+	}
 	.message_area{
-		position: absolute;
-
+		position: relative;
+		left: 17%;
 		width: 50%;
 		height: 65%;
 		background-color: lightblue;
 		margin-top: 2%;
-		left: 17%;
+		overflow-y: scroll;
+		overflow-x: hidden;
+		word-wrap: break-word;
+		
 	}
 	.chat_functions{
-		position: absolute;
-		width: 100%;
+		position: relative;
+		width: 50%;
+		left: 17%;
 		
-		bottom: 0%;
+
 	}
 	.chat_functions input{
 		width: 100%;
@@ -32,9 +41,11 @@
 	}
 
 </style>
-<div class="message_area">
-	<div class="message_content" id='convo'>
+<div class="chat_wrapper">
+	<div class="message_area">
+		<div class="message_content" id='convo'>
 
+		</div>
 	</div>
 	<div class="chat_functions">
 		<form>
@@ -43,7 +54,6 @@
 		</form>
 	</div>
 </div>
-	<script src="/scripts/socket.io.js"></script>
 	<script>
 		$(document).ready(function(){
 			convo_id = "<%= convo_id %>"
@@ -58,9 +68,10 @@
 						for (var line in messages){
 
 							$('#convo').append('<div class="message_line"><span class="email_part">'+messages[line].email+': </span>');
-
 							$('#convo').append('<span class="message_part">'+messages[line].content+'</span></div><br>');
 						}
+
+						$('.message_area').scrollTop($('.message_area')[0].scrollHeight);
 					}
 				}
 			});
@@ -74,7 +85,12 @@
 					text: "Cannot send a blank message."});
 				}
 				else{
+					var socket_message = {
+						convo_id : convo_id,
+						content : message
 
+					};
+					socket.emit('chat_msg', socket_message);
 					$.ajax({
 						type: "POST",
 						url: "../friends/request/convo/send_message",
@@ -94,29 +110,9 @@
 					});
 				}
 			});
-			var socket = io('/friends');
-			socket.on('connect',function()
-				{
-					socket.emit('setup', getCookie('token'));
-				});
-			socket.on('joined', function(msg){
-				alert(msg);
-			})
+			
 			
 
 		});
-		function getCookie(cookie){
-			var name = cookie + "=";
-			var ca = document.cookie.split(';');
-			for (var i = 0; i<ca.length;i++){
-				var c = ca[i];
-				while (c.charAt(0) == ' '){
-					c = c.substring(1);
-				}
-				if (c.indexOf(name) == 0){
-					return c.substring(name.length, c.length)
-				}
-			}
-			return "";
-		}
+
 	</script>

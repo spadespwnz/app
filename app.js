@@ -80,7 +80,7 @@ var webServer = http.listen((process.env.PORT || 3000), function(){
   prompt.start();
 });
 
-var socketServer = io.listen(webServer);
+//var socketServer = io.listen(webServer);
 //var rtcServer = easyrtc.listen(app, socketServer);
 
 getCommand();

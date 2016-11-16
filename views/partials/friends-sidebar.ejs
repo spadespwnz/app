@@ -13,10 +13,20 @@
 	}
 	.friends-list ul{
 		padding-left: 5%;
+		float: left;
 	}
 
-	.convo-section{
-		padding-top: 5%;
+
+	.friends-sidebar li a{
+		color: white;
+		width: 100%;
+		display: block;
+		text-align: left;
+		padding: 0px 20px;
+		text-decoration: none;
+	}
+	.friends-sidebar li a:hover{
+		background-color: #111;
 	}
 
 </style>
@@ -59,7 +69,7 @@
 						}
 						for (var friend in friends){
 
-							$('#friend_list').append($('<li><span>'+friends[friend].email+'</span></li>'));
+							$('#friend_list').append($('<li><a href="/friends/'+friends[friend].email+'"><span>'+friends[friend].email+'</span></a></li>'));
 						}
 
 					}

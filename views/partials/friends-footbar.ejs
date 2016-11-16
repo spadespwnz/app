@@ -1,0 +1,342 @@
+<link rel="stylesheet" type="text/css" href="/css/jquery-ui.min.css">
+
+<script src="/scripts/jquery-ui.min.js"></script>
+
+<style>
+	.friend_footer{
+		z-index: 2;
+		position: fixed;
+		width: 100%;
+		background-color: grey;
+		height: 5%;
+		bottom: 0%;
+		color: red;
+	}
+
+	.toggle_friend_list{
+		position: absolute;
+		width: 3%;
+		height: 100%;
+		display: inline-block;
+		right: 0%;
+		background-color: black;
+	}
+
+
+	.friends_list{
+		display: none;
+		position: fixed;
+		z-index: 2;
+		background-color: grey;
+		height: 50%;
+		width: 15%;
+		bottom: 6%;
+		right: 0%;
+		
+		overflow-x: hidden;
+		white-space:  nowrap;
+		text-overflow: ellipsis;
+
+	}
+
+	.friends_list .menubar{
+		color: black;
+		position: absolute;
+		height: 30px;
+		width: 100%;
+		background-color: black;
+	}
+
+	.friends_list .menubar .refresh_friends{
+		background-color: white;
+		position: absolute;
+		display: inline-block;
+		right: 0%;
+		height: 100%;
+		width: 30px;
+
+	}
+	.ui-icon2 {
+		width: 16px; 
+		height: 16px; 
+		background-image: url(/css/images/ui-icons_444444_256x240.png);
+		float: left;
+		display: inline-block;
+		margin-left: 5px;
+		margin-top: 5px;
+
+	}
+	.x2{
+		transform: scale(2);
+	}
+	.friends{
+		position: absolute;
+		max-height: 90%;
+		bottom: 0%;
+		list-style: none;
+		width: 100%;
+		margin: 0;
+		padding: 0;
+	}
+
+	.friends li{
+		font-size: 200%;
+
+		color: black;
+		text-decoration: none;
+		
+	}
+	.friends li:hover{
+		background-color: orange;
+	}
+	.friends .convo_name{
+		margin-left: 20px;
+	}
+	.online_box{
+
+		position: absolute;
+		display: inline-block;
+		margin: 0;
+		margin-top: 11px;
+		width: 15px;
+		height: 15px;
+		background-color: green;
+	}
+
+	.chat_box{
+		display: none;
+		z-index: 2;
+		position: fixed;
+		background-color: darkgrey;
+		height: 25%;
+		width: 15%;
+		right: 16%;
+		bottom: 6%;
+	}
+
+	.chat_box_area{
+		height: 70%;
+		background-color: lightgrey;
+		overflow-y: scroll;
+		overflow-x: hidden;
+		word-wrap: break-word;
+	}
+	.chatbox_functions{
+		position: absolute;
+		bottom: 0%;
+	}
+	.chat_box_title{
+		font-size: 130%;
+		display: inline-block;
+	
+	}
+	.chat_box_exit{
+		margin: 0;
+		position: absolute;
+		display:inline-block;
+		right:3px;
+		top: 0px;
+		
+		
+	}
+	span{
+		white-space: nowrap;
+	}
+</style>
+<div class="friend_footer">
+	<div class="toggle_friend_list">
+		
+	</div>
+</div>
+<div class="friends_list">
+	<div class="menubar">
+		<div class="refresh_friends">
+			<span class="ui-icon2 x2 ui-icon-refresh"></span>
+		</div>
+	</div>
+	<ul class='friends'>
+
+	</ul>
+</div>
+<div class="chat_box">
+	<div class="chat_box_title">
+		Rawr
+	</div>
+	<div class="chat_box_exit">
+		<span  class="ui-icon2 x2 ui-icon-close"></span>
+	</div>
+	<div class="chat_box_area">
+		<div class="chat_box_content" id='chat_box_convo'>
+
+		</div>
+	</div>
+	<div class="chatbox_functions">
+		<form>
+			<input type="text" class="chat_box_text" id="chat_box_text" placeholder="Message"/>
+			<button type=submit id="chat_box_message" class="button raised bg-blue-500">Send</button>
+		</form>
+	</div>
+</div>
+
+
+
+
+<script>
+	var convo_list = {};
+
+	var current_convo_selected = null;
+	var hidden_chat_box = true;
+	var hidden_friends_list = true;
+	var socket;
+	$(document).ready(function(){
+		$('#chat_box_message').click(function(e){
+			e.preventDefault();
+			var message = $('#chat_box_text').val();
+			if (message == ''){
+				event.preventDefault();
+				swal({title: "Problem",
+				text: "Cannot send a blank message."});
+			}
+			else{
+				var socket_message = {
+					convo_id : current_convo_selected,
+					content : message
+
+				};
+				socket.emit('chat_msg', socket_message);
+				$.ajax({
+					type: "POST",
+					url: "../friends/request/convo/send_message",
+					data: {convo_id: current_convo_selected, message: message},
+					success: function(msg){
+						request = msg['request'];
+						if (request == "success"){
+							$('#chat_box_text').val("");
+							//$('#list').append($('<li id="list:'+$('#title').val()+'"><span class="item-text">'+$('#title').val()+'</span>'));
+							//$('#title').val('')
+							//window.location.reload();
+						}
+						else{
+							alert(msg['error']);
+						}
+					}
+				});
+			}
+		});
+			
+		$('.chat_box_exit').click(function(e){
+			$('.chat_box').hide();
+		});
+		$('.toggle_friend_list').click(function(e){
+			toggle_list();
+		})
+		$('.refresh_friends').click(function(e){
+
+			socket.emit('request_convo_list', getCookie('token'));
+		})
+
+		$('.friends_list').on('click', 'li',function(){
+			$('.chat_box').show();
+			current_convo_selected = this.getAttribute("convo_id");
+			var new_title = $(this).find('.convo_name').text();
+			$('.chat_box_title').text(new_title);
+			$('#chat_box_convo').empty();
+			display_new_selected_convo();
+		})
+		socket = io('/friends');
+		socket.on('connect',function()
+			{
+				socket.emit('setup', getCookie('token'));
+			});
+		socket.emit('request_convo_list', getCookie('token'));
+		socket.on('msg', function (msg){
+			if (typeof(convo_id) != 'undefined'){
+				if (msg.convo_id == convo_id){
+					$('#convo').append('<div class="message_line"><span class="email_part">'+msg.email+': </span>');
+
+					$('#convo').append('<span class="message_part">'+msg.content+'</span></div><br>');
+					$('.message_area').scrollTop($('.message_area')[0].scrollHeight);
+				}
+			}
+
+			if (msg.convo_id == current_convo_selected){
+				$('#chat_box_convo').append('<div style="display: inline-block;"><span style="display: inline-block">'+msg.email+': </span>');
+
+				$('#chat_box_convo').append('<span>'+msg.content+'</span></div><br>');
+			}
+			if (convo_list[''+msg.convo_id]){
+				msg_to_add = {email: msg.email, content: msg.content}
+				convo_list[''+msg.convo_id].push(msg_to_add);
+
+			}
+			else{
+				convo_list[''+msg.convo_id] = [];
+				msg_to_add = {email: msg.email, content: msg.content}
+				
+				convo_list[msg.convo_id].push(msg_to_add);
+				
+			}
+
+		});
+		socket.on('updated_convo_list', function(convos){
+			update_convos(convos);
+		})
+
+
+	});
+
+	function display_new_selected_convo(){
+		if (convo_list[current_convo_selected]){
+			selected_messages = convo_list[current_convo_selected];
+			for (msg in selected_messages){
+				$('#chat_box_convo').append('<div style="display: inline-block;"><span style="display: inline-block">'+selected_messages[msg].email+': </span>');
+
+				$('#chat_box_convo').append('<span>'+selected_messages[msg].content+'</span></div><br>');
+			}
+		}
+		else{
+			
+		}
+	}
+	function update_convos(convos){
+		$('.friends').empty();
+		for (var i = 0; i< convos.length;i++){
+			var append_line = '<li convo_id="'+convos[i].convo_id+'">';
+			if (convos[i].online == true){
+				append_line+='<span class="online_box"></span>'
+			}
+			append_line+= '<span class="convo_name">'+convos[i].email+'</span>';
+				append_line += '</li>'
+
+			$('.friends').append(append_line);
+
+		}	
+	}
+	function toggle_list(){
+		if (hidden_friends_list == true){
+			$('.friends_list').show();
+			hidden_friends_list = false;
+		}
+		else{
+			$('.friends_list').hide();
+			hidden_friends_list = true;
+		}
+	}
+
+	function getCookie(cookie){
+		var name = cookie + "=";
+		var ca = document.cookie.split(';');
+		for (var i = 0; i<ca.length;i++){
+			var c = ca[i];
+			while (c.charAt(0) == ' '){
+				c = c.substring(1);
+			}
+			if (c.indexOf(name) == 0){
+				return c.substring(name.length, c.length)
+			}
+		}
+		return "";
+	}
+
+
+</script>
