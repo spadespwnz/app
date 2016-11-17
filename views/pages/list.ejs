@@ -3,7 +3,10 @@
 		<% include ../partials/head.ejs %>
 
 	</head>
+	<% include ../partials/top-bar.ejs %>
 	<% include ../partials/friends-footbar.ejs %>
+
+	<% include ../partials/lists-sidebar.ejs %>
 	<style>
 		.input-new-item{
 			width: 500px;
@@ -39,8 +42,8 @@
 		}
 		.page_content{
 			position: relative;
-			width: 70%;
-			left: 10%;
+			width: 65%;
+			left: 15%;
 			padding-top: 5px;
 			padding-right: 50px;
 			padding-bottom: 20px;
@@ -108,7 +111,7 @@
 		}
 	</style>
 	<div class="page">
-		<% include ../partials/top-bar.ejs %>
+		
 		<div class="filters">
 			<% for(var i=0; i<json.access.length; i++) {
 
@@ -198,8 +201,8 @@
 		var list;
 		$(document).ready(function(){
 			$(function () {
-				$('[data-toggle="tooltip"]').tooltip()
-			})
+				$('[data-toggle="tooltip"]').tooltip();
+			});
 
 			list = "<%= list %>"
 			

@@ -1,0 +1,94 @@
+<style>
+
+	.list-sidebar{
+		z-index: 4;
+		min-height: 88%;
+		float: left;
+		position: absolute;
+		width: 12%;
+		
+		background-color: black;
+		font-size: 200%;
+	}
+	.list-sidebar li{
+		font-size: 75%;
+		color: white;
+	}
+	.lists-list ul{
+		width: 100%;
+		padding-left: 5%;
+		float: left;
+	}
+
+	a{
+		color: white;
+	}
+	.list-sidebar li a{
+		
+		width: 100%;
+		display: block;
+		text-align: left;
+		padding: 0px 20px;
+		text-decoration: none;
+		overflow-x: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+	.list-sidebar li a:hover{
+		background-color: #111;
+	}
+
+	.list-sidebar li a:active{
+		color: red;
+	}
+
+	.active-list{
+		background-color: white;
+	}
+	.active-list a{
+		color: black;
+	}
+
+
+</style>
+<div class="list-sidebar" id="list-sidebar">
+	<div class="lists-list">
+		<ul id="lists_list">
+
+		</ul>
+	</div>
+
+
+
+</div>
+
+<script>
+
+	$(document).ready(function(){
+		
+		cur_list = "<%= active_list %>";
+		
+		$.ajax({
+			type: "GET",
+			url: "/lists/request/user_lists",
+			success: function(msg){
+				request = msg['request'];
+				if (request == "success"){
+					list = msg['list'];
+					for (var listElement in list){
+						if (cur_list == list[listElement]){
+							$('#lists_list').append($('<li class="active-list"><a href="/lists/'+list[listElement]+'/"><span>'+list[listElement]+'</span></a></li>'));
+						}
+						else{
+							$('#lists_list').append($('<li><a href="/lists/'+list[listElement]+'/"><span>'+list[listElement]+'</span></a></li>'));
+						}
+					}
+
+				}
+				else{
+					alert(msg['error']);
+				}
+			}
+		});
+	});
+</script>

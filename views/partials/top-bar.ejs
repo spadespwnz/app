@@ -3,10 +3,23 @@
 		background-color: red;
 		height: 120px;
 	}
+
+	.topright-content{
+		margin-top: 1em;
+		float: right;
+		margin-right: 1em;
+	}
 	.logout-button{
-		position: absolute;
-		right:5%;
-		top: 10px;
+		float: right;
+		
+		
+	}
+	.user-text{
+		
+		font-size: 200%;
+
+		margin-right: 1em;
+		float: left;
 	}
 	.links-bar{
 		position:absolute;
@@ -62,11 +75,18 @@
 	});
 </script>
 <div class="top-bar">
-	<div class="logout-button">
-		<button type="button" id="logout" class="logout-button btn btn-primary btn-lg">Logout</button>
-	</div>
+
 	<div class="banner-text">
-		<a href="/users/">SPaDeS</a>
+		<a href="/users/">SPaDeS.tech</a>
+	</div>	
+	<div class="topright-content">
+		<div class="logout-button">
+			<button type="button" id="logout" class="logout-button btn btn-primary btn-lg">Logout</button>
+		</div>
+
+		<div class="user-text">
+			<%- email %>
+		</div>
 	</div>
 	<div class="links-bar">
 		<ul class="list-inline">

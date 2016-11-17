@@ -104,26 +104,48 @@
 	}
 
 	.chat_box{
+		border: solid 1px;
 		display: none;
-		z-index: 2;
+		z-index: 10;
 		position: fixed;
 		background-color: darkgrey;
-		height: 25%;
-		width: 15%;
+		height: 30%;
+		width: 20%;
 		right: 16%;
 		bottom: 6%;
 	}
 
 	.chat_box_area{
 		height: 70%;
+		width: 100%;
+		display: inline-block;
 		background-color: lightgrey;
 		overflow-y: scroll;
 		overflow-x: hidden;
 		word-wrap: break-word;
+		
 	}
 	.chatbox_functions{
+		width: 100%;
 		position: absolute;
+		display: block;
 		bottom: 0%;
+	}
+
+	.chat_box form{
+		display: block;
+	}
+	.chat_box_text{
+		float: left;
+		width: 100%;
+	}
+	.chat_box_text_span{
+		display: block;
+		overflow: hidden;
+
+	}
+	.chat_box_button{
+		float: right;
 	}
 	.chat_box_title{
 		font-size: 130%;
@@ -139,7 +161,7 @@
 		
 		
 	}
-	span{
+	.friends_list span{
 		white-space: nowrap;
 	}
 </style>
@@ -172,8 +194,10 @@
 	</div>
 	<div class="chatbox_functions">
 		<form>
-			<input type="text" class="chat_box_text" id="chat_box_text" placeholder="Message"/>
-			<button type=submit id="chat_box_message" class="button raised bg-blue-500">Send</button>
+			<span class="chat_box_text_span">
+				<input type="text" class="chat_box_text" id="chat_box_text" placeholder="Message"/>
+			</span>
+			<button type=submit id="chat_box_message" class="button raised bg-blue-500 chat_box_button">Send</button>
 		</form>
 	</div>
 </div>
@@ -182,6 +206,12 @@
 
 
 <script>
+
+	$(function(){
+		$( ".chat_box").draggable();
+
+	});
+
 	var convo_list = {};
 
 	var current_convo_selected = null;
@@ -206,7 +236,7 @@
 				socket.emit('chat_msg', socket_message);
 				$.ajax({
 					type: "POST",
-					url: "../friends/request/convo/send_message",
+					url: "/friends/request/convo/send_message",
 					data: {convo_id: current_convo_selected, message: message},
 					success: function(msg){
 						request = msg['request'];
@@ -263,6 +293,7 @@
 				$('#chat_box_convo').append('<div style="display: inline-block;"><span style="display: inline-block">'+msg.email+': </span>');
 
 				$('#chat_box_convo').append('<span>'+msg.content+'</span></div><br>');
+				$('.chat_box_area').scrollTop($('.chat_box_area')[0].scrollHeight);
 			}
 			if (convo_list[''+msg.convo_id]){
 				msg_to_add = {email: msg.email, content: msg.content}

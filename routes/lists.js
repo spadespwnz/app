@@ -49,7 +49,50 @@ router.get('/:list', function(req, res) {
 				access_list = list.access;
 
 				if (access_list.indexOf(email) >= 0){
-					res.render('pages/list', {email: email,json: list, list: list_title, active: active});
+					res.render('pages/list', {email: email,json: list, list: list_title, active: active, active_list: list_title});
+
+				}
+				else{
+					res.send("You do not have access to this list.");
+				}
+
+			}
+		}
+	});
+
+});
+
+router.get('/:list/fix', function(req, res) {
+	email = req.decoded.email;
+	var db=req.db;
+	var list_title = req.params.list;
+	dbutils.db_find(db, 'lists', {"title":list_title}, function(set_result){
+		if (set_result.fail == true){
+			//Error changing note text
+			console.log("Error"+set_result.error)
+			res.send({"request":"fail", "error":"Failed to load list."});
+		}
+		else{
+			records = set_result['records'];
+			if (records.length != 1){
+				res.send({"request":"fail", "error":"List does not exist."});
+			}
+			else{
+				list = records[0];
+				access_list = list.access;
+
+				if (access_list.indexOf(email) >= 0){
+					dbutils.db_upsert(db, 'user:'+email, {"type":"lists"}, {"list":list_title}, function(push_result){
+						if (push_result.fail == true){
+							
+							res.send("Some failure occured.");
+							//console.log("Error"+push_result.error)
+
+						}
+						else{
+							res.redirect('/lists/');
+						}
+					});
 
 				}
 				else{
