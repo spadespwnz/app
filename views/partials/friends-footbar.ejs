@@ -4,23 +4,16 @@
 
 <style>
 	.friend_footer{
+
 		z-index: 2;
 		position: fixed;
 		width: 100%;
 		background-color: grey;
-		height: 5%;
+		height: 3em;
 		bottom: 0%;
 		color: red;
 	}
 
-	.toggle_friend_list{
-		position: absolute;
-		width: 3%;
-		height: 100%;
-		display: inline-block;
-		right: 0%;
-		background-color: black;
-	}
 
 
 	.friends_list{
@@ -152,27 +145,75 @@
 		display: inline-block;
 	
 	}
-	.chat_box_exit{
+	.chat_box_icons{
 		margin: 0;
 		position: absolute;
 		display:inline-block;
 		right:3px;
 		top: 0px;
 		
-		
 	}
 	.friends_list span{
 		white-space: nowrap;
 	}
+
+	.toggle_friend_list{
+		width: 3vw;
+		height: 100%;
+		background-color: black;
+		float: right;
+	}
+
+	.friend_footer_content{
+		width: 100%;
+		
+		position: relative;
+		height: 100%;
+		float: right;
+	}
+	.convo_tabs_bar{
+		
+		color: blue;
+		right: 0%;
+		height: 100%;
+		
+		
+	}
+	.convo_tab{
+		color: black;
+		float: right;
+		font-size: 150%;
+		overflow-x: hidden;
+		width: 5%;
+		display: inline-block;
+		height: 100%;
+		margin-right: .5em;
+		border: solid 1px;
+		background-color: lightblue;
+		
+	}
+	.new_messages{
+		animation: blink 1.5s cubic-bezier(.5,0,1,1) infinite alternate;
+	}
+	.minimize_chat{
+		margin-right: 10px;
+	}
+	@keyframes blink { to {background-color: yellow;} }
 </style>
 <div class="friend_footer">
-	<div class="toggle_friend_list">
-		
+	<div class="friend_footer_content">
+		<div class="toggle_friend_list">
+			
+		</div>
+		<div class="convo_tabs_bar">
+
+		</div>
 	</div>
 </div>
 <div class="friends_list">
 	<div class="menubar">
 		<div class="refresh_friends">
+
 			<span class="ui-icon2 x2 ui-icon-refresh"></span>
 		</div>
 	</div>
@@ -180,12 +221,17 @@
 
 	</ul>
 </div>
-<div class="chat_box">
+
+<div class="chat_box" convo_id="template">
 	<div class="chat_box_title">
 		Rawr
 	</div>
-	<div class="chat_box_exit">
-		<span  class="ui-icon2 x2 ui-icon-close"></span>
+	
+	<div class="chat_box_icons">
+		
+		<span class="minimize_chat ui-icon2 x2 ui-icon-arrowthickstop-1-s"></span>
+
+		<span class="close_chat ui-icon2 x2 ui-icon-close"></span>
 	</div>
 	<div class="chat_box_area">
 		<div class="chat_box_content" id='chat_box_convo'>
@@ -197,7 +243,7 @@
 			<span class="chat_box_text_span">
 				<input type="text" class="chat_box_text" id="chat_box_text" placeholder="Message"/>
 			</span>
-			<button type=submit id="chat_box_message" class="button raised bg-blue-500 chat_box_button">Send</button>
+			<button type=submit id="chat_box_message" class="chat_box_message button raised bg-blue-500 chat_box_button">Send</button>
 		</form>
 	</div>
 </div>
@@ -207,21 +253,46 @@
 
 <script>
 
-	$(function(){
-		$( ".chat_box").draggable();
-
-	});
 
 	var convo_list = {};
-
+	var next_z_index = 10;
 	var current_convo_selected = null;
 	var hidden_chat_box = true;
 	var hidden_friends_list = true;
 	var socket;
 	$(document).ready(function(){
-		$('#chat_box_message').click(function(e){
+		$('body').on('click','.close_chat',function(e){
+			var chat = $(this).parent().parent();
+			var convo_id = chat.attr('convo_id');
+			convo_list[''+convo_id].open = false;
+			convo_list[''+convo_id].minimized = false;
+			convo_list[''+convo_id].new_message = false;
+			chat.remove();
+			
+		});
+		$('body').on('click','.minimize_chat',function(e){
+			var chat = $(this).parent().parent();
+			var convo_id = chat.attr('convo_id');
+			
+			convo_list[''+convo_id].minimized = true;
+			convo_list[''+convo_id].new_message = false;
+			$('.convo_tabs_bar').append('<div class="convo_tab" convo_id="'+convo_id+'">'+convo_list[''+convo_id].email+'</div>');
+			chat.hide();
+			
+		});
+
+		$('body').on('click','.convo_tab', function(e){
+			var tab = $(this);
+			var convo_id = tab.attr('convo_id');
+			tab.remove();
+			unminimize(convo_id);
+			
+		});
+		$('body').on('submit', '.chat_box',function (e){
 			e.preventDefault();
-			var message = $('#chat_box_text').val();
+			var send_to_convo = $(e.target).parent().parent().attr("convo_id");
+			var text_field =  $(e.target).find('.chat_box_text');
+			var message = text_field.val();
 			if (message == ''){
 				event.preventDefault();
 				swal({title: "Problem",
@@ -229,7 +300,7 @@
 			}
 			else{
 				var socket_message = {
-					convo_id : current_convo_selected,
+					convo_id : send_to_convo,
 					content : message
 
 				};
@@ -237,26 +308,22 @@
 				$.ajax({
 					type: "POST",
 					url: "/friends/request/convo/send_message",
-					data: {convo_id: current_convo_selected, message: message},
+					data: {convo_id: send_to_convo, message: message},
 					success: function(msg){
 						request = msg['request'];
 						if (request == "success"){
-							$('#chat_box_text').val("");
-							//$('#list').append($('<li id="list:'+$('#title').val()+'"><span class="item-text">'+$('#title').val()+'</span>'));
-							//$('#title').val('')
-							//window.location.reload();
+							text_field.val("");
 						}
 						else{
 							alert(msg['error']);
 						}
 					}
 				});
+
 			}
 		});
 			
-		$('.chat_box_exit').click(function(e){
-			$('.chat_box').hide();
-		});
+
 		$('.toggle_friend_list').click(function(e){
 			toggle_list();
 		})
@@ -266,12 +333,53 @@
 		})
 
 		$('.friends_list').on('click', 'li',function(){
-			$('.chat_box').show();
+
+			//$('.chat_box').show();
 			current_convo_selected = this.getAttribute("convo_id");
+			clicked_convo_id = current_convo_selected;
+
+			if (convo_list[clicked_convo_id]){
+
+				cur = convo_list[clicked_convo_id];
+				if (cur.open == true){
+
+					if (cur.minimized == true){
+						$('.chat_box[convo_id='+clicked_convo_id+']').show();
+						$('.convo_tab[convo_id='+clicked_convo_id+']').remove();
+						cur.minimized = false;
+					}
+					else{
+						$('.chat_box[convo_id='+clicked_convo_id+']').css('z-index',next_z_index);
+						next_z_index++;
+						//Flash or something
+					}
+				}
+				else{
+
+					clone = $('.chat_box[convo_id=template]').clone();
+					$('body').append(clone);
+					clone.find('.chat_box_title').text(cur.email);
+					clone.attr('convo_id',clicked_convo_id);
+					clone.css('z-index', next_z_index);
+					next_z_index++;
+					clone.draggable();
+					clone.show();
+					cur.open = true;
+					cur.minimized = false;
+					cur.new_message = false;
+					load_messages(clone, clicked_convo_id);
+
+
+				}
+			}
+			else{
+
+			}
+			/*
 			var new_title = $(this).find('.convo_name').text();
 			$('.chat_box_title').text(new_title);
 			$('#chat_box_convo').empty();
-			display_new_selected_convo();
+			display_new_selected_convo();*/
 		})
 		socket = io('/friends');
 		socket.on('connect',function()
@@ -289,22 +397,55 @@
 				}
 			}
 
-			if (msg.convo_id == current_convo_selected){
+			/*if (msg.convo_id == current_convo_selected){
 				$('#chat_box_convo').append('<div style="display: inline-block;"><span style="display: inline-block">'+msg.email+': </span>');
 
 				$('#chat_box_convo').append('<span>'+msg.content+'</span></div><br>');
 				$('.chat_box_area').scrollTop($('.chat_box_area')[0].scrollHeight);
-			}
+			}*/
 			if (convo_list[''+msg.convo_id]){
-				msg_to_add = {email: msg.email, content: msg.content}
-				convo_list[''+msg.convo_id].push(msg_to_add);
+				msg_to_add = {email: msg.email, content: msg.content};
+				cur = convo_list[''+msg.convo_id];
+				cur.messages.push(msg_to_add);
+				if (cur.open == true){
+					var chatbox = $('.chat_box[convo_id='+msg.convo_id+']');
+					chatbox.find('.chat_box_content').append('<div style="display: inline-block;"><span style="display: inline-block">'+msg.email+': </span>');
+					chatbox.find('.chat_box_content').append('<span>'+msg.content+'</span></div><br>');
+					chatbox.find('.chat_box_area').scrollTop($('.chat_box_area')[0].scrollHeight);
+
+					if (cur.minimized == true){
+						var tab = $('.convo_tab[convo_id='+msg.convo_id+']');
+						tab.addClass('new_messages');
+					}
+				}
+				else{
+					clone = $('.chat_box[convo_id=template]').clone();
+					$('body').append(clone);
+					clone.find('.chat_box_title').text(cur.email);
+					clone.attr('convo_id',msg.convo_id);
+					clone.css('z-index', next_z_index);
+					next_z_index++;
+					clone.draggable();
+					
+					cur.open = true;
+					cur.minimized = true;
+					cur.new_message = true;
+					load_messages(clone, msg.convo_id);
+					$('.convo_tabs_bar').append('<div class="convo_tab" convo_id="'+msg.convo_id+'">'+msg.email+'</div>');
+				}
+
 
 			}
 			else{
-				convo_list[''+msg.convo_id] = [];
+				convo_list[''+msg.convo_id] = {};
+				cur = convo_list[''+msg.convo_id];
+				cur.messages = [];
+				cur.email = msg.email;
+				cur.open = true;
+				cur.minimized = true;
+				cur.new_message = true;
 				msg_to_add = {email: msg.email, content: msg.content}
-				
-				convo_list[msg.convo_id].push(msg_to_add);
+				cur.messages.push(msg_to_add);
 				
 			}
 
@@ -315,10 +456,16 @@
 
 
 	});
+	
+	function unminimize(convo_id){
+		$('.chat_box[convo_id='+convo_id+']').show();
+		$('.chat_box[convo_id='+convo_id+']').css('z-index',next_z_index);
+		next_z_index++;
+	}
 
 	function display_new_selected_convo(){
 		if (convo_list[current_convo_selected]){
-			selected_messages = convo_list[current_convo_selected];
+			selected_messages = convo_list[current_convo_selected].messages;
 			for (msg in selected_messages){
 				$('#chat_box_convo').append('<div style="display: inline-block;"><span style="display: inline-block">'+selected_messages[msg].email+': </span>');
 
@@ -327,6 +474,14 @@
 		}
 		else{
 			
+		}
+	}
+	function load_messages(chatbox, convo){
+		selected_messages = convo_list[convo].messages;
+		for (msg in selected_messages){
+			chatbox.find('#chat_box_convo').append('<div style="display: inline-block;"><span style="display: inline-block">'+selected_messages[msg].email+': </span>');
+
+			chatbox.find('#chat_box_convo').append('<span>'+selected_messages[msg].content+'</span></div><br>');
 		}
 	}
 	function update_convos(convos){
@@ -340,6 +495,16 @@
 				append_line += '</li>'
 
 			$('.friends').append(append_line);
+			if (!convo_list[''+convos[i].convo_id]){
+				convo_list[''+convos[i].convo_id] = {};
+				cur = convo_list[''+convos[i].convo_id];
+				cur.messages = [];
+				cur.email = convos[i].email;
+				cur.open = false;
+				cur.minimized = false;
+				cur.new_message = false;
+
+			}
 
 		}	
 	}
