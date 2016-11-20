@@ -411,7 +411,7 @@
 					var chatbox = $('.chat_box[convo_id='+msg.convo_id+']');
 					chatbox.find('.chat_box_content').append('<div style="display: inline-block;"><span style="display: inline-block">'+msg.email+': </span>');
 					chatbox.find('.chat_box_content').append('<span>'+msg.content+'</span></div><br>');
-					chatbox.find('.chat_box_area').scrollTop($('.chat_box_area')[0].scrollHeight);
+					chatbox.find('.chat_box_area').scrollTop(chatbox.find($('.chat_box_area'))[0].scrollHeight);
 
 					if (cur.minimized == true){
 						var tab = $('.convo_tab[convo_id='+msg.convo_id+']');
@@ -432,6 +432,7 @@
 					cur.new_message = true;
 					load_messages(clone, msg.convo_id);
 					$('.convo_tabs_bar').append('<div class="convo_tab" convo_id="'+msg.convo_id+'">'+msg.email+'</div>');
+					$('.convo_tab[convo_id='+msg.convo_id+']').addClass('new_messages');
 				}
 
 

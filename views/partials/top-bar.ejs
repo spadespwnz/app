@@ -11,9 +11,11 @@
 	}
 	.logout-button{
 		float: right;
-		
-		
 	}
+	.login-button{
+		float: right;
+	}
+
 	.user-text{
 		
 		font-size: 200%;
@@ -69,8 +71,9 @@
 	$(document).ready(function(){
 		$('#logout').click(function(){
 			window.location.replace("/users/logout");
-
-
+		});
+		$('#login').click(function(){
+			window.location.replace("/users/login");
 		});
 	});
 </script>
@@ -80,13 +83,21 @@
 		<a href="/users/">SPaDeS.tech</a>
 	</div>	
 	<div class="topright-content">
+		<% if (!(email == '')) { %>
 		<div class="logout-button">
-			<button type="button" id="logout" class="logout-button btn btn-primary btn-lg">Logout</button>
+			<button type="button" id="logout" class="btn btn-primary btn-lg">Logout</button>
 		</div>
 
 		<div class="user-text">
 			<%- email %>
 		</div>
+		<% } else { %>
+			<div class="login-button">
+				<button type="button" id="login" class="btn btn-primary btn-lg">Login</button>
+			</div>
+
+		<% } %>
+
 	</div>
 	<div class="links-bar">
 		<ul class="list-inline">
