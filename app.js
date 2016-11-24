@@ -5,6 +5,7 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var easyrtc = require('easyrtc');
 var fs = require('fs');
+var expressDirectory = require('serve-index');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var MongoClient = require('mongodb').MongoClient
@@ -14,10 +15,16 @@ var data_base;
 var jwt = require('jsonwebtoken');
 var prompt = require('prompt');
 var dbutils = require('./utils/dbutils');
+var busboy = require('connect-busboy');
+
+
 MongoClient.connect(url, function(err,db){
 	data_base = db;
 });
 
+app.use(busboy());
+app.use('/images', express.static(__dirname + '/images'));
+app.use('/images', expressDirectory(__dirname + '/images'));
 app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json())
