@@ -135,6 +135,7 @@
 		var img;
 		var urlToCopy;
 		var origImgSrc;
+		var reload_image = 1;
 		var canvas = document.getElementById('canvas');
 		var ctx  = document.getElementById('canvas').getContext('2d');
 		img = new Image();
@@ -161,6 +162,10 @@
 			ctx.clearRect(0,0,canvas.width, canvas.height);
 
 			ctx.drawImage(img,0,0, img.width, img.height, 0, 0, canvas.width, canvas.height);
+			if (reload_image == 1){
+				reload_image = 0;
+				img.src = canvas.toDataURL();
+			}
 			
 			
 		}
