@@ -11,6 +11,7 @@ const S3_BUCKET = process.env.S3_BUCKET || 'spades-image-collection';
 var aws_secret;
 var aws_id;
 if (!process.env.S3_BUCKET){
+	console.log(S3_BUCKET);
 	var secrets = require('../secrets.js');
 	/*aws_secret = secrets.secret;
 	aws_id = secrets.id;*/
