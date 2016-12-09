@@ -691,10 +691,16 @@
 			var url = window.location.href;
 			const files = document.getElementById('image').files;
 			const file = files[0];
+			var fname;
+			var ftype;
 			if (file == null){
-				return alert('invalid file');
+				fname="image";
+				ftype="image/png";
 			}
-
+			else{
+				ftype = file.type;
+				fname = file.name;
+			}
 			var canvasDataUrl = canvas.toDataURL();
 			var blobBin = atob(canvasDataUrl.split(',')[1]);
 			var array = [];
@@ -703,7 +709,7 @@
 				array.push(blobBin.charCodeAt(i));
 			}
 			var blobFile = new Blob([new Uint8Array(array)], {type: 'image/png'});
-			var fname = file.name;
+			
 		
 			$.ajax({
 				type: "POST",
@@ -733,7 +739,7 @@
 							return alert('Cannot Send cross-domain');
 						}
 						xhr.setRequestHeader('Access-Control-Allow-Origin', "*");
-						xhr.setRequestHeader('Content-Type', file.type);
+						xhr.setRequestHeader('Content-Type', ftype);
 					
 						xhr.onreadystatechange =function (){
 							if (xhr.readyState === 4){
