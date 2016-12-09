@@ -1,6 +1,830 @@
-<% include ../partials/head.ejs %>
 
-<form method="post" action="/m/upload_request" name="submit" enctype = "multipart/form-data">
-	<input type="file" name="fileField">
-	<input type="submit" name="submit" value="Upload">
-</form>
+<html manifest="cache2.manifest">
+	<head>
+		
+		<script  src="/scripts/jquery-3.1.0.min.js"></script>
+		<script  src="/scripts/FileSaver.min.js"></script>
+		<link rel="stylesheet" href="/css/bootstrap.min.css">
+	</head>
+	<style>
+		.buttons{
+			position: fixed;
+			left: 0;
+			top: 0;
+			width:100%;
+			height: 100%;
+		}
+		.buttons input{
+			height: 12%;
+			width: 20%;
+		}
+		.canvas{
+			position: fixed;
+			border: solid 1px;
+			left: 25%;
+			top: 0%;
+			max-height: 70%;
+			max-width: 70%;
+		}
+		.storage_content{
+			position: fixed;
+			bottom: 0%;
+			left: 0%;
+			width: 100%;
+			height: 20%;
+		}
+		#upload_store{
+			width: 50%;
+			height: 100%;
+		}
+		#clear_store{
+		
+			width: 49%;
+			height: 100%;
+		}
+
+		.alert{
+			position: fixed;
+			z-index: 1;
+			background-color: grey;
+			opacity: .5;
+			display: none;
+			width: 100%;
+			height: 100%;
+
+
+
+		}
+		.prompt{
+			display: none;
+			position: fixed;
+			z-index: 1;
+			margin-left: 25%;
+			margin-right: 25%;
+			top: 20%;
+
+			background-color: white;
+			
+		
+			width: 50%;
+			height: 50%;
+		}
+
+		.prompt p{
+			text-align: center;
+			position: relative;
+			top: 10%;
+			font-size: 400%;
+		}
+
+		.prompt .alert_buttons{
+			position: absolute;
+			display: inline-block;
+			left: 15%;
+			width: 70%;
+			height: 20%;
+			bottom: 20%;
+			margin: 0 auto;
+	
+		}
+		.prompt .alert_buttons input{
+			margin: 0 auto;
+			width: 45%;
+			height: 100%;
+		}
+	</style>	
+	<div class="alert">
+		
+	</div>
+	<div class="prompt">
+		<p>Upload Complete</p>
+		<div class="alert_buttons">
+			<input type="button" class="btn btn-primary" name="submit" id="copy" value="Copy URL to Clipboard">
+			<input type="button" class="btn btn-primary" name="submit" id="close" value="close">
+		</div>
+	</div>
+	<div class="buttons">
+		<input type="file" class="btn btn-primary" id="image" name="fileField" accept="image/*" capure="camera">
+		<input type="button" class="btn btn-primary" name="submit" id="upload_image" value="Upload">
+
+		<p>Successful uploads:</p>
+		<p id="upload_count">0</p>
+		<p><input type="button" class="btn btn-primary" name="submit" id="flip" value="Flip Image"></p>
+		<p><input type="button" class="btn btn-primary" name="submit" id="crop" value="Crop Image"></p>
+		<p><input type="button" class="btn btn-primary" name="submit" id="reset" value="Reset Image"></p>
+
+	</div>
+	
+	<div class="storage_content">
+		<input type="button" class="btn btn-primary" name="submit" id="upload_store" value="Upload Stored Images">
+		<input type="button" class="btn btn-primary" name="submit" id="clear_store" value="Clear">
+		
+	</div>
+<canvas class="canvas" width="1920" height="1080" id="canvas" />
+<script>
+	$(document).ready(function(){
+		var alertShown = false;
+		$('#alert').click(function(){
+			alertCopy();
+		});
+		$('.alert').click(function(){
+			alertShown = false;
+			$('.alert').hide();
+			$('.prompt').hide();
+		});
+		var img;
+		var urlToCopy;
+		var origImgSrc;
+		var canvas = document.getElementById('canvas');
+		var ctx  = document.getElementById('canvas').getContext('2d');
+		img = new Image();
+		img.onload = function(){
+			var AR = img.width/img.height;
+			var new_width;
+			var new_height;
+			if (img.width > 1920){
+				canvas.width = 1920;
+				canvas.height = canvas.width / AR;
+
+			}
+			else{
+
+				canvas.width = img.width;
+				canvas.height = canvas.width / AR;
+			}
+
+			if (canvas.height > 1080){
+				canvas.height = 1080;
+				canvas.width = canvas.height * AR;
+			}
+
+			ctx.clearRect(0,0,canvas.width, canvas.height);
+
+			ctx.drawImage(img,0,0, img.width, img.height, 0, 0, canvas.width, canvas.height);
+			
+			
+		}
+		var URL = window.URL;
+
+		var downAt;
+		var upAt;
+		var lastMove;
+		var old_crop_bg_color = "lightblue";
+		var crop = 0;
+		var flip = 0;
+		var uploaded_images = 0;
+		var stored_images_processed = 0;
+		var total_stored_images;
+		var storedImagesJson = localStorage.getItem("images");
+		var storedImages = JSON.parse(storedImagesJson);
+		if (storedImages){
+			updateStoreButtonText(storedImages.length);
+		}
+		else{
+			storedImages = [];
+			updateStoreButtonText('0')
+			
+		}
+
+		function alertCopy(){
+			if (alertShown){
+				alertShown = false;
+				$('.alert').hide();
+				$('.prompt').hide();
+			}
+			else{
+				alertShown = true;
+				$('.alert').show();
+				$('.prompt').show();
+			}
+		}
+		$('#copy').click(function(){
+			var copyArea = document.createElement('textarea');
+			copyArea.style.position = 'fixed';
+			copyArea.style.top = 0;
+			copyArea.style.left = 0;
+			copyArea.style.width = '2em';
+			copyArea.style.height = '2em';
+			copyArea.style.padding = 0;
+			copyArea.style.backgroud = 'transparent';
+			copyArea.value = urlToCopy;
+			document.body.appendChild(copyArea);
+			copyArea.select();
+			try{
+				var success = document.execCommand('copy');
+				
+			}
+			catch (err){
+				console.log("Error: "+err);
+			}
+			
+			document.body.removeChild(copyArea);
+			alertCopy();
+		});
+
+		$('#close').click(function(){
+			alertCopy();
+		});
+		document.onpaste = function(event){
+			var clipboard = (event.clipboardData || event.originalEvent.clipboardData).items;
+			var clipBlob = null;
+			for (var i = 0; i < clipboard.length; i++){
+				if (clipboard[i].type.indexOf("image") === 0){
+					clipBlob = clipboard[i].getAsFile();
+				}
+			
+			}
+			if (clipBlob !== null){
+				var reader = new FileReader();
+				reader.onload = function(event){
+					img.src = "";
+					img.src = event.target.result;
+					origImgSrc = event.target.result;
+				};
+
+				reader.readAsDataURL(clipBlob);
+			}
+		};
+		/*var events = ["checking", "error","noupdate","downloading","progress","updateready","cached","obsolete"];
+		for (var i = 0; i < events.length; i++){
+			window.applicationCache.addEventListener(events[i], function(e){
+
+				alert(e);
+			});
+		}*/
+		
+		function fixX(x,y){
+			if (flip == 1){
+
+				return y;
+			}
+			if (flip== 2){
+				x = canvas.width - x;
+				
+
+			}
+			if (flip == 3){
+				return canvas.height - y;
+			}
+			return x;
+		}
+
+		function fixY(x,y){
+			if (flip == 1){
+				return canvas.width - x;
+			}
+			if (flip == 2){
+
+				y = canvas.height - y;
+			}
+			if (flip == 3){
+				return x;
+			}
+			return y;
+		}
+
+
+		$(document).on('touchmove', '#canvas', function(e){
+			e.preventDefault();
+			lastMove = e;
+		});
+		$(document).on('touchstart', '#canvas', function(e){
+		
+			var boundingRect = canvas.getBoundingClientRect();
+			var scaleX = canvas.width / boundingRect.width;
+			var scaleY = canvas.height / boundingRect.height;
+			var x = e.originalEvent.touches[0].clientX - boundingRect.left;
+			var y = e.originalEvent.touches[0].clientY - boundingRect.top;
+			downAt = {x: fixX(x * scaleX, y*scaleY), y:fixY(x*scaleX,y * scaleY)};
+		});
+		$(document).on('touchend', '#canvas', function(e){
+			var boundingRect = canvas.getBoundingClientRect();
+			var scaleX = canvas.width / boundingRect.width;
+			var scaleY = canvas.height / boundingRect.height;
+
+			var x = e.originalEvent.changedTouches[0].clientX - boundingRect.left;
+			var y = e.originalEvent.changedTouches[0].clientY - boundingRect.top;
+
+			upAt = {x: fixX(x * scaleX, y* scaleY), y:fixY(x*scaleX,y * scaleY)};
+	
+						width = upAt.x - downAt.x;
+			height = upAt.y - downAt.y;
+			if (crop == 0){
+				ctx.rect(downAt.x, downAt.y, upAt.x - downAt.x, upAt.y - downAt.y);
+				ctx.lineWidth = 10;
+				ctx.stroke();
+			}
+			else{
+				if (flip%2 == 0){
+					ctx.clearRect(0,0,canvas.width,canvas.height);
+					ctx.drawImage(img, downAt.x, downAt.y, width,height,0,0,canvas.width,canvas.height);
+				}
+				else{
+					ctx.clearRect(0,0,canvas.height,canvas.width);
+					
+					ctx.drawImage(img, downAt.x, downAt.y, width,height,0,0,canvas.height,canvas.width);
+
+
+					//ctx.drawImage(img, downAt.x, downAt.y, width,height,0,0,canvas.width,canvas.height);
+
+				}
+				newImgURL = canvas.toDataURL();
+				img.src = newImgURL;
+			}
+
+		});
+
+		$("#canvas").mousedown(function(event){
+			var boundingRect = canvas.getBoundingClientRect();
+			var scaleX = canvas.width / boundingRect.width;
+			var scaleY = canvas.height / boundingRect.height;
+			var x = event.clientX - boundingRect.left;
+			var y = event.clientY - boundingRect.top;
+			downAt = {x: fixX(x * scaleX, y*scaleY), y:fixY(x*scaleX, y * scaleY)};
+
+		});
+
+		$("#canvas").mouseup(function(event){
+			var boundingRect = canvas.getBoundingClientRect();
+			var scaleX = canvas.width / boundingRect.width;
+			var scaleY = canvas.height / boundingRect.height;
+			var x = event.clientX - boundingRect.left;
+			var y = event.clientY - boundingRect.top;
+			upAt = {x:fixX(x * scaleX, y*scaleY), y:fixY(x*scaleX, y * scaleY)};
+			width = upAt.x - downAt.x;
+			height = upAt.y - downAt.y;
+			if (crop == 0){
+				ctx.rect(downAt.x, downAt.y, upAt.x - downAt.x, upAt.y - downAt.y);
+				ctx.lineWidth = 10;
+				ctx.stroke();
+			}
+			else{
+				
+				if (flip%2 == 0){
+					ctx.clearRect(0,0,canvas.width,canvas.height);
+					ctx.drawImage(img, downAt.x, downAt.y, width,height,0,0,canvas.width,canvas.height);
+				}
+				else{
+					ctx.clearRect(0,0,canvas.height,canvas.width);
+					
+					ctx.drawImage(img, downAt.x, downAt.y, width,height,0,0,canvas.height,canvas.width);
+
+
+					//ctx.drawImage(img, downAt.x, downAt.y, width,height,0,0,canvas.width,canvas.height);
+
+				}
+				newImgURL = canvas.toDataURL();
+
+				img.src = newImgURL;
+				
+			}
+	
+		});
+
+		$('#reset').click(function(){
+			img.src="";
+			flip = 0;
+			img.src = origImgSrc;
+		});
+
+		$('#image').change(function(){
+			var reload_image = 1;
+			flip = 0;
+			var files = document.getElementById('image').files;
+			var file = files[0];
+
+			var imageUrl = URL.createObjectURL(file);
+			img = new Image();
+			img.onload = function(){
+				var AR = img.width/img.height;
+				var new_width;
+				var new_height;
+				if (img.width > 1920){
+					canvas.width = 1920;
+					canvas.height = canvas.width / AR;
+
+				}
+				else{
+
+					canvas.width = img.width;
+					canvas.height = canvas.width / AR;
+				}
+
+				if (canvas.height > 1080){
+					canvas.height = 1080;
+					canvas.width = canvas.height * AR;
+				}
+
+				ctx.clearRect(0,0,canvas.width, canvas.height);
+
+				ctx.drawImage(img,0,0, img.width, img.height, 0, 0, canvas.width, canvas.height);
+				if (reload_image == 1){
+					reload_image = 0;
+					img.src = canvas.toDataURL();
+				}
+				
+			}
+
+			origImgSrc = imageUrl;
+			img.src = imageUrl;
+		});
+
+		var fitImageOn = function(canvas, imageObj) {
+			var imageAspectRatio = imageObj.width / imageObj.height;
+			var canvasAspectRatio = canvas.width / canvas.height;
+			var renderableHeight, renderableWidth, xStart, yStart;
+
+			// If image's aspect ratio is less than canvas's we fit on height
+			// and place the image centrally along width
+			if(imageAspectRatio < canvasAspectRatio) {
+				renderableHeight = canvas.height;
+				renderableWidth = imageObj.width * (renderableHeight / imageObj.height);
+				xStart = (canvas.width - renderableWidth) / 2;
+				yStart = 0;
+			}
+
+			// If image's aspect ratio is greater than canvas's we fit on width
+			// and place the image centrally along height
+			else if(imageAspectRatio > canvasAspectRatio) {
+				renderableWidth = canvas.width
+				renderableHeight = imageObj.height * (renderableWidth / imageObj.width);
+				xStart = 0;
+				yStart = (canvas.height - renderableHeight) / 2;
+			}
+
+			// Happy path - keep aspect ratio
+			else {
+				renderableHeight = canvas.height;
+				renderableWidth = canvas.width;
+				xStart = 0;
+				yStart = 0;
+			}
+			ctx.drawImage(imageObj, xStart, yStart, renderableWidth, renderableHeight);
+		};
+
+		function updateStoreButtonText(num){
+			$("#upload_store").attr('value','Upload Stored Images ('+num+')');
+		};
+		function updateUploadCount(){
+			$("#upload_count").text(uploaded_images);
+		}
+		function doneProcessingImages(){
+			localStorage.setItem('images', JSON.stringify(storedImages));
+			updateStoreButtonText(storedImages.length);
+		}
+		function uploadFromStore(image){
+
+			var url = window.location.href;
+			if (url.substr(-1) != '/'){
+				url += '/';
+			}
+
+
+			var blobBin = atob(image.img.split(',')[1]);
+			var array = [];
+			
+			for (var i = 0 ; i < blobBin.length; i++){
+				array.push(blobBin.charCodeAt(i));
+			}
+			var blobFile = new Blob([new Uint8Array(array)], {type: 'image/png'});
+
+
+
+			$.ajax({
+				type: "POST",
+				url: url + "generate_sign/",
+				data: {name: image.name, type: 'image/png'},
+				success: function(msg){
+					
+					if (!(msg.success == 'false')){
+
+						var parsedMsg = JSON.parse(msg);
+						var fname = parsedMsg.fname;
+						
+						var signedUrl = parsedMsg.signedRequest
+						var accessUrl = parsedMsg.url;
+				
+
+						var xhr = new XMLHttpRequest();
+						if ("withCredentials" in xhr){
+							xhr.open('PUT', signedUrl, true);
+						}
+						else if (typeof XDomainRequest != 'undefined') {
+							xhr = new XDomainRequest();
+							xhr.open('PUT', signedUrl);
+						}
+						else{
+							stored_images_processed++;
+							if (stored_images_processed >= total_stored_images){
+								doneProcessingImages();
+							}
+							return alert('Cannot Send cross-domain');
+						}
+						xhr.setRequestHeader('Access-Control-Allow-Origin', "*");
+						xhr.setRequestHeader('Content-Type', image.type);
+						xhr.onreadystatechange =function (){
+							if (xhr.readyState === 4){
+								if (xhr.status === 200){
+									
+									$.ajax({
+										type: "POST",
+										url: url + "upload_image",
+										data: {name: fname, type: 'image/png', access_url: accessUrl},
+										success: function(msg){
+										
+											var index = storedImages.indexOf(image);
+											if (index > -1){
+												storedImages.splice(index,1);
+											}
+											stored_images_processed++;
+											if (stored_images_processed >= total_stored_images){
+												doneProcessingImages();
+											}
+											uploaded_images++;
+											updateUploadCount();
+										},
+										error: function(err){
+											stored_images_processed++;
+											if (stored_images_processed >= total_stored_images){
+												doneProcessingImages();
+											}
+										}
+
+									});
+
+								}
+								else{
+									alert('Upload Failed');
+									stored_images_processed++;
+									if (stored_images_processed >= total_stored_images){
+										doneProcessingImages();
+									}
+								}
+							}
+							else{
+								stored_images_processed++;
+								if (stored_images_processed >= total_stored_images){
+									doneProcessingImages();
+								}
+							}
+						};
+						xhr.send(blobFile);
+						
+					}
+					else{
+						stored_images_processed++;
+						alert("Something failed")
+					}
+
+				},
+				error: function(err){
+					stored_images_processed++;
+					if (stored_images_processed >= total_stored_images){
+						doneProcessingImages();
+					}
+				}
+			});
+		}
+		$('#crop').click(function(){
+			toggleCrop();
+		});
+
+		function toggleCrop(){
+			if (crop == 0){
+				crop = 1;
+				old_crop_bg_color = $('#crop').css('background-color');
+				$('#crop').css('background-color','pink');
+			}
+			else{
+				crop = 0;
+				$('#crop').css('background-color',old_crop_bg_color);	
+			}
+		}
+
+		$('#upload_store').click(function(){
+			stored_images_processed = 0;
+			total_stored_images = storedImages.length;
+			for (var i = 0; i < storedImages.length;i++){
+				uploadFromStore(storedImages[i]);
+			}
+		});
+
+		$('#flip').click(function(){
+			flip++;
+			ctx.clearRect(0,0,canvas.width,canvas.height);
+			var old_width = canvas.width;
+			var old_height = canvas.height;
+			var max_width;
+			var max_height;
+			var w_flip = 0;
+			var h_flip = 0;
+
+			if (flip%4 == 0){
+				max_width = 1920;
+				max_height = 1080;
+				w_flip = 0;
+				h_flip = 0;
+			}
+			if (flip%4 == 1){
+				max_height = 1920;
+				max_width = 1080;
+				w_flip = 1;
+				h_flip = 0;
+			}
+			if (flip%4 == 2){
+				max_width = 1920;
+				max_height = 1080;
+				w_flip = 1;
+				h_flip = 1;
+			}
+			if (flip%4 == 3){
+				max_height = 1920;
+				max_width = 1080;
+				w_flip = 0;
+				h_flip = 1;
+			}
+			canvas.height = old_width;
+			canvas.width = old_height;
+			var AR = old_height/old_width;
+
+			var new_width;
+			var new_height;
+
+			if (old_height > max_width){
+				canvas.width = 1920;
+				canvas.height = canvas.width / AR;
+
+			}
+			else{
+
+				canvas.width = old_height;
+				canvas.height = canvas.width / AR;
+			}
+
+			if (canvas.height > max_height){
+				canvas.height = 1080;
+				canvas.width = canvas.height * AR;
+			}
+
+			ctx.translate(canvas.width*w_flip, canvas.height*h_flip);
+			ctx.rotate(Math.PI*flip/2);
+			if (flip%2 == 1){
+				ctx.drawImage(img,0,0, canvas.height, canvas.width);
+			}
+			else{
+				ctx.drawImage(img,0,0, canvas.width, canvas.height);
+			}
+		});
+		$('#clear_store').click(function(){
+			localStorage.clear();
+			storedImages = [];
+			updateStoreButtonText(0);
+		});
+		$('#upload_image').click(function(){
+			
+			var url = window.location.href;
+			const files = document.getElementById('image').files;
+			const file = files[0];
+			if (file == null){
+				return alert('invalid file');
+			}
+
+			var canvasDataUrl = canvas.toDataURL();
+			var blobBin = atob(canvasDataUrl.split(',')[1]);
+			var array = [];
+			
+			for (var i = 0 ; i < blobBin.length; i++){
+				array.push(blobBin.charCodeAt(i));
+			}
+			var blobFile = new Blob([new Uint8Array(array)], {type: 'image/png'});
+			var fname = file.name;
+		
+			$.ajax({
+				type: "POST",
+				url: url + "generate_sign/",
+				data: {name: fname, type: 'image/png'},
+				success: function(msg){
+					
+					if (!(msg.success == 'false')){
+
+						var parsedMsg = JSON.parse(msg);
+						fname = parsedMsg.fname;
+						
+	
+						var signedUrl = parsedMsg.signedRequest
+						var accessUrl = parsedMsg.url;
+						
+
+						var xhr = new XMLHttpRequest();
+						if ("withCredentials" in xhr){
+							xhr.open('PUT', signedUrl, true);
+						}
+						else if (typeof XDomainRequest != 'undefined') {
+							xhr = new XDomainRequest();
+							xhr.open('PUT', signedUrl);
+						}
+						else{
+							return alert('Cannot Send cross-domain');
+						}
+						xhr.setRequestHeader('Access-Control-Allow-Origin', "*");
+						xhr.setRequestHeader('Content-Type', file.type);
+					
+						xhr.onreadystatechange =function (){
+							if (xhr.readyState === 4){
+								if (xhr.status === 200){
+									
+									$.ajax({
+										type: "POST",
+										url: url + "upload_image",
+										data: {name: fname, type: 'image/png', access_url: accessUrl},
+										success: function(msg){
+										
+											urlToCopy = window.location.host+msg.url;
+											alertCopy();
+											uploaded_images++;
+											updateUploadCount();
+										}
+
+									});
+									
+
+								}
+								else{
+									store(fname, canvasDataUrl);
+								}
+							}
+						};
+						xhr.send(blobFile);
+						
+					}
+					else{
+						alert("Something failed")
+					}
+
+				},
+				error: function(err){
+					store(fname, canvasDataUrl);
+					
+				}
+			});
+		});
+		function store(name,img){
+			alert("Couldn't upload, temporarly stored");
+			var image_to_store = {name: name, type: 'image/png', img: img};
+			storedImages.push(image_to_store);
+			try{
+				localStorage.setItem("images", JSON.stringify(storedImages));
+				updateStoreButtonText(storedImages.length);
+			}
+			catch(e){
+				if (isQuotaExceeded(e)){
+					var shouldStore = confirm("Browser storage full, save to disk?");
+					if (shouldStore == true){
+
+						saveAs(blobFile, name);
+						//remove last item from images
+					}
+					else{
+						updateStoreButtonText(storedImages.length);
+					}
+				}
+				
+			}
+		}
+		function isQuotaExceeded(e){
+			var full = false;
+			if (e){
+				if (e.code){
+					switch (e.code){
+						case 22:
+							full = true;
+							break;
+						case 1014:
+							if (e.name == 'NS_ERROR_DOM_QUOTA_REACHED'){
+								full = true;
+							}
+							break;
+					}
+				}
+				else if (e.number === -2147024882){
+					full = true;
+				}
+			}
+			return full;
+		}
+		function getAmountUsed(){
+			var bytes = 0;
+			for (var i = 0;i<storedImages.length;i++){
+				bytes += JSON.stringify(storedImages[i].img).length*2;
+			}
+			
+			return bytes;
+		}
+
+	});
+
+</script>
+
+
+</html>
+

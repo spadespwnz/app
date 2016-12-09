@@ -119,6 +119,14 @@
 						class =  active
 					<% } %>
 					href="/friends">Friends</a></li>
+			<li><a <% if (active == 'upload'){ %>
+						class =  active
+					<% } %>
+					href="/upload">Upload</a></li>
+			<li><a <% if (active == 'my_images'){ %>
+						class =  active
+					<% } %>
+					href="/users/u/<%- email %>/images">My Images</a></li>
 
 		</ul>
 	</div>

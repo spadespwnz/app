@@ -15,6 +15,7 @@ router.get('/logout', function(req,res){
 router.get('/login', function(req, res) {
   res.render('pages/login')
 });
+
 router.post('/request/login', function(req, res) {
 	var db = req.db;
 	var email = req.body.username;
@@ -63,6 +64,73 @@ router.post('/request/login', function(req, res) {
 
 });
 
+router.get('/u/:username/images',function(req,res){
+	var user = req.params.username;
+	var db=req.db;
+
+	if (req.originalUrl.substr(-1) != '/' ){
+		url = req.originalUrl;
+
+		url = url + '/';
+		return res.redirect(301,url);
+		
+	}
+	db.collection('user:'+user).find( {"type":"image_uploads"}).toArray(function(err, cursor){
+		if (err){
+			res.send("Error loading images");
+		}
+		else{
+			if (cursor[0]){
+				if (cursor[0].files){
+					res.render('pages/images', {images : cursor[0].files});
+				}
+				else{
+					res.send("no images");
+				}
+			}
+			else{
+				res.send("No images");
+			}
+		}
+	});
+
+});
+
+router.get('/u/:username/images/:image', function(req,res){
+	var user = req.params.username;
+	var db = req.db;
+	var fname = req.params.image;
+	db.collection('user:'+user).find( {"type":"image_uploads","files.name":fname}, {files: {  $elemMatch: {name: fname} }}).toArray(function(err, cursor){
+		if (err){
+			res.send("Error finding friend")
+		}
+		else{
+			if (cursor[0]){
+				if (cursor[0].files){
+					if (cursor[0].files.length < 1){
+						res.send("File not found");
+					}
+					else if (cursor[0].files.length > 1){
+						res.send("Multiple files with this name ????")
+					}
+					else{
+						var image_name = cursor[0].files[0].name;
+						var image_url = cursor[0].files[0].url;
+						res.render('pages/show_image', {image_name : image_name, image_url : image_url});
+						//res.render('pages/friends_convo', {email: email, active: active, convo_id: cursor[0].my_friends[0].convo_id});
+					}
+				}
+				else{
+					res.send("File not found")
+				}
+			}
+			else{
+				res.send("File not found");
+			}
+		}
+		
+	});
+});
 
 
 router.post('/request/signup', function(req, res) {

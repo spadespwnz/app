@@ -16,22 +16,23 @@ var jwt = require('jsonwebtoken');
 var prompt = require('prompt');
 var dbutils = require('./utils/dbutils');
 var busboy = require('connect-busboy');
-
+var cors = require('cors');
 
 MongoClient.connect(url, function(err,db){
 	data_base = db;
 });
 
 app.use(busboy());
-app.use('/images', express.static(__dirname + '/images'));
-app.use('/images', expressDirectory(__dirname + '/images'));
+//app.use('/images', express.static(__dirname + '/images'));
+//app.use('/images', expressDirectory(__dirname + '/images'));
 app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json())
 app.use(cookieParser())
 app.set('view engine', 'ejs');
 app.set('views', __dirname + '/views');
-app.set('jwt_secret', 'randosecretkey');
+app.set('jwt_secret', process.env.JWT_SECRET || 'randosecretkey');
+app.use(cors({credentials: true, origin: true}));
 
 app.use(function(req,res,next){
     req.db = data_base;

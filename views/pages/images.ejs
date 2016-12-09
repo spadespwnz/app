@@ -1,0 +1,44 @@
+<html>
+	<head>
+		<% include ../partials/head %>
+	</head>
+	<div id="images" class="images">
+
+	</div>
+
+</html>
+
+
+<style>
+	.images{
+		display:flex;
+		flex-wrap: wrap;
+
+	}
+	.image-area{
+		width: 300px;
+		height: 200px;
+		border: solid 1px;
+		
+		margin: 0 auto;
+		margin-right: 0 auto;
+		margin-bottom: 30px;
+	}
+	.image{
+		display: block;
+		margin: 0 auto;
+		max-width: 100%;
+		max-height: 100%;
+
+	}
+</style>
+<script>
+	$(document).ready(function(){
+		var images = <%- JSON.stringify(images) %>
+
+		for (var image in images){
+			$(".images").append("<div class='image-area'><a href='"+images[image].name +"'><image class='image' src="+images[image].url+"></image></a></div>");
+		}
+
+	})
+</script>
