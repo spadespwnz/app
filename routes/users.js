@@ -141,7 +141,6 @@ router.post('/request/signup', function(req, res) {
 	var hash = utils.sha512(pass,salt).passwordHash;
 	var data = {"email":email, "hash":hash, "salt":salt};
 	dbutils.db_find(db, 'users', {"email":email},function(find_result){
-		console.log(find_result)
 
 		if (find_result.fail == true){
 			//Error checking if account already exists

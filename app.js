@@ -127,6 +127,9 @@ function runCommand(command, args){
 			break;
 		case 'fix comments':
 			addIdsToComments();
+		case 'add admin':
+			addAdmin(args);
+
 		default:
 			console.log("Command '"+command+"' not found.");
 	}
@@ -135,7 +138,16 @@ function runCommand(command, args){
 function print(args){
 	console.log(args);
 }
-
+function addAdmin(new_admin){
+	dbutils.db_upsert(data_base, 'admin', {"type":"admin_list"},{"admins":new_admin}, function(upsert_result){
+		if (upsert_result.fail == true){
+			console.log("Error adding admin");
+		}
+		else{
+			console.log("Success: "+new_admin+" is now an admin.");
+		}
+	});
+}
 function addIdsToTitles(){
 
 	/*
