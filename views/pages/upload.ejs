@@ -165,7 +165,7 @@
 			
 		}
 		var URL = window.URL;
-
+		var reload_image = 1;
 		var downAt;
 		var upAt;
 		var lastMove;
@@ -382,13 +382,14 @@
 		});
 
 		$('#reset').click(function(){
+			reload_image = 1;
 			img.src="";
 			flip = 0;
 			img.src = origImgSrc;
 		});
 
 		$('#image').change(function(){
-			var reload_image = 1;
+			reload_image = 1;
 			flip = 0;
 			var files = document.getElementById('image').files;
 			var file = files[0];
