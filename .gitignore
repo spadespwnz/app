@@ -3,3 +3,4 @@ dbrun.bat
 dbrun2.bat
 /db/*
 secrets.js
+.env

@@ -1,6 +1,7 @@
 
 var express = require('express');
 app = express();
+require('dotenv').config();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var easyrtc = require('easyrtc');

@@ -10,16 +10,12 @@ var utils = require('../utils/utils');
 const S3_BUCKET = process.env.S3_BUCKET || 'spades-image-collection';
 var aws_secret;
 var aws_id;
-if (!process.env.S3_BUCKET){
-	console.log(S3_BUCKET);
-	var secrets = require('../secrets.js');
-	/*aws_secret = secrets.secret;
-	aws_id = secrets.id;*/
-	aws.config.update({
-		accessKeyId: secrets.id,
-		secretAccessKey: secrets.secret
-	});
-}
+
+aws.config.update({
+	accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+	secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+});
+
 var active = 'upload';
 /* GET home page. */
 

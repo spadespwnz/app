@@ -11,6 +11,7 @@
     "connect-form": "^0.2.1",
     "cookie-parser": "^1.4.3",
     "cors": "^2.8.1",
+    "dotenv": "^2.0.0",
     "easyrtc": "^1.0.15",
     "express": "^4.10.2",
     "fs": "0.0.2",
