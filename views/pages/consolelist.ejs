@@ -1,0 +1,84 @@
+<html>
+
+	<style>
+		#top{
+			width: 100%;
+			height: 20%;
+			background-color: aqua;
+		}
+		#consoles{
+			float: left;
+			position: relative;
+			display: inline-block;
+			background-color: lightgrey;
+			height: 100%;
+			width: 20%;
+			font-size: 200%;
+		}
+		#games{
+			float: left;
+			position: relative;
+			display: inline-block;
+			width: 80%;
+			background-color: white;
+			color: black;
+			height: 100%;
+
+			font-size: 200%;
+		}
+		.selected{
+			color: black;
+			background-color: white;
+		}
+	</style>
+	<head>
+		<% include ../partials/head %>
+	</head>
+	<div id="top"></div>
+
+	<div id="consoles"></div>
+	<div id="games"></div>
+
+	<script>
+		$(document).ready(function(){
+			var selectedConsole;
+			var consoles = <%- JSON.stringify(consoles) %>
+			for (var console in consoles){
+				$('#consoles').append('<p>'+consoles[console]+"</p>");
+			}
+			$('#consoles').on('click','p',function(){
+
+				var clickedConsole = $(this);
+				if (clickedConsole == selectedConsole){
+
+				}
+				else{
+					if (selectedConsole){
+						selectedConsole.removeClass('selected');
+					}
+					selectedConsole = clickedConsole
+					clickedConsole.addClass('selected');
+					$('#games').empty();
+					$.ajax({
+					type: "POST",
+					url: "../stream/request/gameslist",
+					data: {console: clickedConsole.text()},
+					success: function(msg){
+						request = msg['request'];
+						if (request == "success"){
+							var games = msg['games'];
+							for (var game in games){
+								$('#games').append('<p>'+games[game].game+"</p>");
+							}
+						}
+						else{
+							alert(msg['error']);
+						}
+					}
+					});
+				}
+
+			})
+		});
+	</script>
+</html>

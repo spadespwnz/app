@@ -1,0 +1,15 @@
+<html>
+	<head>
+		<% include ../partials/head %>
+	</head>
+
+	<div id="game_list"></div>
+	<script>
+		$(document).ready(function(){
+			var games = <%- JSON.stringify(games) %>
+			for (var game in games){
+				$('#game_list').append('<p>'+games[game].game+"</p>");
+			}
+		});
+	</script>
+</html>

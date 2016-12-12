@@ -1,0 +1,202 @@
+
+<html>
+	<style>
+		.card-area{
+			position: fixed;
+			top: 10%;
+			width: 100%;
+			height: 50%;
+			
+		}
+		.flip-card{
+			box-shadow: 2px 2px 10px black;
+			display: inline-block;
+			position: relative;
+			width: 30%;
+			color: black;
+			height: 100%;
+			background-color: white;
+			
+			word-wrap: all;
+		}
+		.flip-card.front-card{
+			float: left;
+			left: 5%;
+		}
+		.flip-card.back-card{
+			float: right;
+			right: 5%;
+		}
+		.content{
+			margin: 5px;
+			position: : relative;
+			text-align: left;
+			font-size: 150%;
+			left: 0%;
+			top: 0%;
+					display: inline-block;
+			word-wrap: break-word;
+		}
+		.content p{
+		
+			padding: 1px;
+		}
+		.format-tools{
+			position: fixed;
+			bottom: 10%;
+			background-color: grey;
+			height: 100px;
+			width: 100%;
+			
+		}
+		.tool{
+			display: inline-block;
+			background-color: black;
+			color: white;
+			width: 90px;
+			height: 90px;
+			margin: 5px;
+			overflow: hidden;
+		}
+		.removed{
+			text-decoration: line-through;
+		}
+	</style>
+	<head>
+		<% include ../partials/head %>
+	</head>
+
+	<input type="file" class="btn btn-primary" id="deck_upload" name="fileField">
+	<div class="card-area">
+		<div class="flip-card front-card">
+			<div id='frontcard' class='content'></div>
+		</div>
+		
+		<div class="flip-card back-card">
+			<div id="backcard" class='content'></div>
+		</div>
+	</div>
+	<div class='format-tools'>
+		<div class='tool' id='swap'>
+			Swap
+		</div>
+		<div class='tool' id='move_left'>
+			Move Left
+		</div>
+		<div class='tool' id='move_right'>
+			Move Right
+		</div>
+		<div class='tool' id='check_next'>
+			Check Next card
+		</div>
+	</div>
+	<script>
+	$(document).ready(function(){
+		var lines;
+		var currentLine = 0;
+		var sepChar = '	';
+		var domParts = [];
+		var removed = [];
+		var frontcard = $('#frontcard');
+		var backcard = $('#backcard');
+		var splitAt = 1;
+		var partCount;
+		var swap = false;
+
+		$('#check_next').click(function(){
+			currentLine++;
+			readLine(lines[currentLine]);
+		});
+		$('#swap').click(function(){
+			if (swap == false){
+				swap = true;
+
+			}
+			else{
+				swap = false;
+			}
+			var old_front = $('.front-card');
+			var old_back = $('.back-card');
+
+
+			old_front.removeClass('front-card');
+			old_front.addClass('back-card');
+
+
+			old_back.removeClass('back-card');
+			old_back.addClass('front-card');
+			
+		});
+		$('#move_left').click(function(){
+			if (splitAt < partCount){
+				$(domParts[splitAt]).remove();
+				frontcard.append(domParts[splitAt]);
+				splitAt++;
+			}
+		});
+
+		$('#move_right').click(function(){
+			if (splitAt > 0){
+				splitAt--;
+				$(domParts[splitAt]).remove();
+				backcard.append(domParts[splitAt]);
+				
+			}
+		});
+
+		$('.card-area').on('click', 'p',function(){
+			partIndex = domParts.indexOf(this);
+
+			if (removed.indexOf(partIndex) < 0){
+				removed.push(partIndex);
+				$(this).addClass('removed');
+			}
+			else{
+				removed.splice(partIndex,1);
+				$(this).removeClass('removed');
+			}
+		});
+		$('#deck_upload').change(function(){
+
+			var files = document.getElementById('deck_upload').files;
+			var file = files[0];
+
+			var reader = new FileReader();
+			reader.onload = function(progressEvent){
+
+				lines = this.result.split('\n');
+				
+				var line = lines[0];
+				readLine(line);
+					
+			}
+			reader.readAsText(file);
+		});
+
+		function readLine(line){
+			frontcard.empty();
+			backcard.empty();
+			var parts = line.split(sepChar);
+			partCount = parts.length;
+			
+			domParts = [];
+			for (var i = 0; i < partCount; i++){
+				var domLine = document.createElement("p");
+				domLine.appendChild ( document.createTextNode(parts[i]+'\n'));
+				domParts.push(domLine);
+				if (removed.indexOf(i) >= 0){
+					
+					$(domLine).addClass('removed');
+				}
+				if (i < splitAt){
+					frontcard.append(domLine);
+				}
+				else{
+					backcard.append(domLine);
+				}
+			}
+		}
+	});
+	</script>
+</html>
+

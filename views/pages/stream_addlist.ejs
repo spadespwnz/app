@@ -1,0 +1,48 @@
+
+<html>
+	<head>
+		<% include ../partials/head %>
+	</head>
+	<p><textarea id="list"></textarea></p>
+	<input type="textbox" id="section">
+	<input type="button" value="upload" id="upload">
+
+	<script>
+	$(document).ready(function(){
+		$('#upload').click(function(){
+			var games = $('#list').val().split('\n');
+			var console = $('#section').val();
+		
+			for (var i = 0; i < games.length; i++){
+				var game = games[i];
+
+				var startTagIndex = game.indexOf('[');
+				if (startTagIndex > -1){
+					var endTagIndex = game.indexOf(']');
+					var tag = game.slice(startTagIndex+1, endTagIndex);
+					game = game.slice(0,startTagIndex-1);
+				}
+				else{
+					tag = "BLIND";
+				}
+				$.ajax({
+					type: "POST",
+					url: "../stream/request/add_game",
+					data: {game: game, console: console, exp: tag},
+					success: function(msg){
+						request = msg['request'];
+						if (request == "success"){
+							
+						}
+						else{
+						
+						}
+					}
+				});
+			}
+			alert("Done");
+		});
+		
+	});
+	</script>
+</html>
