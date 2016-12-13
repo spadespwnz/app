@@ -18,9 +18,11 @@ var prompt = require('prompt');
 var dbutils = require('./utils/dbutils');
 var busboy = require('connect-busboy');
 var cors = require('cors');
+var bot = require('./bot.js');
 
 MongoClient.connect(url, function(err,db){
 	data_base = db;
+	bot.set_db(data_base);
 });
 
 app.use(busboy());

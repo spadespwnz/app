@@ -46,7 +46,6 @@ router.use(function(req,res,next){
 
 		res.redirect('/users');
 	}
-
 });
 
 router.get('/setpassword', function(req,res){

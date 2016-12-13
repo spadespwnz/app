@@ -83,6 +83,31 @@ router.get('/gameslist/', function(req, res) {
 
 });
 
+
+router.get('/suggestions/', function(req, res) {
+	var db = req.db;
+
+	db.collection('suggestion').find( {"type":"suggest_list"}).toArray(function(err, cursor){
+		if (err){
+			res.send("Error loading images");
+		}
+		else{
+			if (cursor[0]){
+				if (cursor[0].game_suggestions){
+					res.render('pages/suggestlist.ejs', {games : cursor[0].game_suggestions});
+				}
+				else{
+					res.send("no suggestions");
+				}
+			}
+			else{
+				res.send("No suggestions");
+			}
+		}
+	});
+
+});
+
 router.use(function(req,res,next){
 	var token = req.cookies.token || req.body.token || req.query.token || req.headers['x-access-token'];
 	var db = req.db;
