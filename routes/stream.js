@@ -174,7 +174,23 @@ router.use(function(req,res,next){
 router.get('/addlist', function(req, res) {
   res.render('pages/stream_addlist')
 });
+router.get('/removelist', function(req, res) {
+  res.render('pages/stream_removelist')
+});
 
+
+router.post('/request/remove_console', function(req,res){
+	var db=req.db;
+	email = req.decoded.email;
+
+	var console = req.body.console;
+
+	var db = req.db;
+	db.collection('stream_games').remove({"type":console});
+	db.collection('stream_games').update({"type":"console_list"}, {$pull:{consoles:console}});
+	
+	
+});
 router.post('/request/add_game', function(req,res){
 	var db=req.db;
 	email = req.decoded.email;

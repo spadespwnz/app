@@ -5,7 +5,7 @@ var fs = require('fs');
 var uid = require('mongodb').ObjectID;
 var dbutils = require('../utils/dbutils');
 var utils = require('../utils/utils');
-
+var http = require('http');
 router.use(function(req,res,next){
 	var token = req.cookies.token || req.body.token || req.query.token || req.headers['x-access-token'];
 	var db = req.db;

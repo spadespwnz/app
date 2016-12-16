@@ -1,0 +1,35 @@
+
+<html>
+	<head>
+		<% include ../partials/head %>
+	</head>
+	<input type="textbox" id="section">
+	<input type="button" value="upload" id="upload">
+
+	<script>
+	$(document).ready(function(){
+		$('#upload').click(function(){
+
+			var console = $('#section').val();
+
+
+			$.ajax({
+				type: "POST",
+				url: "../stream/request/remove_console",
+				data: {console: console},
+				success: function(msg){
+					request = msg['request'];
+					if (request == "success"){
+						
+					}
+					else{
+					
+					}
+				}
+			});
+			alert("Done");
+		});
+		
+	});
+	</script>
+</html>
