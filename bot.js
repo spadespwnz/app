@@ -26,6 +26,20 @@ var mods = [];
 var chatterTypes = ['moderators','staff','admins','global_mods','viewers'];
 var channel = "#spadespwnzyou";
 var bot = new tmi.client(tmi_options);
+var day = 1;
+var messages = [
+		'You gain 1 point every 5 minutes while watching. Type !points to see your amount',
+		'Type !queue to see how many levels are in the queue',
+		'You can see completed (or failed) viewer levels at http://www.spades.tech/stream/smm',
+		'24H stream at 500 followers! Hit that follow button if your enjoying the stream.',
+		'Tell a friend to come type !ref [YOUR USERNAME] in chat to receive 2 points!',
+		'Type !submit [CODE] to add your level to the queue',
+		'For 10 points, type !priority [CODE] to add your level to the priority queue',
+		'Levels in the Priority queue will be played first, You can switch your level with !switch',
+		'This is '+day+' of 365 of my daily stream challenge'
+
+
+];
 
 bot.connect();
 console.log("BOT ON");
@@ -47,6 +61,8 @@ console.log("BOT ON");
 				});
 			}
 		});
+		pingSite();
+		sendNote();
 		/*for (var i = 0; i < viewers.length; i++){
 			console.log(viewers[i]);
 		}*/
@@ -140,7 +156,7 @@ bot.on("chat", function(channel, userstate, message, self){
 			break;
 		case "!priority":
 			findPoints(user, function(points){
-				if (points >= 5){
+				if (points >= 10){
 					if (message_parts.length == 2 && message_parts[1].length == 19){
 						var code = message_parts[1];
 						findLevelByCode(code, function(found_level){
@@ -171,7 +187,7 @@ bot.on("chat", function(channel, userstate, message, self){
 									var level = {user: user, code: code, title: title, maker: maker, style: style, percent: percent, id: new uid()};
 									addToSMMPrioQueue(level, function(success){
 										if (success){
-											decPoints(user, 5);
+											decPoints(user, 10);
 											
 											bot.say(channel,'@'+user+' Added "'+title+'" by '+maker+' ['+percent+'%]');
 
@@ -198,7 +214,7 @@ bot.on("chat", function(channel, userstate, message, self){
 			break;
 		case "!switch":
 			findPoints(user, function(points){
-				if (points >= 5){
+				if (points >= 10){
 					levelQueued(user, function(found_level){
 						if (found_level){
 							if (found_level[0]){
@@ -206,6 +222,7 @@ bot.on("chat", function(channel, userstate, message, self){
 									level = found_level[0].level[0];
 									deleteByCode(level.code, function(del_success){
 										addToSMMPrioQueue(level, function(add_success){
+											decPoints(user, 10);
 											bot.say(channel,"@"+user+" switched level to priority queue");
 										});
 									});
@@ -388,6 +405,11 @@ bot.on("chat", function(channel, userstate, message, self){
 					bot.say(channel, "@"+user+" reference already used.");
 				}
 			});
+			break;
+		case "!day":
+			if (user == admin){
+				day = message_parts[1];
+			}
 			break;
 	}
 });
@@ -823,6 +845,29 @@ function checkOnline(callback){
 
 		});
 	})
+}
+function pingSite(){
+		http.get({
+		host: 'www.spades.tech',
+		path: '/',
+	}, function(res){
+		var body = '';
+		res.on('data', function(d){
+			body += d;
+		});
+		res.on('end', function(){
+		});
+	})
+}
+
+function sendNote(){
+	checkOnline(function(success){
+			if (success == true){
+					var msgNumber = Math.floor(Math.random()*messages.length);
+					bot.say(channel, messages[msgNumber]);
+			}
+	})
+
 }
 module.exports = {
 		set_db: function(database){
