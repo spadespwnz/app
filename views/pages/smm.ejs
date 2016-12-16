@@ -1,0 +1,293 @@
+<html>
+
+	<style>
+
+
+		#games{
+			margin-top: 1%;
+			float: right;
+			position: relative;
+			display: inline-block;
+			width: 80%;
+			background-color: white;
+			color: black;
+			height: 100%;
+			font-size: 200%;
+		}
+		.selected{
+			color: black;
+			background-color: white;
+		}
+		span{
+			color: black;
+			text-decoration: none
+		}
+		.QUEUE{
+			text-decoration: underline;
+			color: blue;
+		}
+		.PRIO{
+			text-decoration: underline;
+			color: orange;
+		}
+		.FAIL{
+			text-decoration: underline;
+			color: red;
+		}
+		.COMPLETE{
+			text-decoration: underline;
+			color: green;
+		}
+		.queue-border{
+			box-shadow: 0px 0 15px 5px blue;
+			color: blue;
+		}
+		.prio_queue-border{
+			box-shadow: 0px 0 15px 5px orange;
+			color: orange;
+		}
+		.failed-border{
+			box-shadow: 0px 0 15px 5px red;
+			color: red;
+		}
+		.completed-border{
+			box-shadow: 0px 0 15px 5px green;
+			color: green;
+		}
+		.level{
+			position: relative;
+			margin-top: 1%;
+			width: 70%;
+			height: 100px;
+			left: 15%;
+			margin-left: 10px;
+			padding-left: 10px;
+		
+		}
+		#legend{
+			z-index: 10;
+			background-color: white;
+			position: fixed;
+			display: inline-block;
+			font-size: 4vh;
+			width: 50%;
+			left: 25%;
+			height: 5%;
+			bottom: 0%;
+			box-shadow: 0px 0 5px black;
+		}
+		.legend-text{
+			width: 25%;
+			text-align: center;
+			position: relative;
+			float: left;
+			display: inline-block;
+
+		}
+		#tab-bar{
+			
+			background-color: white;
+			position: relative;
+			width: 70%;
+			height: 7%;
+			left: 15%;
+			box-shadow: 0px 0 5px black;
+		}
+		#tab-bar .tab{
+
+			display: inline-block;
+			float: left;
+			width: 25%;
+			font-size: 4vh;
+			padding-top: 1%;
+			height: 100%;
+			text-align: center;
+
+			box-shadow: 0px 0 5px green;
+		
+		}
+		.selected-tab{
+			background-color: grey;
+		}
+		.image{
+			float: left;
+			height: 100%;
+			width: 100px;
+		}
+		.level div{
+		
+			
+			color: black;
+			
+			
+		}
+		.left-text{
+			float: left;
+			display: inline-block;
+			text-align: center;
+			width: 40%;
+
+		}
+		.right-text{
+			float: right;
+			display: inline-block;
+			text-align: center;
+			width: 40%;
+		}
+		.text-title{
+			font-size: 3vh;
+			text-align: center;
+		}
+	</style>
+	<head>
+		<% include ../partials/head %>
+	</head>
+	
+	<% include ../partials/stream_top-bar %>
+	<div id="tab-bar">
+		<p id='All' class="tab">All</p>
+
+		<p id='Queue' class="tab">Queue</p>
+		<p id='Completed' class="tab">Completed</p>
+		<p id="Failed" class="tab">Failed</p>
+	</div>
+
+	<div id="levels"></div>
+	<div id="legend">
+		<div class="PRIO legend-text"><span>Priority</span></div>
+		<div class="QUEUE legend-text"><span>Queue</span></div>
+		<div class="COMPLETE legend-text"><span>Complete</span></div>
+		<div class="FAIL legend-text"><span>Fail</span></div>
+	</div>
+
+
+	<script>
+		$(document).ready(function(){
+			var selectedConsole;
+			
+			var tab = "All";
+			var levels = <%- JSON.stringify(levels) %>
+			var all = [];
+			var prio = [];
+			var queue = [];
+			var complete = [];
+			var fail = [];
+			selectTab("All");
+			function selectTab(set_tab){
+				tab = set_tab;
+				$('.tab').each(function (item){
+					$(this).removeClass('selected-tab');
+				});
+				$('#'+tab).addClass('selected-tab');
+
+				showTab(tab);
+			}
+
+			$('.tab').click(function (item){
+				var new_tab = $(this).text();
+				selectTab(new_tab);
+			});
+			for (var i = 0; i< levels.length; i++){
+				var type = levels[i].type;
+				for (var j = 0; j< levels[i].level.length; j++){
+					levels[i].level[j].type = levels[i].type;
+				}
+				all.push.apply(all,levels[i].level);
+				//alert(JSON.stringify(levels[i].level));
+				if (type == "prio_queue"){
+					prio_queue = levels[i].level;
+				}
+				if (type == "queue"){
+					queue = levels[i].level;
+				}
+				if (type == "failed"){
+					fail = levels[i].level;
+				}
+				if (type == "completed"){
+					complete = levels[i].level;
+				}
+
+			}
+			showTab(tab);
+			/*$('#consoles').on('click','p',function(){
+
+				var clickedConsole = $(this);
+				if (clickedConsole == selectedConsole){
+
+				}
+				else{
+					if (selectedConsole){
+						selectedConsole.removeClass('selected');
+					}
+					selectedConsole = clickedConsole
+					clickedConsole.addClass('selected');
+					$.ajax({
+					type: "POST",
+					url: "../stream/request/gameslist",
+					data: {console: clickedConsole.text()},
+					success: function(msg){
+						request = msg['request'];
+						if (request == "success"){
+							var games = msg['games'];
+							allGames = [];
+							completedGames = [];
+							incompleteGames = [];
+							for (var game in games){
+								allGames.push(games[game]);
+								if (games[game].completed != undefined){
+									completedGames.push(games[game]);
+								}
+								else{
+									incompleteGames.push(games[game]);
+								}
+								
+							}
+							showTab(tab);
+						}
+						else{
+							alert(msg['error']);
+						}
+					}
+					});
+				}
+
+			});*/
+			function showTab(tab){
+				$('#levels').empty();
+				var prio = [];
+				var games = [];
+				if (tab == "All"){
+					games = all;
+				}
+				if (tab == "Queue"){
+					prio = prio_queue;
+					games = queue;
+
+				}
+				if (tab == "Completed"){
+			
+					games = complete;
+				}
+				if (tab == "Failed"){
+			
+					games = fail;
+				}
+				for (var i = 0; i < prio.length; i++){
+					$('#levels').append('<div class="level '+prio[i].type+'-border"><p><span>'+prio[i].title+"</span></p></div>");
+				}
+				for (var i = 0; i < games.length; i++){
+					
+					$('#levels').append('<div class="level '+games[i].type+'-border"><img class=image src='+games[i].img+'></img><p class=text>'+
+						'<div class=text-title>'+games[i].title+'</div>'+
+						'<div class=left-text><div>By: '+games[i].maker+'</div>'+
+						'<div>Code: '+games[i].code+'</div></div>'+
+						'<div class=right-text><div>Submitter: '+games[i].user+'</div>'+
+						'<div>Style: '+games[i].style+'</div>'+
+		
+						'<div>Clear Rate: '+games[i].percent+'</div></div>'+
+						'</p></div>');
+				}
+			}
+		});
+	</script>
+</html>

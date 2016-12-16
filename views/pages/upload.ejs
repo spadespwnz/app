@@ -367,11 +367,15 @@
 				
 				if (flip%2 == 0){
 					ctx.clearRect(0,0,canvas.width,canvas.height);
+					canvas.width = width;
+					canvas.height = height;
 					ctx.drawImage(img, downAt.x, downAt.y, width,height,0,0,canvas.width,canvas.height);
 				}
 				else{
 					ctx.clearRect(0,0,canvas.height,canvas.width);
-					
+					canvas.width = width;
+					canvas.height = height;
+
 					ctx.drawImage(img, downAt.x, downAt.y, width,height,0,0,canvas.height,canvas.width);
 
 

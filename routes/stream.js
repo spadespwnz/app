@@ -83,6 +83,27 @@ router.get('/gameslist/', function(req, res) {
 
 });
 
+router.get('/smm/', function(req, res) {
+	var db = req.db;
+
+	db.collection('SMM').find( {}).toArray(function(err, cursor){
+		if (err){
+			res.send("Error loading images");
+		}
+		else{
+			if (cursor){
+				res.render('pages/smm', {levels : cursor});
+
+			}
+			else{
+				('pages/smm', {levels : []})
+			}
+		}
+	});
+
+});
+
+
 
 router.get('/suggestions/', function(req, res) {
 	var db = req.db;
