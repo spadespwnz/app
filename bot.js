@@ -101,7 +101,58 @@ bot.on("chat", function(channel, userstate, message, self){
 				bot.say(channel, "@"+user+" "+points+" points.");
 			});
 			break;
+		case "!add":
+			if (message_parts.length == 2 && message_parts[1].length == 19){
+				var code = message_parts[1];
+				findLevelByCode(code, function(found_level){
+					if (found_level){
+						bot.say(channel, "@"+user+" Level already "+found_level[0].type);
+						return;
+					}
+					levelQueued(user, function(user_queue){
+						if (user_queue){
+							bot.say(channel, "@"+user+" Max 1 queue / person");
+							return;
+						}
 
+						smm.fetchCourse(code, function(error, course){
+							if (error){
+								bot.say(channel, "Error submitting level, invalid code?");
+								return;
+							}
+
+							if (course == undefined){
+								bot.say(channel, "Error submitting level, invalid code?");
+								return;
+							}
+
+							var title = course.title;
+							var maker = course.creator.miiName;
+							var percent = course.clearRate;
+							var style = course.gameStyle;
+							var img = course.thumbnailUrl;
+							var level = {user: user, code: code, title: title, maker: maker, style: style, img: img,percent: percent, id: new uid()};
+							addToSMMQueue(level, function(success){
+								if (success){
+
+									bot.say(channel,'@'+user+' Added "'+title+'" by '+maker+' ['+percent+'%]');
+								}
+								else{
+
+									bot.say(channel,'@'+user+' failed to add.');
+								}
+							})
+
+							
+							
+						}); //End Fetch Level Callback
+					}); //End Level Queued Callback
+				}); //End Find Level Callback
+			}
+			else{
+				bot.say(channel, "Incorrect format, '!submit ABCD-1234-ABCD-1234");
+			}
+			break;
 		case "!submit":
 			if (message_parts.length == 2 && message_parts[1].length == 19){
 				var code = message_parts[1];
@@ -836,11 +887,11 @@ function checkOnline(callback){
 		res.on('end', function(){
 			var parsed = JSON.parse(body);
 
-			if (parsed.stream == null){
-				callback(false);
+			if (parsed.stream != 'null'){
+				callback(true);
 			}
 			else{
-				callback(true);
+				callback(false);
 			}
 
 		});
@@ -862,10 +913,11 @@ function pingSite(){
 
 function sendNote(){
 	checkOnline(function(success){
-			if (success == true){
-					var msgNumber = Math.floor(Math.random()*messages.length);
-					bot.say(channel, messages[msgNumber]);
-			}
+		
+		if (success == false){
+			var msgNumber = Math.floor(Math.random()*messages.length);
+			bot.say(channel, messages[msgNumber]);
+		}
 	})
 
 }
