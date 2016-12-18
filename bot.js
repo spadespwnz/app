@@ -28,7 +28,7 @@ var channel = "#spadespwnzyou";
 var bot = new tmi.client(tmi_options);
 var day = 1;
 var messages = [
-		'You gain 1 point every 5 minutes while watching. Type !points to see your amount',
+		'You gain 1 point every 20 minutes while watching. Type !points to see your amount',
 		'Type !queue to see how many levels are in the queue',
 		'You can see completed (or failed) viewer levels at http://www.spades.tech/stream/smm',
 		'24H stream at 500 followers! Hit that follow button if your enjoying the stream.',
@@ -66,7 +66,7 @@ console.log("BOT ON");
 		/*for (var i = 0; i < viewers.length; i++){
 			console.log(viewers[i]);
 		}*/
-	},1000*60*5);
+	},1000*60*20);
 
 
 })();
@@ -460,6 +460,7 @@ bot.on("chat", function(channel, userstate, message, self){
 		case "!day":
 			if (user == admin){
 				day = message_parts[1];
+				bot.say(channel, "Now day: "+day);
 			}
 			break;
 	}
