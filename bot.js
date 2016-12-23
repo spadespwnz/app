@@ -1042,8 +1042,9 @@ module.exports = {
 		db = database;
 	},
 	socket_connect: function(){
-		var uri = process.env.SOCKET_URI || "http://localhost:3000/stream";
-		client = client.connect(uri);
+		var uri = process.env.SOCKET_URI || "http://localhost";
+		var port = process.env.PORT || 3000;
+		client = client.connect(uri+':'+port+'/stream');
 		client.on('connect',function()
 		{
 			
