@@ -11,7 +11,7 @@
 			width: 80%;
 			background-color: white;
 			color: black;
-			height: 100%;
+			height: auto;
 			font-size: 200%;
 		}
 		.selected{
@@ -84,14 +84,28 @@
 			display: inline-block;
 
 		}
-		#tab-bar{
-			
-			background-color: white;
+		.tab-bar-wrapper{
 			position: relative;
 			width: 70%;
 			height: 7%;
 			left: 15%;
+			background-color: white;
+			z-index: 5;
+		}
+		#tab-bar{
+			position: relative;
+			
+			
+			background-color: white;
 			box-shadow: 0px 0 5px black;
+		}
+		#tab-bar.locked{
+			position: fixed;
+			width: 70%;
+			height: 7%;
+			top: 0%;
+			
+
 		}
 		#tab-bar .tab{
 
@@ -138,20 +152,31 @@
 			font-size: 3vh;
 			text-align: center;
 		}
+		#footer-space{
+			z-index: 0;
+
+			float: right;
+			display: block;
+			position: relative;
+			width: 100%;
+			height: 5%;
+		}
 	</style>
 	<head>
 		<% include ../partials/head %>
 	</head>
 	
 	<% include ../partials/stream_top-bar %>
-	<div id="tab-bar">
-		<p id='All' class="tab">All</p>
+	<div class='tab-bar-wrapper'>
+		
+		<div id="tab-bar">
+			<p id='All' class="tab">All</p>
 
-		<p id='Queue' class="tab">Queue</p>
-		<p id='Completed' class="tab">Completed</p>
-		<p id="Failed" class="tab">Failed</p>
+			<p id='Queue' class="tab">Queue</p>
+			<p id='Completed' class="tab">Completed</p>
+			<p id="Failed" class="tab">Failed</p>
+		</div>
 	</div>
-
 	<div id="levels"></div>
 	<div id="legend">
 		<div class="PRIO legend-text"><span>Priority</span></div>
@@ -160,7 +185,7 @@
 		<div class="FAIL legend-text"><span>Fail</span></div>
 	</div>
 
-
+	<div id='footer-space'></div>
 	<script>
 		$(document).ready(function(){
 			var selectedConsole;
@@ -173,6 +198,26 @@
 			var complete = [];
 			var fail = [];
 			selectTab("All");
+			var tabHeight = $('#tab-bar').offset().top;
+			var tabLocked = false;
+			$(window).scroll(function(){
+				if (tabLocked == false){
+					if ($(window).scrollTop() > tabHeight){
+						$('#tab-bar').addClass('locked');
+						tabLocked = true;
+
+					}
+				}
+				else {
+					if ($(window).scrollTop() < tabHeight){
+						$('#tab-bar').removeClass('locked');
+						tabLocked = false;
+
+					}
+				}
+				
+				
+			})
 			function selectTab(set_tab){
 				tab = set_tab;
 				$('.tab').each(function (item){

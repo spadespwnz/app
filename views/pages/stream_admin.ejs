@@ -1,0 +1,148 @@
+<html>
+
+	<head>
+		<% include ../partials/head %>
+	</head>
+	<style>
+		.youtube{
+
+		}
+		#player{
+			width: 640;
+			height: 390;
+			background-color: black;
+			margin-top: 1%;
+		}
+		.complete_game_form{
+			margin-top: 2%;
+		}
+	</style>
+	<% include ../partials/stream_top-bar %>
+	<div class='complete_game_form'>
+		<input type="textbox" id="game" placeholder="Game">
+		<input type="textbox" id="time" placeholder="Time">
+		<input type="textbox" id="desc" placeholder="descripton">
+		<input type="button" value="Complete!" id="complete_game">
+	</div>
+	<div class="youtube">
+	<div id="player"></div>
+	</div>
+	<script>
+
+	var tag = document.createElement('script');
+
+	tag.src = 'https://www.youtube.com/iframe_api';
+	var firstScriptTag = document.getElementsByTagName('script')[0];
+	firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+	var playing = false;
+	var player;
+	var playList = [];
+	function onYouTubeIframeAPIReady(){
+		player = new YT.Player('player',{
+			height: '390',
+			width: '640',
+			videoId: '',
+			events:{
+				'onReady': onPlayerReady,
+				'onStateChange': onPlayerStateChange
+			}
+		});
+	}
+	function onPlayerStateChange(event){
+		if (event.data ==0){
+			playList.splice(0,1);
+			if (playList.length > 0){
+				player.loadVideoById({
+					videoId: getId(playList[0]),
+					startSecond: 0,
+					suggestedQuality: 'large'
+				});
+			}
+
+		}
+	}
+	function onPlayerReady(event){
+		event.target.playVideo();
+	}
+	socket = io('/stream');
+	socket.on('connect',function()
+	{
+		socket.emit('setup', getCookie('token'));
+	});
+
+	socket.on('skip',function(){
+		player.stopVideo();
+		if (playList.length > 0){
+			playList.splice(0,1);
+		}
+		if (playList.length > 0){
+
+			player.loadVideoById({
+				videoId: getId(playList[0]),
+				startSecond: 0,
+				suggestedQuality: 'large'
+			});
+			player.playVideo();
+		}	
+
+	})
+	socket.on('add_song',function(song)
+	{
+		/*
+		})*/
+
+		playList.push(song);
+
+		if (player.getPlayerState() == -1 || player.getPlayerState() == 0 || player.getPlayerState() == 5){
+			player.loadVideoById({
+				videoId: getId(song),
+				startSecond: 0,
+				suggestedQuality: 'large'
+			});
+			player.playVideo();
+		}
+	});
+	$('#complete_game').click(function(){
+
+		var game = $('#game').val();
+		var time = $('#time').val();
+		var desc = $('#desc').val();
+
+
+		$.ajax({
+			type: "POST",
+			url: "../stream/request/complete_game",
+			data: {game: game, time: time, desc: desc},
+			success: function(msg){
+				request = msg['request'];
+				if (request == "success"){
+					
+				}
+				else{
+				
+				}
+			}
+		});
+		alert("Done");
+	});
+	function getId(url){
+		var i = url.indexOf('?v=');
+		return url.substring(i+3);
+	}
+	function getCookie(cookie){
+		var name = cookie + "=";
+		var ca = document.cookie.split(';');
+		for (var i = 0; i<ca.length;i++){
+			var c = ca[i];
+			while (c.charAt(0) == ' '){
+				c = c.substring(1);
+			}
+			if (c.indexOf(name) == 0){
+				return c.substring(name.length, c.length)
+			}
+		}
+		return "";
+	}
+
+	</script>
+</html>

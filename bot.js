@@ -3,7 +3,10 @@ var tmi = require('tmi.js');
 var dbutils = require('./utils/dbutils');
 var utils = require('./utils/utils');
 var http = require('http');
+var https = require('https');
 var uid = require('mongodb').ObjectID;
+var validator = require('youtube-validator');
+var client = require('socket.io/node_modules/socket.io-client');
 require('dotenv').config();
 var db;
 
@@ -27,27 +30,40 @@ var chatterTypes = ['moderators','staff','admins','global_mods','viewers'];
 var channel = "#spadespwnzyou";
 var bot = new tmi.client(tmi_options);
 var day = 1;
-var messages = [
+var smm_messages = [
 		'You gain 1 point every 20 minutes while watching. Type !points to see your amount',
 		'Type !queue to see how many levels are in the queue',
 		'You can see completed (or failed) viewer levels at http://www.spades.tech/stream/smm',
 		'24H stream at 500 followers! Hit that follow button if your enjoying the stream.',
-		'Tell a friend to come type !ref [YOUR USERNAME] in chat to receive 2 points!',
 		'Type !submit [CODE] to add your level to the queue',
-		'For 10 points, type !priority [CODE] to add your level to the priority queue',
-		'Levels in the Priority queue will be played first, You can switch your level with !switch',
-		'This is '+day+' of 365 of my daily stream challenge'
+		'This is '+day+' of 365 of my daily stream challenge',
+		'Use !song [YOUTUBE URL] to add a song to the queue',
+		'Your points are currently useless, so for 5 points, !suggest [IDEA] me some ideas',
+		'Each level will get around 10 minutes unless it doesnt',
 
 
 ];
 
+var other_messages = [
+		'You gain 1 point every 20 minutes while watching. Type !points to see your amount',
+		'24H stream at 500 followers! Hit that follow button if your enjoying the stream.',
+		'Tell a friend to come type !ref [YOUR USERNAME] in chat to receive 2 points!',
+		'This is '+day+' of 365 of my daily stream challenge',
+		'Use !song [YOUTUBE URL] to add a song to the queue',
+		'Your points are currently useless, so for 5 points, !suggest [IDEA] me some ideas',
+		'Current Goal: Beat every good game',
+		'You Can suggest new games for my good-game list using !suggestgame [GAME]',
+		'Coming soon: Vote on the next game I play (like, really soon, probably TM)',
+		'Check out the current games list at www.spades.tech/stream/gameslist'
+
+
+];
+
+var message_type = 'smm'
 bot.connect();
 console.log("BOT ON");
 
 (function(){
-	
-
-
 	var pointInterval = setInterval(function(){
 		checkOnline(function(status){
 			if (status == true){
@@ -63,6 +79,7 @@ console.log("BOT ON");
 		});
 		pingSite();
 		sendNote();
+		
 		/*for (var i = 0; i < viewers.length; i++){
 			console.log(viewers[i]);
 		}*/
@@ -83,6 +100,11 @@ bot.on("chat", function(channel, userstate, message, self){
 					suggest(message.slice(9), user);
 				}
 			})
+			break;
+		case "!suggestgame":
+
+				suggest(message.slice(9), user);
+			
 			break;
 		case "!checkonline":
 			checkOnline(function(status){
@@ -148,6 +170,49 @@ bot.on("chat", function(channel, userstate, message, self){
 						}); //End Fetch Level Callback
 					}); //End Level Queued Callback
 				}); //End Find Level Callback
+			}
+			else{
+				bot.say(channel, "Incorrect format, '!submit ABCD-1234-ABCD-1234");
+			}
+			break;
+
+		case "!tadd":
+			if (message_parts.length == 2 && message_parts[1].length == 19){
+				var code = message_parts[1];
+				
+
+						smm.fetchCourse(code, function(error, course){
+							if (error){
+								bot.say(channel, "Error submitting level, invalid code?");
+								return;
+							}
+
+							if (course == undefined){
+								bot.say(channel, "Error submitting level, invalid code?");
+								return;
+							}
+
+							var title = course.title;
+							var maker = course.creator.miiName;
+							var percent = course.clearRate;
+							var style = course.gameStyle;
+							var img = course.thumbnailUrl;
+							var level = {user: user, code: code, title: title, maker: maker, style: style, img: img,percent: percent, id: new uid()};
+							addToSMMQueue(level, function(success){
+								if (success){
+
+									bot.say(channel,'@'+user+' Added "'+title+'" by '+maker+' ['+percent+'%]');
+								}
+								else{
+
+									bot.say(channel,'@'+user+' failed to add.');
+								}
+							})
+
+							
+							
+						}); //End Fetch Level Callback
+			
 			}
 			else{
 				bot.say(channel, "Incorrect format, '!submit ABCD-1234-ABCD-1234");
@@ -344,6 +409,7 @@ bot.on("chat", function(channel, userstate, message, self){
 				}
 			});
 			break;
+		
 		case "!complete":
 			if (user == admin){
 				if (message_parts.length == 3){
@@ -463,9 +529,52 @@ bot.on("chat", function(channel, userstate, message, self){
 				bot.say(channel, "Now day: "+day);
 			}
 			break;
+		case "!msgtype":
+			if (user == admin){
+				message_type = message_parts[1];
+			}
+			break;
+		case "!song":
+			songUrl = message_parts[1];
+			var useUrl = songUrl;
+			if (songUrl.substring(0,8) == 'https://'){
+				useUrl = songUrl.substring(8);
+			}
+			if (songUrl.indexOf('.be/') > 0){
+				var id = songUrl.substring(songUrl.indexOf('.be/')+4);
+				useUrl = 'http://www.youtube.com/watch?v='+id;
+			}
+			validSong(useUrl, function(success){
+				if (success == true){
+					client.emit('new_song', message_parts[1]);
+					bot.say(channel, 'Song Added!');
+				}
+				else{
+					bot.say(channel, "Invalid Song :(");
+				}
+			})
+			break;
+		case "!nextsong":
+			if (user == admin){
+
+				client.emit('skip');
+			}
+		break;
+
 	}
 });
 
+function validSong(url, callback){
+	validator.validateUrl(url, function(res, err){
+		if (err){
+			console.log(err);
+			callback(false);
+		}
+		else{
+			callback(true);
+		}
+	});
+}
 function refUser(from_user, to_user, callback){
 	db.collection('stream_stats').find({'type':'used_ref_list'}).toArray(function(err,cursor){
 		if (err){
@@ -877,9 +986,10 @@ function getViewers(callback){
 	})
 }
 function checkOnline(callback){
-	http.get({
+	https.get({
 		host: 'api.twitch.tv',
 		path: '/kraken/streams/spadespwnzyou',
+		headers: {'Client-ID': 'g9112834cyysblntbe474sc099s00d'}
 	}, function(res){
 		var body = '';
 		res.on('data', function(d){
@@ -888,7 +998,7 @@ function checkOnline(callback){
 		res.on('end', function(){
 			var parsed = JSON.parse(body);
 
-			if (parsed.stream != 'null'){
+			if (parsed.stream != null){
 				callback(true);
 			}
 			else{
@@ -914,16 +1024,31 @@ function pingSite(){
 
 function sendNote(){
 	checkOnline(function(success){
-		
-		if (success == false){
-			var msgNumber = Math.floor(Math.random()*messages.length);
-			bot.say(channel, messages[msgNumber]);
+		if (success == true){
+			if (message_type == 'smm'){
+				var msgNumber = Math.floor(Math.random()*smm_messages.length);
+				bot.say(channel, smm_messages[msgNumber]);
+			}
+			else{
+				var msgNumber = Math.floor(Math.random()*other_messages.length);
+				bot.say(channel, other_messages[msgNumber]);
+			}
 		}
 	})
 
 }
 module.exports = {
-		set_db: function(database){
+	set_db: function(database){
 		db = database;
+	},
+	socket_connect: function(){
+		client = client.connect('http://localhost:3000/stream');
+		client.on('connect',function()
+		{
+			
+		});
+		client.on('msg', function(message){
+			console.log('In Bot:'+message);
+		});
 	}
 }

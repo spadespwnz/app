@@ -3,9 +3,10 @@
 	<style>
 
 		#consoles{
+			clear: both;
 			margin-top: 1%;
 			float: left;
-			z-index: 10;
+			z-index: 4;
 			position: absolute;
 			display: block;
 			background-color: lightgrey;
@@ -14,15 +15,18 @@
 			box-shadow: 0px 0 5px black;
 		}
 		#games{
+			clear: both;
 			margin-top: 1%;
 			float: right;
 			position: relative;
-			display: inline-block;
+			display: block;
 			width: 80%;
 			background-color: white;
 			color: black;
-			height: 100%;
+			height: auto;
 			font-size: 200%;
+			overflow: visible;
+			z-index: 1;
 		}
 		.selected{
 			color: black;
@@ -50,6 +54,10 @@
 			padding-left: 10px;
 			box-shadow: 0px 0 5px black;
 		}
+		.console-text{
+			font-size: 50%;
+			margin-top: 0;
+		}
 		#legend{
 			z-index: 5;
 			background-color: white;
@@ -70,12 +78,28 @@
 			display: inline-block;
 
 		}
-		#tab-bar{
+		.tab-bar-wrapper{
 			position: relative;
 			width: 70%;
 			height: 7%;
 			left: 15%;
+			background-color: white;
+			z-index: 5;
+		}
+		#tab-bar{
+			position: relative;
+			
+			
+			background-color: white;
 			box-shadow: 0px 0 5px black;
+		}
+		#tab-bar.locked{
+			position: fixed;
+			width: 70%;
+			height: 7%;
+			top: 0%;
+			
+
 		}
 		#tab-bar .tab{
 
@@ -93,16 +117,57 @@
 		.selected-tab{
 			background-color: grey;
 		}
+		#footer-space{
+			z-index: 0;
+
+			float: right;
+			display: block;
+			position: relative;
+			width: 100%;
+			height: 5%;
+		}
+		#completion-bar{
+			position: fixed;
+			z-index: 10;
+
+			right: 10%;
+			height: 50%;
+			bottom: 10%;
+			width: 3%;
+			text-align: center;
+
+		
+		}
+		#completion-bar #complete-amount{
+			position: absolute;
+			bottom: 0;
+			background-color: green;
+			height: 50%;
+			width: 100%;
+		}
+		#completion-bar #incomplete-amount{
+			position: absolute;
+			bottom: 0;
+			background-color: red;
+			height: 90%;
+			width: 100%;
+			box-shadow: 0px 0 5px black;
+		}
+		#completion-bar #completion-percent{
+			font-size: 150%;
+		}
 	</style>
 	<head>
 		<% include ../partials/head %>
 	</head>
 	
 	<% include ../partials/stream_top-bar %>
-	<div id="tab-bar">
-		<p id='All' class="tab">All</p>
-		<p id='Completed' class="tab">Completed</p>
-		<p id="Incomplete" class="tab">Incomplete</p>
+	<div class="tab-bar-wrapper">
+		<div id="tab-bar">
+			<p id='All' class="tab">All</p>
+			<p id='Completed' class="tab">Completed</p>
+			<p id="Incomplete" class="tab">Incomplete</p>
+		</div>
 	</div>
 	<div id="consoles"></div>
 	<div id="games"></div>
@@ -111,6 +176,12 @@
 		<div class="SEMI-BLIND legend-text"><span>Semi-Blind</span></div>
 		<div class="BLIND legend-text"><span>Blind</span></div>
 	</div>
+	<div id='footer-space'></div>
+	<div id='completion-bar'>
+		<p id="complete-percent">0%</p>
+		<div id='incomplete-amount'></div>
+		<div id='complete-amount'></div>
+	</div>
 
 
 	<script>
@@ -118,10 +189,36 @@
 			var selectedConsole;
 			
 			var tab = "All";
+			var tabHeight = $('#tab-bar').offset().top;
+			var tabLocked = false;
+			$(window).scroll(function(){
+				if (tabLocked == false){
+					if ($(window).scrollTop() > tabHeight){
+						$('#tab-bar').addClass('locked');
+						tabLocked = true;
+
+					}
+				}
+				else {
+					if ($(window).scrollTop() < tabHeight){
+						$('#tab-bar').removeClass('locked');
+						tabLocked = false;
+
+					}
+				}
+				
+				
+			})
 			var consoles = <%- JSON.stringify(consoles) %>
+			var games_list = {};
+			games_list['All'] = {allGames: [], completedGames: [], incompleteGames: []};
 			var allGames = [];
 			var completedGames = [];
 			var incompleteGames = [];
+			
+			$('#consoles').append('<p>All</p>');
+			selectedConsole = $($('#consoles').children()[0]);
+			
 			selectTab("All");
 			function selectTab(set_tab){
 				tab = set_tab;
@@ -137,8 +234,54 @@
 				var new_tab = $(this).text();
 				selectTab(new_tab);
 			});
+
+			
 			for (var console in consoles){
 				$('#consoles').append('<p>'+consoles[console]+"</p>");
+				games_list[''+consoles[console]] = {allGames: [], completedGames: [], incompleteGames: []};
+				$.ajax({
+					type: "POST",
+					url: "../stream/request/gameslist",
+					data: {console: consoles[console]},
+					success: function(msg){
+
+						request = msg['request'];
+						if (request == "success"){
+							var games = msg['games'];
+							var console = msg['console'];
+							var allGames = [];
+							var completedGames = [];
+							var incompleteGames = [];
+							for (var game in games){
+								games[game].console = console;
+								allGames.push(games[game]);
+								if (games[game].complete != undefined){
+									completedGames.push(games[game]);
+								}
+								else{
+									incompleteGames.push(games[game]);
+								}
+
+								games_list[''+console].allGames = allGames;
+
+								games_list[''+console].completedGames = completedGames;
+
+								games_list[''+console].incompleteGames = incompleteGames;
+							}
+							games_list['All'].allGames.push.apply(games_list['All'].allGames, allGames);
+
+							games_list['All'].completedGames.push.apply(games_list['All'].completedGames, completedGames);
+
+							games_list['All'].incompleteGames.push.apply(games_list['All'].incompleteGames, incompleteGames);
+
+							
+						}
+						else{
+							alert(msg['error']);
+						}
+					}
+				});
+
 			}
 			$('#consoles').on('click','p',function(){
 
@@ -152,34 +295,38 @@
 					}
 					selectedConsole = clickedConsole
 					clickedConsole.addClass('selected');
+					/*
 					$.ajax({
-					type: "POST",
-					url: "../stream/request/gameslist",
-					data: {console: clickedConsole.text()},
-					success: function(msg){
-						request = msg['request'];
-						if (request == "success"){
-							var games = msg['games'];
-							allGames = [];
-							completedGames = [];
-							incompleteGames = [];
-							for (var game in games){
-								allGames.push(games[game]);
-								if (games[game].completed != undefined){
-									completedGames.push(games[game]);
+						type: "POST",
+						url: "../stream/request/gameslist",
+						data: {console: clickedConsole.text()},
+						success: function(msg){
+							request = msg['request'];
+							if (request == "success"){
+								var games = msg['games'];
+								allGames = [];
+								completedGames = [];
+								incompleteGames = [];
+								for (var game in games){
+									alert(JSON.stringify(games[game]));
+									allGames.push(games[game]);
+									if (games[game].complete != undefined){
+										completedGames.push(games[game]);
+									}
+									else{
+										incompleteGames.push(games[game]);
+									}
+									
 								}
-								else{
-									incompleteGames.push(games[game]);
-								}
-								
+								showTab(tab);
 							}
-							showTab(tab);
+							else{
+								alert(msg['error']);
+							}
 						}
-						else{
-							alert(msg['error']);
-						}
-					}
 					});
+					*/
+					showTab(tab);
 				}
 
 			});
@@ -188,18 +335,35 @@
 				
 				var games = [];
 				if (tab == "All"){
-					games = allGames;
+
+					games = games_list[selectedConsole.text()].allGames;
 				}
 				if (tab == "Completed"){
-					games = completedGames;
+					games = games_list[selectedConsole.text()].completedGames;
 				}
 				if (tab == "Incomplete"){
 			
-					games = incompleteGames;
+					games = games_list[selectedConsole.text()].incompleteGames;
 				}
+				var perc = Math.round(100 *(games_list[selectedConsole.text()].completedGames.length / games_list[selectedConsole.text()].allGames.length)); 
+				setCompleteBar(perc);
 				for (var i = 0; i < games.length; i++){
-					$('#games').append('<div class="game"><p class='+games[i].experience+'><span>'+games[i].game+"</span></p></div>");
+					var appendLine = '';
+					appendLine += '<div class="game"><p class='+games[i].experience+'><span>'+games[i].game+'</span></p><p class="console-text">'+games[i].console+'</p>';
+					if (games[i].complete != undefined){
+						appendLine+= '<p class="console-text">Completed: True, Time: '+games[i].time +', Info: '+games[i].desc+'</p>';
+					}
+					else{
+						appendLine+= '<p class="console-text">Completed: false</p>'
+					}
+					appendLine += '</div>';
+
+					$('#games').append(appendLine);
 				}
+			}
+			function setCompleteBar(perc){
+				$('#complete-percent').text(perc+'%');
+				$('#complete-amount').css('height', .9*perc+'%');
 			}
 		});
 	</script>

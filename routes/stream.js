@@ -5,7 +5,6 @@ var fs = require('fs');
 var uid = require('mongodb').ObjectID;
 var dbutils = require('../utils/dbutils');
 var utils = require('../utils/utils');
-
 var active="stream";
 /* GET home page. */
 router.get('/', function(req, res) {
@@ -22,7 +21,7 @@ router.post('/request/gameslist', function(req, res) {
 		else{
 			if (cursor[0]){
 				if (cursor[0].games){
-					res.send({'request':'success', 'games':cursor[0].games});
+					res.send({'request':'success', 'games':cursor[0].games, 'console': console});
 				}
 				else{
 					res.send({'request':'fail','error': 'No games'});
@@ -46,7 +45,7 @@ router.get('/gameslist/:console', function(req, res) {
 		else{
 			if (cursor[0]){
 				if (cursor[0].games){
-					res.render('pages/gameslist', {games : cursor[0].games});
+					res.render('pages/gameslist', {games : cursor[0].games, console: console});
 				}
 				else{
 					res.send("no games");
@@ -178,7 +177,23 @@ router.get('/removelist', function(req, res) {
   res.render('pages/stream_removelist')
 });
 
+router.get('/admin', function(req, res) {
+  res.render('pages/stream_admin')
+});
 
+
+router.post('/request/complete_game', function(req,res){
+	var db=req.db;
+	email = req.decoded.email;
+	var time = req.body.time;
+	var game = req.body.game;
+	var desc = req.body.desc;
+
+	var db = req.db;
+	db.collection('stream_games').update({'games.game': game}, {$set: {'games.$.complete': true, 'games.$.time': time, 'games.$.desc': desc}});
+	
+	
+});
 router.post('/request/remove_console', function(req,res){
 	var db=req.db;
 	email = req.decoded.email;
