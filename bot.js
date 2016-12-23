@@ -546,7 +546,7 @@ bot.on("chat", function(channel, userstate, message, self){
 			}
 			validSong(useUrl, function(success){
 				if (success == true){
-					client.emit('new_song', message_parts[1]);
+					client.emit('new_song', useUrl);
 					bot.say(channel, 'Song Added!');
 				}
 				else{
@@ -1042,7 +1042,8 @@ module.exports = {
 		db = database;
 	},
 	socket_connect: function(){
-		client = client.connect('http://localhost:3000/stream');
+		var uri = process.env.SOCKET_URI || "http://localhost:3000/stream";
+		client = client.connect(uri);
 		client.on('connect',function()
 		{
 			

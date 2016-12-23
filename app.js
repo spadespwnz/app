@@ -74,7 +74,7 @@ var chat = io
 var stream = io
 	.of('/stream')
 	.on('connection', function(socket){
-
+		console.log("Connection in stream");
 		stream_controller.respond(stream, socket, data_base);
 	});
 
