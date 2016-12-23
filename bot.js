@@ -1046,7 +1046,7 @@ module.exports = {
 		var port = process.env.PORT || 3000;
 		var end_url = uri+':'+port+'/stream';
 		console.log("End Url:"+end_url);
-		client = client.connect(uri+':'+port+'/stream');
+		client = client.connect(end_url);
 		client.on('connect',function()
 		{
 			
