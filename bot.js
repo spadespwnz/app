@@ -1044,7 +1044,7 @@ module.exports = {
 	socket_connect: function(){
 		var uri = process.env.SOCKET_URI || "http://localhost";
 		var port = process.env.PORT || 3000;
-		var end_url = uri+':'+port+'/stream';
+		var end_url = uri+'/stream';
 		console.log("End Url:"+end_url);
 		client = client.connect(end_url);
 		client.on('connect',function()
