@@ -232,6 +232,9 @@
 
 			$('.tab').click(function (item){
 				var new_tab = $(this).text();
+				if (new_tab.indexOf('All') >= 0){
+					new_tab = 'All';
+				}
 				selectTab(new_tab);
 			});
 
@@ -273,7 +276,7 @@
 							games_list['All'].completedGames.push.apply(games_list['All'].completedGames, completedGames);
 
 							games_list['All'].incompleteGames.push.apply(games_list['All'].incompleteGames, incompleteGames);
-
+							$('#All').text('All ('+games_list['All'].allGames.length+')');
 							
 						}
 						else{
