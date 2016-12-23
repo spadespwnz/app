@@ -24,6 +24,7 @@ module.exports.respond = function(endpoint,socket, db){
 	});
 	*/
 	socket.on('new_song', function(song){
+		console.log("Message from bot in sockets");
 		endpoint.to('song_channel').emit('add_song', song);
 
 
