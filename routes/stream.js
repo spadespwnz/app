@@ -6,6 +6,9 @@ var uid = require('mongodb').ObjectID;
 var dbutils = require('../utils/dbutils');
 var utils = require('../utils/utils');
 var active="stream";
+
+require('dotenv').config();
+var bot_id = process.env.BOT_ID;
 /* GET home page. */
 router.get('/', function(req, res) {
   res.render('pages/stream')
@@ -58,6 +61,14 @@ router.get('/gameslist/:console', function(req, res) {
 	});
 
 });
+
+router.get('/next', function(req, res) {
+	
+	var code = req.param.code;
+
+	res.render('pages/stream_next', {client_id: bot_id, code: code});
+});
+
 router.get('/gameslist/', function(req, res) {
 	var db = req.db;
 

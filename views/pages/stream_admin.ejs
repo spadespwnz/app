@@ -65,9 +65,7 @@
 		event.target.playVideo();
 	}
 	socket = io('/stream');
-	alert('protocol:'+window.location.protocol);
 
-	alert('host:'+window.location.host);
 	socket.on('connect',function()
 	{
 		socket.emit('setup', getCookie('token'));

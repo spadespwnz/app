@@ -8,6 +8,9 @@ var uid = require('mongodb').ObjectID;
 var validator = require('youtube-validator');
 var client = require('socket.io/node_modules/socket.io-client');
 require('dotenv').config();
+var bot_id = process.env.BOT_ID;
+var bot_secret = process.env.BOT_SECRET;
+
 var db;
 
 var tmi_options = {
@@ -25,7 +28,7 @@ var tmi_options = {
 
 };
 var admin = 'spadespwnzyou';
-var mods = [];
+var mods = ['miamiandy513', 'yungtdot'];
 var chatterTypes = ['moderators','staff','admins','global_mods','viewers'];
 var channel = "#spadespwnzyou";
 var bot = new tmi.client(tmi_options);
@@ -36,7 +39,7 @@ var smm_messages = [
 		'You can see completed (or failed) viewer levels at http://www.spades.tech/stream/smm',
 		'24H stream at 500 followers! Hit that follow button if your enjoying the stream.',
 		'Type !submit [CODE] to add your level to the queue',
-		'This is '+day+' of 365 of my daily stream challenge',
+
 		'Use !song [YOUTUBE URL] to add a song to the queue',
 		'Your points are currently useless, so for 5 points, !suggest [IDEA] me some ideas',
 		'Each level will get around 10 minutes unless it doesnt',
@@ -48,7 +51,7 @@ var other_messages = [
 		'You gain 1 point every 20 minutes while watching. Type !points to see your amount',
 		'24H stream at 500 followers! Hit that follow button if your enjoying the stream.',
 		'Tell a friend to come type !ref [YOUR USERNAME] in chat to receive 2 points!',
-		'This is '+day+' of 365 of my daily stream challenge',
+
 		'Use !song [YOUTUBE URL] to add a song to the queue',
 		'Your points are currently useless, so for 5 points, !suggest [IDEA] me some ideas',
 		'Current Goal: Beat every good game',
@@ -59,7 +62,7 @@ var other_messages = [
 
 ];
 
-var message_type = 'smm'
+var message_type = 'other'
 bot.connect();
 console.log("BOT ON");
 
@@ -540,9 +543,13 @@ bot.on("chat", function(channel, userstate, message, self){
 			if (songUrl.substring(0,8) == 'https://'){
 				useUrl = songUrl.substring(8);
 			}
-			if (songUrl.indexOf('.be/') > 0){
-				var id = songUrl.substring(songUrl.indexOf('.be/')+4);
+			if (useUrl.indexOf('.be/') > 0){
+				var id = useUrl.substring(useUrl.indexOf('.be/')+4);
 				useUrl = 'http://www.youtube.com/watch?v='+id;
+			}
+			if (useUrl.indexOf('&list=') > 0){
+				useUrl = useUrl.substring(0,useUrl.indexOf('&list='));
+			
 			}
 			validSong(useUrl, function(success){
 				if (success == true){
@@ -555,7 +562,7 @@ bot.on("chat", function(channel, userstate, message, self){
 			})
 			break;
 		case "!nextsong":
-			if (user == admin){
+			if (user == admin || mods.indexOf(user) >= 0){
 
 				client.emit('skip');
 			}
@@ -1042,7 +1049,7 @@ module.exports = {
 		db = database;
 	},
 	socket_connect: function(){
-		var uri = process.env.SOCKET_URI || "http://localhost";
+		var uri = process.env.SOCKET_URI || "http://localhost:3000";
 		var port = process.env.PORT || 3000;
 		var end_url = uri+'/stream';
 		console.log("End Url:"+end_url);

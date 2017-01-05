@@ -1,0 +1,23 @@
+
+<html>
+	<head>
+		<% include ../partials/head %>
+	</head>
+	<% include ../partials/stream_top-bar %>
+	<form action='https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id=<%-client_id%>&redirect_uri=www.spades.tech/next&scope=&state=lol' method='POST'>
+		<button type=lsubmitl value='Auth' class='btn'>Auth</button>
+	</form>
+
+	<script>
+	$(document).ready(function(){
+		alert(<%-code%>)
+		var url = 'https://api.twitch.tv/kraken/oauth2/authorize?response_type=code';
+		url += '&client_id=' + '<%-client_id %>';
+		url += '&redirect_uri=localhost:3000/next';
+		url += '&scope=';
+		url += '&state=lol';
+		$('body').append('<a href="'+url+'">Click</a>');
+		
+	});
+	</script>
+</html>
