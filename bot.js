@@ -593,7 +593,7 @@ bot.on("chat", function(channel, userstate, message, self){
 		break;
 
 		case "!cgss":
-			var mult = 1;
+			var multi = 1;
 
 			if (users_on_cooldown.indexOf(user) < 0){
 				if (on_msg_cooldown == false){
