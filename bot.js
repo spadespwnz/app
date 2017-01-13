@@ -45,7 +45,7 @@ var cgss_messages = [
 	'You fall through the perfect spot on the green wall, but miss the visual queue on the space debris. So close and yet so far',
 	'You land on the roof of the goal, as you jump down and homing attack the goal ring, but you miss LOL',
 	'PERFECT spindash, perfect angle, perfect homing attak cancel, you GOT this. j/k you overshoot the goal ring by 2 pixels.',
-	'You do a perfect CGSS, to bad its after 3 deaths, oh well good enough. You gain 15 points!'
+	'You do a perfect CGSS, to bad its after 3 deaths, oh well good enough. You gain some points!'
 ]
 var smm_messages = [
 		'You gain 1 point every 20 minutes while watching. Type !points to see your amount',
@@ -69,7 +69,7 @@ var other_messages = [
 		'Your points are currently useless, so for 5 points, !suggest [IDEA] me some ideas',
 		'Im currently trying to become less bad at SA2B, might have a decent time sometime',
 		'Upcoming potential stream plans: Centurion Saturdays and Meme Game Mondays (Sonic 06 first?)',
-		
+
 
 
 
@@ -593,21 +593,26 @@ bot.on("chat", function(channel, userstate, message, self){
 		break;
 
 		case "!cgss":
+			var mult = 1;
+
 			if (users_on_cooldown.indexOf(user) < 0){
 				if (on_msg_cooldown == false){
+					if (message_parts.length > 1){
+						multi = parseInt(message_parts[1]);
+					}
 					lock(user);
 					message_delay();
 					findPoints(user, function(points){
-						if (points > 1){
-							decPoints(user, 1);
+						if (points > multi){
+							decPoints(user, multi);
 							var roll = Math.floor(Math.random() * (10 + 1));
 							if (roll == 10){
-								addPoints(user, 15);
+								addPoints(user, 15*multi);
 							}
 							bot.say(channel, '@'+user+' '+cgss_messages[roll]);
 						}
 						else{
-							bot.say(channel, "@"+user+" you are pointless :(");
+							bot.say(channel, "@"+user+" not enough points :(");
 						}
 					})
 					
