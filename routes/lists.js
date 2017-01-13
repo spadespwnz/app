@@ -184,7 +184,6 @@ router.post('/request/add',function(req,res){
 	var title = req.body.title;
 	var text = req.body.text;
 	var db = req.db;
-
 	dbutils.db_find(db, 'lists', {"title":list}, function(set_result){
 		if (set_result.fail == true){
 			//Error changing note text
@@ -193,6 +192,7 @@ router.post('/request/add',function(req,res){
 		}
 		else{
 			records = set_result['records'];
+			console.log(records);
 			if (records.length != 1){
 				res.send({"request":"fail", "error":"List does not exist."});
 			}

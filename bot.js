@@ -33,6 +33,20 @@ var chatterTypes = ['moderators','staff','admins','global_mods','viewers'];
 var channel = "#spadespwnzyou";
 var bot = new tmi.client(tmi_options);
 var day = 1;
+var on_msg_cooldown = false;
+var cgss_messages = [
+	'You hit the wrong gravity switch.',
+	'You line yourself up perfectly on the white tile, then your finger twitched and you died',
+	'You spindash at the perfect angle, to bad you missed the jump input',
+	'Wait, what is the camera doing. Oh, Im dead',
+	'You changed your angle too slow, and now your dead',
+	'Everything is going perfect, you made it passed the kill walls. Nevermind, you hit one at the last second',
+	'As your falling to the goal, you held your controlstick at the wrong angle, R I P',
+	'You fall through the perfect spot on the green wall, but miss the visual queue on the space debris. So close and yet so far',
+	'You land on the roof of the goal, as you jump down and homing attack the goal ring, but you miss LOL',
+	'PERFECT spindash, perfect angle, perfect homing attak cancel, you GOT this. j/k you overshoot the goal ring by 2 pixels.',
+	'You do a perfect CGSS, to bad its after 3 deaths, oh well good enough. You gain 15 points!'
+]
 var smm_messages = [
 		'You gain 1 point every 20 minutes while watching. Type !points to see your amount',
 		'Type !queue to see how many levels are in the queue',
@@ -51,17 +65,16 @@ var other_messages = [
 		'You gain 1 point every 20 minutes while watching. Type !points to see your amount',
 		'24H stream at 500 followers! Hit that follow button if your enjoying the stream.',
 		'Tell a friend to come type !ref [YOUR USERNAME] in chat to receive 2 points!',
-
-		'Use !song [YOUTUBE URL] to add a song to the queue',
+		'Gamble your points away with !cgss',
 		'Your points are currently useless, so for 5 points, !suggest [IDEA] me some ideas',
-		'Current Goal: Beat every good game',
-		'You Can suggest new games for my good-game list using !suggestgame [GAME]',
-		'Coming soon: Vote on the next game I play (like, really soon, probably TM)',
-		'Check out the current games list at www.spades.tech/stream/gameslist'
+		'Im currently trying to become less bad at SA2B, might have a decent time sometime',
+		'Upcoming potential stream plans: Centurion Saturdays and Meme Game Mondays (Sonic 06 first?)',
+		
+
 
 
 ];
-
+var users_on_cooldown = [];
 var message_type = 'other'
 bot.connect();
 console.log("BOT ON");
@@ -105,9 +118,7 @@ bot.on("chat", function(channel, userstate, message, self){
 			})
 			break;
 		case "!suggestgame":
-
-				suggest(message.slice(9), user);
-			
+			suggest(message.slice(9), user);
 			break;
 		case "!checkonline":
 			checkOnline(function(status){
@@ -178,7 +189,6 @@ bot.on("chat", function(channel, userstate, message, self){
 				bot.say(channel, "Incorrect format, '!submit ABCD-1234-ABCD-1234");
 			}
 			break;
-
 		case "!tadd":
 			if (message_parts.length == 2 && message_parts[1].length == 19){
 				var code = message_parts[1];
@@ -566,10 +576,54 @@ bot.on("chat", function(channel, userstate, message, self){
 
 				client.emit('skip');
 			}
+			break;
+		case "!giveall":
+			if (user == admin){
+				var amount = parseInt(message_parts[1]);
+				getViewers(function(parsed){
+					for (var type = 0; type<chatterTypes.length;type++){
+						for (var i = 0; i< parsed.chatters[chatterTypes[type]].length;i++){
+							addPoints(parsed.chatters[chatterTypes[type]][i], amount);
+							
+						}
+					}
+					bot.say(channel,"Points Given");
+				});
+			}
 		break;
 
+		case "!cgss":
+			if (users_on_cooldown.indexOf(user) < 0){
+				if (on_msg_cooldown == false){
+					lock(user);
+					message_delay();
+					findPoints(user, function(points){
+						if (points > 1){
+							decPoints(user, 1);
+							var roll = Math.floor(Math.random() * (10 + 1));
+							if (roll == 10){
+								addPoints(user, 15);
+							}
+							bot.say(channel, '@'+user+' '+cgss_messages[roll]);
+						}
+						else{
+							bot.say(channel, "@"+user+" you are pointless :(");
+						}
+					})
+					
+
+					
+				}
+			}
+			break;	
 	}
 });
+function freeUser(user){
+	var spot = users_on_cooldown.indexOf(user);
+	if (spot > -1){
+		users_on_cooldown.splice(spot, 1);
+	}
+}
 
 function validSong(url, callback){
 	validator.validateUrl(url, function(res, err){
@@ -630,6 +684,19 @@ function refUser(from_user, to_user, callback){
 
 	});
 };
+function lock(user){
+	users_on_cooldown.push(user);
+	setTimeout(
+		function(){
+			freeUser(user)
+		}, 60000);
+}
+function message_delay(){
+	on_msg_cooldown = true;
+	setTimeout(function(){
+		on_msg_cooldown = false;
+	}, 5000);
+}
 function clearQueue(callback){
 	db.collection('SMM').update({$or: [{'type':'prio_queue'},{'type':'queue'}]},{$set:{level: []}},{multi: true, upsert: true}, function(err){
 		if (err){

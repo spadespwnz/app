@@ -204,9 +204,11 @@
 				$('[data-toggle="tooltip"]').tooltip();
 			});
 			
-			list = "<%= list %>"
+			var list = "<%= list %>"
+
 			
 			$('#create').click(function(){
+
 				$.ajax({
 					type: "POST",
 					url: "/lists/request/add",
