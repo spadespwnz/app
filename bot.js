@@ -31,6 +31,7 @@ var trivia_on = false;
 var trivia_question_solved = false;
 var trivia_answer = "";
 var trivia_categories = [];
+var trivia_choices = true;
 var admin = 'spadespwnzyou';
 var mods = ['miamiandy513', 'yungtdot'];
 var chatterTypes = ['moderators','staff','admins','global_mods','viewers'];
@@ -671,6 +672,18 @@ bot.on("chat", function(channel, userstate, message, self){
 				remove_trivia_category(message_parts[1]);
 			}
 			break;
+		case "!choice_on":
+			if (user == admin || mods.indexOf(user) >= 0){
+				trivia_choices = true;
+				bot.say(channel,"Choices will be dislayed");
+			}
+			break;
+		case "!choice_off":
+			if (user == admin || mods.indexOf(user) >= 0){
+				trivia_choices = false;
+				bot.say(channel,"Choices will be NOT dislayed");
+			}
+			break;
 		case "!question":
 			if (user == admin || mods.indexOf(user) >= 0){
 				question();
@@ -718,7 +731,11 @@ function question(){
 					if (cursor[0].questions){
 						var count = cursor[0].questions.length;
 						var choose_q = parseInt(Math.floor(Math.random() * (count + 1)));
-						bot.say(channel,'['+trivia_categories[choose_cat]+'] '+cursor[0].questions[choose_q].question)
+						var t_question = cursor[0].questions[choose_q].question;
+						if (trivia_choices == false){
+							t_question = t_question.substring(0, t_question.indexOf('['));
+						}
+						bot.say(channel,'['+trivia_categories[choose_cat]+'] '+t_question)
 						trivia_answer = cursor[0].questions[choose_q].answer.toLowerCase();
 						
 					}
