@@ -31,6 +31,8 @@ var trivia_on = false;
 var trivia_question_solved = false;
 var trivia_answer = "";
 var trivia_categories = [];
+var trivia_clue = "";
+var already_guessed = [];
 var trivia_choices = true;
 var admin = 'spadespwnzyou';
 var mods = ['miamiandy513', 'yungtdot'];
@@ -702,7 +704,15 @@ bot.on("chat", function(channel, userstate, message, self){
 	if (trivia_on){
 		if (trivia_question_solved == false){
 			if (message.toLowerCase() == trivia_answer){
-				answer_correct(user);
+				if (already_guessed.indexOf(user) < 0){
+					answer_correct(user);
+				}
+			}
+			if (already_guessed.indexOf(user) < 0){
+				if (trivia_clue.indexOf(message.toLowerCase()) > -1){
+					already_guessed.push(user);
+				
+				}
 			}
 		}
 	}
@@ -719,6 +729,7 @@ function question(){
 		bot.say(channel, "No Categories Added");
 	}
 	else{
+		already_guessed = [];
 		var choose_cat = parseInt(Math.floor(Math.random() * (trivia_categories.length)));
 		trivia_question_solved = false;
 		db.collection('trivia').find( {"category":trivia_categories[choose_cat]}).toArray(function(err, cursor){
@@ -732,6 +743,8 @@ function question(){
 						var count = cursor[0].questions.length;
 						var choose_q = parseInt(Math.floor(Math.random() * (count + 1)));
 						var t_question = cursor[0].questions[choose_q].question;
+						trivia_clue = t_question.substring(t_question.indexOf('[')).toLowerCase();
+					
 						if (trivia_choices == false){
 							t_question = t_question.substring(0, t_question.indexOf('['));
 						}
