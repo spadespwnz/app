@@ -27,6 +27,10 @@ var tmi_options = {
 	channels: ["#spadespwnzyou"]
 
 };
+var trivia_on = false;
+var trivia_question_solved = false;
+var trivia_answer = "";
+var trivia_categories = [];
 var admin = 'spadespwnzyou';
 var mods = ['miamiandy513', 'yungtdot'];
 var chatterTypes = ['moderators','staff','admins','global_mods','viewers'];
@@ -104,6 +108,23 @@ console.log("BOT ON");
 
 })();
 
+(function(){
+	var triviaInterval = setInterval(function(){
+
+		if (trivia_on == true){
+			if (trivia_question_solved == false){
+				if (trivia_answer != ""){
+					bot.say(channel, "The Correct Answer was: "+trivia_answer);
+				}
+			}
+			question();
+		}
+		
+	},1000*60);
+
+
+})();
+
 bot.on("chat", function(channel, userstate, message, self){
 	if (self) return;
 	var message_parts = message.split(' ');
@@ -135,6 +156,12 @@ bot.on("chat", function(channel, userstate, message, self){
 			findPoints(user, function(points){
 
 				bot.say(channel, "@"+user+" "+points+" points.");
+			});
+			break;
+		case "!intel":
+			findIntel(user, function(points){
+
+				bot.say(channel, "@"+user+" "+points+" intel.");
 			});
 			break;
 		case "!add":
@@ -590,7 +617,7 @@ bot.on("chat", function(channel, userstate, message, self){
 					bot.say(channel,"Points Given");
 				});
 			}
-		break;
+			break;
 
 		case "!cgss":
 			var multi = 1;
@@ -603,7 +630,7 @@ bot.on("chat", function(channel, userstate, message, self){
 					lock(user);
 					message_delay();
 					findPoints(user, function(points){
-						if (points > multi){
+						if (points >= multi){
 							decPoints(user, multi);
 							var roll = Math.floor(Math.random() * (10 + 1));
 							if (roll == 10){
@@ -621,8 +648,152 @@ bot.on("chat", function(channel, userstate, message, self){
 				}
 			}
 			break;	
+		case "!triviaon":
+			if (user == admin || mods.indexOf(user) >= 0 ){
+				trivia_on = true;
+				bot.say(channel,'Trivia Enabled');
+			}
+			break;
+		case "!triviaoff":
+			if (user == admin || mods.indexOf(user) >= 0 ){
+				trivia_on = false;
+				bot.say(channel,'Trivia Disabled');
+			}
+			break;
+		case "!addcat":
+			if (user == admin || mods.indexOf(user) >= 0){
+				add_trivia_category(message_parts[1]);
+			}
+			break;
+
+		case "!removecat":
+			if (user == admin || mods.indexOf(user) >= 0){
+				remove_trivia_category(message_parts[1]);
+			}
+			break;
+		case "!question":
+			if (user == admin || mods.indexOf(user) >= 0){
+				question();
+			}
+			break;
+		case "!trivia_categories":
+			announce_categories();
+			break;
+		case "!trivia_using":
+			bot.say(channel,""+trivia_categories);
+			break;
+
+
 	}
+
+	if (trivia_on){
+		if (trivia_question_solved == false){
+			if (message.toLowerCase() == trivia_answer){
+				answer_correct(user);
+			}
+		}
+	}
+
 });
+function answer_correct(user){
+	trivia_question_solved = true;
+	addIntel(user, 1);
+	bot.say(channel, "@"+user+" is correct! You gain 1 intel");
+}
+function question(){
+	if (trivia_categories.length == 0){
+		trivia_answer = null;
+		bot.say(channel, "No Categories Added");
+	}
+	else{
+		var choose_cat = parseInt(Math.floor(Math.random() * (trivia_categories.length)));
+		trivia_question_solved = false;
+		db.collection('trivia').find( {"category":trivia_categories[choose_cat]}).toArray(function(err, cursor){
+			if (err){
+				bot.say(channel, "Whoever coded me is bad");
+				return null;
+			}
+			else{
+				if (cursor[0]){
+					if (cursor[0].questions){
+						var count = cursor[0].questions.length;
+						var choose_q = parseInt(Math.floor(Math.random() * (count + 1)));
+						bot.say(channel,'['+trivia_categories[choose_cat]+'] '+cursor[0].questions[choose_q].question)
+						trivia_answer = cursor[0].questions[choose_q].answer.toLowerCase();
+						
+					}
+					else{
+						
+						bot.say(channel, "Whoever coded me is bad");
+					}
+				}
+				else{
+					
+					bot.say(channel, "Whoever coded me is bad");
+				}
+			}
+		});
+	}
+}
+function question_solved(){
+
+}
+function announce_categories(){
+	db.collection('trivia').find( {"category":"category_list"}).toArray(function(err, cursor){
+		if (err){
+			bot.say(channel,"None");
+
+		}
+		else{
+			if (cursor[0]){
+				if (cursor[0].categories){
+					bot.say(channel,""+cursor[0].categories);
+					
+				}
+				else{
+					
+					bot.say(channel,"None");
+				}
+			}
+			else{
+				bot.say(channel,"None");
+			}
+		}
+	});
+};
+function add_trivia_category(cat){
+	db.collection('trivia').find( {"category":"category_list"}).toArray(function(err, cursor){
+		if (err){
+			bot.say(channel,"Category Not Found");
+
+		}
+		else{
+			if (cursor[0]){
+				if (cursor[0].categories){
+					if (cursor[0].categories.indexOf(cat) >= 0){
+						trivia_categories.push(cat);
+						bot.say(channel,"Category Added");
+					}
+				}
+				else{
+					
+					bot.say(channel,"Category Not Found");
+				}
+			}
+			else{
+				bot.say(channel,"Category Not Found");
+			}
+		}
+	});
+};
+function remove_trivia_category(cat){
+	var spot = trivia_categories.indexOf(cat);
+	if (spot > -1){
+		trivia_categories.splice(spot,1);
+	}
+	
+	bot.say(channel,"Category Removed");
+};
 function freeUser(user){
 	var spot = users_on_cooldown.indexOf(user);
 	if (spot > -1){
@@ -642,6 +813,7 @@ function validSong(url, callback){
 	});
 }
 function refUser(from_user, to_user, callback){
+	to_user = to_user.toLowerCase();
 	db.collection('stream_stats').find({'type':'used_ref_list'}).toArray(function(err,cursor){
 		if (err){
 			return null;
@@ -1008,9 +1180,15 @@ function addPoints(user, amount){
 function decPoints(user, amount){
 	db.collection('points').update( {"user":user}, {$inc: {points: amount*-1}, $set: {"user":user}},{upsert: true});
 };
+function addIntel(user, amount){
+	db.collection('points').update( {"user":user}, {$inc: {intel: amount}, $set: {"user":user}},{upsert: true});
+};
 
+function decIntel(user, amount){
+	db.collection('points').update( {"user":user}, {$inc: {intel: amount*-1}, $set: {"user":user}},{upsert: true});
+};
 
-function findPoints(user, callback){
+function findIntel(user, callback){
 
 		db.collection('points').find( {"user":user}).toArray(function(err, cursor){
 		if (err){
@@ -1018,8 +1196,8 @@ function findPoints(user, callback){
 		}
 		else{
 			if (cursor[0]){
-				if (cursor[0].points){
-					callback(cursor[0].points);
+				if (cursor[0].intel){
+					callback(cursor[0].intel);
 				}
 				else{
 					

@@ -1,0 +1,118 @@
+
+<html>
+	<style>
+
+	</style>
+	<head>
+		<% include ../partials/head %>
+	</head>
+
+	<input type="file" class="btn btn-primary" id="deck_upload" name="fileField">
+	<input type="textbox" id="cat">
+	<script>
+	$(document).ready(function(){
+		var lines;
+		var upload_list = [];
+		var uploaded = 0;
+		var currentLine = 0;
+		var sepChar = '	';
+		var domParts = [];
+		var removed = [];
+		var frontcard = $('#frontcard');
+		var backcard = $('#backcard');
+		var splitAt = 1;
+		var partCount;
+		var swap = false;
+
+		
+		$('#deck_upload').change(function(){
+
+			var files = document.getElementById('deck_upload').files;
+			var file = files[0];
+
+			var reader = new FileReader();
+			reader.onload = function(progressEvent){
+
+				lines = this.result.split('\n');
+				
+				
+				readLines();
+					
+			}
+			reader.readAsText(file);
+		});
+
+		function readLines(){
+			var cat = $('#cat').val();
+			$.ajax({
+				type: "POST",
+				url: "../trivia/request/add_category",
+				data: {cat: cat},
+				success: function(msg){
+					request = msg['request'];
+					if (request == "success"){
+						
+					}
+					else{
+					
+					}
+				}
+			});
+			var question='';
+			var answer='';
+			for (var i=1;i<lines.length;i++){
+				if (lines[i].indexOf('#Q') == 0){
+					question = lines[i].substring(2);
+					question += ' [';
+				}
+				else if (lines[i].charAt(0) == '^'){
+					answer = lines[i].substring(2);
+				}
+				else if (lines[i] == ""){
+					question+=']';
+					upload_list.push({q: question, a: answer});
+					
+				}
+				else{
+					question += lines[i].substring(2)+', ';
+				}
+			}
+
+			uploadNext();
+		}
+		function uploadNext(){
+			var current_question;
+			if (uploaded >= upload_list.length){
+				return;
+			}
+			else{
+				current_question = upload_list[uploaded];
+
+			}
+			var cat = $('#cat').val();
+
+			q = current_question.q;
+			a = current_question.a;
+			$.ajax({
+				type: "POST",
+				url: "../trivia/request/add_question",
+				data: {cat: cat, question: q, answer: a},
+				success: function(msg){
+					request = msg['request'];
+					$('body').append(q.substring(0,50) + ' --- ' + (uploaded/upload_list.length)+'<br>');
+					if (request == "success"){
+						uploaded++;
+						uploadNext();
+					}
+					else{
+					
+					}
+				}
+			});
+			//alert(q+"   "+a);
+		}
+	});
+
+	</script>
+</html>
+
