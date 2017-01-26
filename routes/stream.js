@@ -68,7 +68,12 @@ router.get('/next', function(req, res) {
 
 	res.render('pages/stream_next', {client_id: bot_id, code: code});
 });
+router.get('/garden', function(req, res) {
+	
+	var code = req.param.code;
 
+	res.render('pages/garden', {client_id: bot_id,code: code});
+});
 router.get('/gameslist/', function(req, res) {
 	var db = req.db;
 

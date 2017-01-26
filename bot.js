@@ -697,6 +697,15 @@ bot.on("chat", function(channel, userstate, message, self){
 		case "!trivia_using":
 			bot.say(channel,""+trivia_categories);
 			break;
+		case "!exchange":
+			findIntel(user, function(intel){
+				if (intel >= parseInt(message_parts[1])){
+					decIntel(user, parseInt(message_parts[1]));
+					addPoints(user, parseInt(message_parts[1])*3);
+					bot.say(channel, "@"+user+" added "+parseInt(message_parts[1])*3+"points");
+				}
+			})
+			break;
 
 
 	}

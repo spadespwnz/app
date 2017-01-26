@@ -1,0 +1,77 @@
+
+<html>
+	<head>
+		<% include ../partials/head %>
+	</head>
+	<% include ../partials/stream_top-bar %>
+
+
+	<script>
+	$(document).ready(function(){
+		var user_code = getUrlVar("code");
+		var url = 'https://api.twitch.tv/kraken/oauth2/authorize?response_type=code';
+		url += '&client_id=' + '<%-client_id %>';
+		url += '&redirect_uri=http://localhost:3000/stream/garden';
+		url += '&scope=';
+		url += '&state=lol';
+		$('body').append('<a href="'+url+'">Click</a>');
+		if (user_code == false){
+			user_code = getCookie("user_code")
+			if (user_code == ""){
+				var url = 'https://api.twitch.tv/kraken/oauth2/authorize?response_type=code';
+				url += '&client_id=' + '<%-client_id %>';
+				url += '&redirect_uri=http://localhost:3000/stream/garden';
+				url += '&scope=';
+				url += '&state=lol';
+				$('body').append('<a href="'+url+'">Click</a>');
+			}
+			else{
+				setup_garden();
+			}
+		}
+		else{
+			document.cookie = 'user_code='+user_code;
+			setup_garden();		
+		}
+
+		function setup_garden(){
+			$('body').append("https://api.twitch.tv/kraken?oauth_token="+user_code);
+			
+			$.ajax({
+				type: "GET",
+				url: "https://api.twitch.tv/kraken?oauth_token="+user_code,
+
+				success: function(msg){
+					alert(JSON.stringify(msg));
+				}
+			});
+			//al
+		}
+		function getUrlVar(variable){
+			var query = window.location.search.substring(1);
+			var vars = query.split("&");
+			for (var i = 0;i<vars.length;i++){
+				var pair = vars[i].split("=");
+				if(pair[0]== variable){return pair[1];}
+
+			}
+			return false;
+		}
+		function getCookie(cookie){
+			var name = cookie + "=";
+			var ca = document.cookie.split(';');
+			for (var i = 0; i<ca.length;i++){
+				var c = ca[i];
+				while (c.charAt(0) == ' '){
+					c = c.substring(1);
+				}
+				if (c.indexOf(name) == 0){
+					return c.substring(name.length, c.length)
+				}
+			}
+			return "";
+		}
+		
+	});
+	</script>
+</html>
