@@ -710,21 +710,21 @@ bot.on("chat", function(channel, userstate, message, self){
 
 	}
 
-	if (trivia_on){
-		if (trivia_question_solved == false){
-			if (message.toLowerCase() == trivia_answer){
-				if (already_guessed.indexOf(user) < 0){
-					answer_correct(user);
-				}
-			}
+
+	if (trivia_question_solved == false){
+		if (message.toLowerCase() == trivia_answer){
 			if (already_guessed.indexOf(user) < 0){
-				if (trivia_clue.indexOf(message.toLowerCase()) > -1){
-					already_guessed.push(user);
-				
-				}
+				answer_correct(user);
+			}
+		}
+		if (already_guessed.indexOf(user) < 0){
+			if (trivia_clue.indexOf(message.toLowerCase()) > -1){
+				already_guessed.push(user);
+			
 			}
 		}
 	}
+
 
 });
 function answer_correct(user){
@@ -1227,6 +1227,30 @@ function decIntel(user, amount){
 	db.collection('points').update( {"user":user}, {$inc: {intel: amount*-1}, $set: {"user":user}},{upsert: true});
 };
 
+function findPoints(user, callback){
+
+		db.collection('points').find( {"user":user}).toArray(function(err, cursor){
+		if (err){
+			res.send("Error loading images");
+		}
+		else{
+			if (cursor[0]){
+				if (cursor[0].points){
+					callback(cursor[0].points);
+				}
+				else{
+					
+					callback(0);
+				}
+			}
+			else{
+
+				callback(0);
+				
+			}
+		}
+	});
+}
 function findIntel(user, callback){
 
 		db.collection('points').find( {"user":user}).toArray(function(err, cursor){
