@@ -109,7 +109,7 @@ router.get('/garden', function(req, res) {
 				}
 			}
 			
-			res.render('pages/garden', {client_id: bot_id, logged_in: 'true', user: user, points: points});
+			res.render('pages/garden', {client_id: bot_id, logged_in: 'true', user: user, points: points, redirect: process.env.REDIRECT_URL});
 		});
 		
 		
@@ -118,11 +118,13 @@ router.get('/garden', function(req, res) {
 		return;
 	}
 	
-	res.render('pages/garden', {client_id: bot_id,code: code, logged_in: 'false'});
+	res.render('pages/garden', {client_id: bot_id,code: code, logged_in: 'false',user: null, points: 0, redirect: process.env.REDIRECT_URL});
 });
 router.get('/garden/request/logout', function(req, res) {
-	
-	req.session.cookie.expires = new Date();
+	var sessionID = req.sessionID;
+
+	delete sessionMap.sessionID;
+
 	res.send({success: true});
 
 });
@@ -137,7 +139,7 @@ router.post('/garden/auth', function(req,res){
 	request_body += "client_id="+bot_id;
 	request_body += "&client_secret="+bot_secret;
 	request_body += "&grant_type=authorization_code";
-	request_body += "&redirect_uri=http://localhost:3000/stream/garden";
+	request_body += "&redirect_uri="+process.env.REDIRECT_URL;
 	request_body += "&code="+code;
 	request_body += "&state=lol";
 
@@ -145,12 +147,12 @@ router.post('/garden/auth', function(req,res){
 		'client_id':bot_id,
 		'client_secret':bot_secret,
 		'grant_type':'authorization_code',
-		'redirect_uri':'http://localhost:3000/stream/garden',
+		'redirect_uri':process.env.REDIRECT_URL,
 		'code':code,
 		'state':'lol'
 
 	});
-	post_data_json = { client_id: bot_id, client_secret: bot_secret, grant_type: "authorization_code", redirect_uri: "http://localhost:3000/stream/garden", code: code, state: "lol"};
+	post_data_json = { client_id: bot_id, client_secret: bot_secret, grant_type: "authorization_code", redirect_uri: process.env.REDIRECT_URL, code: code, state: "lol"};
 
 
 	
@@ -183,6 +185,7 @@ router.post('/garden/auth', function(req,res){
 						query_body += d;
 					});
 					auth_token_query.on('end', function(){
+
 						var parsed = JSON.parse(query_body);
 						var valid = parsed.token.valid;
 						if (valid == true){

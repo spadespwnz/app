@@ -2,6 +2,9 @@
 <html>
 	<head>
 		<% include ../partials/head %>
+		<link rel="stylesheet" type="text/css" href="/css/jquery-ui.min.css">
+
+		<script src="/scripts/jquery-ui.min.js"></script>
 	</head>
 	
 	<style>
@@ -59,6 +62,7 @@
 			animation: dooropenleft 5s;
 			animation-play-state: paused;
 		}
+
 		@keyframes fontcycle{
 			0%,100% {
 				font-size: 150%;
@@ -94,11 +98,21 @@
 			top: 10%;
 		}
 
-		#garden #stats{
-			display: inline-block;
-			width: 10%;
-			height: 10%;
+
+
+		#garden .ui-item{
+			padding-left: 10px;
+			padding-right: 10px;
+			border-radius: 10px;
+			border-color: black;
+			border-style: solid;
+			border-width: 1px;
 			background-color: white;
+			opacity: .7;
+			display: flex;
+			flex-direction: column;
+			float: left;
+			
 		}
 
 
@@ -111,7 +125,7 @@
 		
 		</div>
 		<div id='garden'>
-			<div id='stats'>
+			<div id='stats' class='ui-item draggable'>
 				<p>Username: <span id="username_span">null<span></p>
 				<p>Points: <span id="point_span">null<span></p>
 			</div>
@@ -126,13 +140,16 @@
 	</body>
 	<script>
 	$(document).ready(function(){
+		$(function(){
+			$('.draggable').draggable();
+		})
 		var user_code = getUrlVar("code");
 		var logged_in = <%-logged_in %>;
 		var user;
 		var points;
 		var url = 'https://api.twitch.tv/kraken/oauth2/authorize?response_type=code';
 		url += '&client_id=' + '<%-client_id %>';
-		url += '&redirect_uri=http://localhost:3000/stream/garden';
+		url += '&redirect_uri=<%-redirect%>';
 		url += '&scope=';
 		url += '&state=lol';
 		$('#tester').click(function(){
@@ -160,7 +177,7 @@
 	
 
 				success: function(msg){
-					location.reload();
+					window.location.href="<%-redirect%>";
 				}
 			});
 		})
@@ -169,18 +186,7 @@
 			setup_garden();
 		})
 
-		function test(){
 
-			$.ajax({
-				type: "GET",
-				url: "../stream/garden/request/test",
-	
-
-				success: function(msg){
-					alert(JSON.stringify(msg));
-				}
-			});
-		}
 
 		function setup_garden(){
 			//$('body').append("https://api.twitch.tv/kraken?oauth_token="+user_code);
@@ -194,22 +200,28 @@
 
 			}
 			else{
+			
 				$.ajax({
 					type: "POST",
 					url: "../stream/garden/auth",
 					data: {code: user_code},
 
 					success: function(msg){
-						alert(JSON.stringify(msg));
-						user = msg.user;
-						points = msg.points;
-						$('#point_span').text(""+points);
-						$('#username_span').text(""+user);
-						$('#left_bg').css('animation-play-state', 'running');
-						$('#right_bg').css('animation-play-state', 'running');
-						setTimeout(function(){
-							$('#needs_login').hide();
-						}, 4500);
+
+						if (msg.success == "false"){
+
+						}
+						else{
+							user = msg.user;
+							points = msg.points;
+							$('#point_span').text(""+points);
+							$('#username_span').text(""+user);
+							$('#left_bg').css('animation-play-state', 'running');
+							$('#right_bg').css('animation-play-state', 'running');
+							setTimeout(function(){
+								$('#needs_login').hide();
+							}, 4500);
+						}
 					}
 				});
 			}
