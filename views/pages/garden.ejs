@@ -193,7 +193,7 @@
 			if (user_code == false){
 				var url = 'https://api.twitch.tv/kraken/oauth2/authorize?response_type=code';
 				url += '&client_id=' + '<%-client_id %>';
-				url += '&redirect_uri=http://localhost:3000/stream/garden';
+				url += '&redirect_uri=<%-redirect%>';
 				url += '&scope=';
 				url += '&state=lol';
 				window.location=url;
