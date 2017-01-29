@@ -9,6 +9,7 @@ var fs = require('fs');
 var expressDirectory = require('serve-index');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
+var session = require('express-session');
 var MongoClient = require('mongodb').MongoClient
 var uid = require('mongodb').ObjectID;
 var url =  process.env.MONGODB_URI || 'mongodb://localhost:27017/app';
@@ -26,6 +27,11 @@ MongoClient.connect(url, function(err,db){
 });
 
 app.use(busboy());
+app.use(session({
+	secret: process.env.SESSION_SECRET,
+	resave: false,
+	saveUninitialized: true
+}));
 //app.use('/images', express.static(__dirname + '/images'));
 //app.use('/images', expressDirectory(__dirname + '/images'));
 app.use(express.static(__dirname + '/public'));
@@ -75,6 +81,7 @@ var stream = io
 	.of('/stream')
 	.on('connection', function(socket){
 		console.log("Connection in stream");
+		
 		stream_controller.respond(stream, socket, data_base);
 	});
 

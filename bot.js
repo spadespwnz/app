@@ -629,6 +629,9 @@ bot.on("chat", function(channel, userstate, message, self){
 				if (on_msg_cooldown == false){
 					if (message_parts.length > 1){
 						multi = parseInt(message_parts[1]);
+						if (multi <= 0){
+							multi = 1;
+						}
 					}
 					lock(user);
 					message_delay();
@@ -699,6 +702,9 @@ bot.on("chat", function(channel, userstate, message, self){
 			break;
 		case "!exchange":
 			findIntel(user, function(intel){
+				if (parseInt(message_parts[1]) <= 0){
+					return;
+				}
 				if (intel >= parseInt(message_parts[1])){
 					decIntel(user, parseInt(message_parts[1]));
 					addPoints(user, parseInt(message_parts[1])*3);
@@ -1227,9 +1233,25 @@ function decIntel(user, amount){
 	db.collection('points').update( {"user":user}, {$inc: {intel: amount*-1}, $set: {"user":user}},{upsert: true});
 };
 
+function resetPoints(){
+	db.collection('points').find().toArray(function(err, cursor){
+		if (err){
+			res.send("Error loading images");
+		}
+		else{
+			if (cursor){
+				for (var i = 0;i<cursor.length;i++){
+					console.log(cursor[i]);
+				}
+			}
+			
+		}
+	});
+}
+
 function findPoints(user, callback){
 
-		db.collection('points').find( {"user":user}).toArray(function(err, cursor){
+	db.collection('points').find( {"user":user}).toArray(function(err, cursor){
 		if (err){
 			res.send("Error loading images");
 		}

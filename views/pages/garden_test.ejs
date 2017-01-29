@@ -1,11 +1,36 @@
 
 <html>
+	<style>
+		#body{
+			background-color: blue;
+		}
+		#needs_login{
+			position: absolute;
+			display: inline-block;
+			left: 40%;
+			top: 40%;
+			opacity: .7;
+		}
+		#needs_login #enter_garden_button{
+			width: 20vw;
+			height: 20vh;
+			font-size: 150%;
+		}
+
+	</style>
 	<head>
 		<% include ../partials/head %>
 	</head>
-	<% include ../partials/stream_top-bar %>
+	<body id="body">
+		<div id='needs_login'>
 
-	<button id="tester">
+			<button id="enter_garden_button" class="button raised">Enter Garden</button>
+			<img id="left_bg" src='/img/azu.png'></img>
+			<img id="right_bg"></img>
+		</div>
+
+		<button id="tester">
+	</body>
 	<script>
 	$(document).ready(function(){
 		var user_code = getUrlVar("code");
@@ -66,20 +91,7 @@
 			}
 			return false;
 		}
-		function getCookie(cookie){
-			var name = cookie + "=";
-			var ca = document.cookie.split(';');
-			for (var i = 0; i<ca.length;i++){
-				var c = ca[i];
-				while (c.charAt(0) == ' '){
-					c = c.substring(1);
-				}
-				if (c.indexOf(name) == 0){
-					return c.substring(name.length, c.length)
-				}
-			}
-			return "";
-		}
+
 		
 	});
 	</script>

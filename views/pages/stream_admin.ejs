@@ -18,6 +18,8 @@
 		}
 	</style>
 	<% include ../partials/stream_top-bar %>
+	<button id="reset_points">RESET POINTS</button>
+
 	<div class='complete_game_form'>
 		<input type="textbox" id="game" placeholder="Game">
 		<input type="textbox" id="time" placeholder="Time">
@@ -125,6 +127,29 @@
 			}
 		});
 		alert("Done");
+	});
+	$('#reset_points').click(function(){
+
+		var game = $('#game').val();
+		var time = $('#time').val();
+		var desc = $('#desc').val();
+
+
+		$.ajax({
+			type: "POST",
+			url: "../stream/request/reset_points",
+			data: {},
+			success: function(msg){
+				request = msg['request'];
+				if (request == "success"){
+					
+				}
+				else{
+				
+				}
+			}
+		});
+		
 	});
 	function getId(url){
 		var i = url.indexOf('?v=');

@@ -6,9 +6,13 @@ var uid = require('mongodb').ObjectID;
 var dbutils = require('../utils/dbutils');
 var utils = require('../utils/utils');
 var active="stream";
+var https = require('https');
+var querystring = require('querystring');
+var sessionMap = [];
 
 require('dotenv').config();
 var bot_id = process.env.BOT_ID;
+var bot_secret = process.env.BOT_SECRET;
 /* GET home page. */
 router.get('/', function(req, res) {
   res.render('pages/stream')
@@ -68,12 +72,109 @@ router.get('/next', function(req, res) {
 
 	res.render('pages/stream_next', {client_id: bot_id, code: code});
 });
+
+router.get('/garden/test', function(req, res) {
+
+	res.render('pages/garden_test', {client_id: bot_id, logged_in: 'false'});
+});
 router.get('/garden', function(req, res) {
 	
 	var code = req.param.code;
+	var sessionID = req.sessionID;
+	if (sessionMap.sessionID){
+		//test auth
+		var auth_token = sessionMap.sessionID;
+		https.get({
+			host: 'api.twitch.tv',
+			path: '/kraken/',
+			headers: {'Authorization': 'OAuth '+auth_token}
+		}, function(auth_res){
+			var body = '';
+			auth_res.on('data', function(d){
+				body += d;
+			});
+			auth_res.on('end', function(){
+				var parsed = JSON.parse(body);
+				var valid = parsed.token.valid;
+				if (valid == true){
+					var user = parsed.token.user_name;
+					res.send({valid: valid, user: user});
+				}
+				else{
+					
+					res.render('pages/garden', {client_id: bot_id,code: code, logged_in: 'false'});
+				}
 
-	res.render('pages/garden', {client_id: bot_id,code: code});
+				
+
+			});
+		})
+		return;
+	}
+	
+	res.render('pages/garden', {client_id: bot_id,code: code, logged_in: 'false'});
 });
+
+router.post('/garden/auth', function(req,res){
+	var code = req.body.code;
+
+	var sessionID = req.sessionID;
+
+	console.log("Sesh"+sessionID);
+	var request_body = "";
+	request_body += "client_id="+bot_id;
+	request_body += "&client_secret="+bot_secret;
+	request_body += "&grant_type=authorization_code";
+	request_body += "&redirect_uri=http://localhost:3000/stream/garden";
+	request_body += "&code="+code;
+	request_body += "&state=lol";
+
+	var post_data = querystring.stringify({
+		'client_id':bot_id,
+		'client_secret':bot_secret,
+		'grant_type':'authorization_code',
+		'redirect_uri':'http://localhost:3000/stream/garden',
+		'code':code,
+		'state':'lol'
+
+	});
+	post_data_json = { client_id: bot_id, client_secret: bot_secret, grant_type: "authorization_code", redirect_uri: "http://localhost:3000/stream/garden", code: code, state: "lol"};
+
+
+	
+	var options = {
+		host: 'api.twitch.tv',
+		path: '/kraken/oauth2/token',
+		method: 'POST',
+		headers:{
+			'Content-Type':'application/json',
+			'Client-ID':bot_id,
+		}
+	};
+	var body = "";
+	var auth_req = https.request(options, function(auth_res){
+		auth_res.on('data', function (chunk){
+			body += chunk;
+		});
+		auth_res.on('end',function(){
+			sessionMap.sessionID = JSON.parse(body).access_token;
+			res.send(body);
+		})
+
+
+	});
+	auth_req.write(JSON.stringify(post_data_json));
+	auth_req.end();
+
+})
+router.get('/garden/request/test', function(req,res){
+	var sessionID = req.sessionID;
+
+	console.log("Sesh"+sessionID);
+	console.log("test from: "+sessionMap.sessionID);
+	res.send("ok then");
+
+})
 router.get('/gameslist/', function(req, res) {
 	var db = req.db;
 
@@ -117,7 +218,29 @@ router.get('/smm/', function(req, res) {
 	});
 
 });
+router.get('/points', function(req,res){
+	var db=req.db;
 
+	var db = req.db;
+	
+	db.collection('points').find().toArray(function(err, cursor){
+		if (err){
+			res.send("Error loading");
+		}
+		else{
+			if (cursor){
+				res.render('pages/stream_points',{list: cursor});
+			}
+			else{
+				res.send("No Points Found");
+			}
+			
+		}
+	});
+	
+
+	
+});
 
 
 router.get('/suggestions/', function(req, res) {
@@ -197,7 +320,29 @@ router.get('/admin', function(req, res) {
   res.render('pages/stream_admin')
 });
 
+router.post('/request/reset_points', function(req,res){
+	var db=req.db;
 
+	var db = req.db;
+	
+	db.collection('points').find().toArray(function(err, cursor){
+		if (err){
+			res.send("Error loading images");
+		}
+		else{
+			if (cursor){
+				for (var i = 0;i<cursor.length;i++){
+					var user = cursor[i].user;
+					db.collection('points').update( {"user":user}, {$set: {points: 0}});
+				}
+			}
+			
+		}
+	});
+	res.send("lol");
+
+	
+});
 router.post('/request/complete_game', function(req,res){
 	var db=req.db;
 	email = req.decoded.email;

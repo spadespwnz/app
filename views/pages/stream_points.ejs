@@ -1,0 +1,40 @@
+<% include ../partials/head.ejs %>
+
+
+<table id="table" border='1'>
+	<tr>
+		<td><b>Username</td>
+		<td><b>Points</td>
+		<td><b>Intel</b></td>
+	</tr>
+
+</table>
+
+<script>
+	var list = <%- JSON.stringify(list) %>
+	var table = document.getElementById('table');
+	$(document).ready(function(){
+
+		for (var i = 0; i < list.length;i++){
+			var tr = document.createElement('tr');
+
+			var td1 = document.createElement('td');
+			var td1_text = document.createTextNode(list[i].user);
+			var td2 = document.createElement('td');
+			var td2_text = document.createTextNode(list[i].points);
+			var td3 = document.createElement('td');
+			var td3_text = document.createTextNode(list[i].intel);
+			td1.appendChild(td1_text);
+			td2.appendChild(td2_text);
+			td3.appendChild(td3_text);
+			tr.appendChild(td1);
+			tr.appendChild(td2);
+			tr.appendChild(td3);
+
+			table.appendChild(tr);
+
+		}
+
+	});
+
+</script>
