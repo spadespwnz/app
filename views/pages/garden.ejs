@@ -3,14 +3,133 @@
 	<head>
 		<% include ../partials/head %>
 	</head>
-	<% include ../partials/stream_top-bar %>
+	
+	<style>
+		#body{
+			background-image: url("/img/chao.jpg");
+			background-size: 100% 100%;
+			background-repeat: no-repeat;
+		}
+		#needs_login{
+			
+			padding: 0;
+			margin: 0;
+			position: relative;
+			display: none;
+			width: 100%;
+			height: 100%;
 
-	<button id="tester">
+
+		}
+		#needs_login #enter_garden_button{
+			position: absolute;
+			left: 40%;
+			top: 40%;
+			opacity: .7;
+			width: 20vw;
+			height: 20vh;
+			font-size: 150%;
+			animation: fontcycle 2s infinite;
+			z-index: 1;
+		}
+		#needs_login #right_bg{
+			display: inline-block;
+			position: relative;
+			float: right;
+			padding-left: : 0;
+			padding-right: 0;
+			margin-left: : 0;
+			margin-right: : 0;
+			right: 0%;
+			width: 50%;
+			height: 100%;
+			animation: dooropenright 5s;
+			animation-play-state: paused;
+		}
+		#needs_login #left_bg{
+			display: inline-block;
+			position: relative;
+			padding-left: : 0;
+			padding-right: 0;
+			margin-left: : 0;
+			margin-right: : 0;
+			width: 50%;
+			height: 100%;
+			left: 0;
+			animation: dooropenleft 5s;
+			animation-play-state: paused;
+		}
+		@keyframes fontcycle{
+			0%,100% {
+				font-size: 150%;
+			}
+			50%{
+				font-size: 200%;
+			}
+		}
+		@keyframes dooropenleft {
+			0% {
+				width: 50%;
+				left:0;
+			}
+			100% {
+				width: 0%;
+			}
+		}
+		@keyframes dooropenright {
+			0% {
+				width: 50%;
+				
+			}
+			100% {
+				width: 0%;
+			}
+		}
+
+
+		#logout{
+			display: inline-block;
+			position: absolute;
+			right: 10%;
+			top: 10%;
+		}
+
+		#garden #stats{
+			display: inline-block;
+			width: 10%;
+			height: 10%;
+			background-color: white;
+		}
+
+
+	</style>
+	<body id="body">
+		<div id='needs_login'>
+
+			<button id="enter_garden_button" class="button raised">Enter Garden</button>
+			<img id="left_bg" src='/img/chao_left_door.png'></img><img id="right_bg" src='/img/chao_right_door.png'></img>
+		
+		</div>
+		<div id='garden'>
+			<div id='stats'>
+				<p>Username: <span id="username_span">null<span></p>
+				<p>Points: <span id="point_span">null<span></p>
+			</div>
+		
+		</div>
+
+		<div id='logout_div'>
+
+			<button id="logout" class="button raised">Logout</button>
+		</div>
+
+	</body>
 	<script>
 	$(document).ready(function(){
 		var user_code = getUrlVar("code");
 		var logged_in = <%-logged_in %>;
-
+		var user;
+		var points;
 		var url = 'https://api.twitch.tv/kraken/oauth2/authorize?response_type=code';
 		url += '&client_id=' + '<%-client_id %>';
 		url += '&redirect_uri=http://localhost:3000/stream/garden';
@@ -19,15 +138,36 @@
 		$('#tester').click(function(){
 			test();
 		})
-		if (logged_in == 'false'){
-			if (!user_code){
-				$('body').append('<a href="'+url+'">Click To Enter Garden</a>');
-			}
-			else{
-				setup_garden();
+
+		if (logged_in == false){
+			$('#needs_login').show();
+			if (user_code == false){
+				$('#enter_garden_button').text('Authenticate with Twitch');
 			}
 		}
+		else{
+			points = <%-points%>;
+			user = "<%-user%>";
 
+			$('#point_span').text(""+points);
+			$('#username_span').text(""+user);
+		}
+
+		$('#logout').click(function(){
+			$.ajax({
+				type: "GET",
+				url: "../stream/garden/request/logout",
+	
+
+				success: function(msg){
+					location.reload();
+				}
+			});
+		})
+		$('#enter_garden_button').click(function(){
+
+			setup_garden();
+		})
 
 		function test(){
 
@@ -44,16 +184,35 @@
 
 		function setup_garden(){
 			//$('body').append("https://api.twitch.tv/kraken?oauth_token="+user_code);
+			if (user_code == false){
+				var url = 'https://api.twitch.tv/kraken/oauth2/authorize?response_type=code';
+				url += '&client_id=' + '<%-client_id %>';
+				url += '&redirect_uri=http://localhost:3000/stream/garden';
+				url += '&scope=';
+				url += '&state=lol';
+				window.location=url;
 
-			$.ajax({
-				type: "POST",
-				url: "../stream/garden/auth",
-				data: {code: user_code},
+			}
+			else{
+				$.ajax({
+					type: "POST",
+					url: "../stream/garden/auth",
+					data: {code: user_code},
 
-				success: function(msg){
-					
-				}
-			});
+					success: function(msg){
+						alert(JSON.stringify(msg));
+						user = msg.user;
+						points = msg.points;
+						$('#point_span').text(""+points);
+						$('#username_span').text(""+user);
+						$('#left_bg').css('animation-play-state', 'running');
+						$('#right_bg').css('animation-play-state', 'running');
+						setTimeout(function(){
+							$('#needs_login').hide();
+						}, 4500);
+					}
+				});
+			}
 			//al
 		}
 		function getUrlVar(variable){

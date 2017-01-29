@@ -73,49 +73,61 @@ router.get('/next', function(req, res) {
 	res.render('pages/stream_next', {client_id: bot_id, code: code});
 });
 
-router.get('/garden/test', function(req, res) {
 
-	res.render('pages/garden_test', {client_id: bot_id, logged_in: 'false'});
-});
 router.get('/garden', function(req, res) {
-	
+	var db = req.db;
 	var code = req.param.code;
 	var sessionID = req.sessionID;
+
 	if (sessionMap.sessionID){
 		//test auth
-		var auth_token = sessionMap.sessionID;
-		https.get({
-			host: 'api.twitch.tv',
-			path: '/kraken/',
-			headers: {'Authorization': 'OAuth '+auth_token}
-		}, function(auth_res){
-			var body = '';
-			auth_res.on('data', function(d){
-				body += d;
-			});
-			auth_res.on('end', function(){
-				var parsed = JSON.parse(body);
-				var valid = parsed.token.valid;
-				if (valid == true){
-					var user = parsed.token.user_name;
-					res.send({valid: valid, user: user});
+		var auth_token = sessionMap.sessionID.token;
+
+		var user = sessionMap.sessionID.user
+
+
+		db.collection('points').find( {"user":user}).toArray(function(err, cursor){
+			var points;
+			if (err){
+				points = 0;
+			}
+			else{
+				
+				if (cursor[0]){
+					if (cursor[0].points){
+						points = cursor[0].points;
+					}
+					else{
+						
+						points = 0;
+					}
 				}
 				else{
+
+					points = 0;
 					
-					res.render('pages/garden', {client_id: bot_id,code: code, logged_in: 'false'});
 				}
-
-				
-
-			});
-		})
+			}
+			
+			res.render('pages/garden', {client_id: bot_id, logged_in: 'true', user: user, points: points});
+		});
+		
+		
+	
+		
 		return;
 	}
 	
 	res.render('pages/garden', {client_id: bot_id,code: code, logged_in: 'false'});
 });
+router.get('/garden/request/logout', function(req, res) {
+	
+	req.session.cookie.expires = new Date();
+	res.send({success: true});
 
+});
 router.post('/garden/auth', function(req,res){
+	var db = req.db;
 	var code = req.body.code;
 
 	var sessionID = req.sessionID;
@@ -157,8 +169,63 @@ router.post('/garden/auth', function(req,res){
 			body += chunk;
 		});
 		auth_res.on('end',function(){
-			sessionMap.sessionID = JSON.parse(body).access_token;
-			res.send(body);
+			if (JSON.parse(body).access_token){
+				var auth_token = JSON.parse(body).access_token;
+				sessionMap.sessionID = {};
+				sessionMap.sessionID.token = JSON.parse(body).access_token;
+				https.get({
+					host: 'api.twitch.tv',
+					path: '/kraken/',
+					headers: {'Authorization': 'OAuth '+auth_token}
+				}, function(auth_token_query){
+					var query_body = '';
+					auth_token_query.on('data', function(d){
+						query_body += d;
+					});
+					auth_token_query.on('end', function(){
+						var parsed = JSON.parse(query_body);
+						var valid = parsed.token.valid;
+						if (valid == true){
+							var user = parsed.token.user_name;
+							sessionMap.sessionID.user = user;
+							db.collection('points').find( {"user":user}).toArray(function(err, cursor){
+								var points;
+								if (err){
+									points = 0;
+								}
+								else{
+									
+									if (cursor[0]){
+										if (cursor[0].points){
+											points = cursor[0].points;
+										}
+										else{
+											
+											points = 0;
+										}
+									}
+									else{
+
+										points = 0;
+										
+									}
+								}
+								res.send({success: true, user: user , points: points});
+		
+							});
+							
+							
+						}
+						else{
+							res.send({success: false});
+						}
+					});
+				})
+				
+			}
+			else{
+				res.send({success: false});
+			}
 		})
 
 
