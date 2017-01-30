@@ -78,12 +78,11 @@ router.get('/garden', function(req, res) {
 	var db = req.db;
 	var code = req.param.code;
 	var sessionID = req.sessionID;
-
-	if (sessionMap.sessionID){
+	if (sessionMap[sessionID]){
 		//test auth
-		var auth_token = sessionMap.sessionID.token;
+		var auth_token = sessionMap[sessionID].token;
 
-		var user = sessionMap.sessionID.user
+		var user = sessionMap[sessionID].user
 
 
 		db.collection('points').find( {"user":user}).toArray(function(err, cursor){
@@ -123,7 +122,7 @@ router.get('/garden', function(req, res) {
 router.get('/garden/request/logout', function(req, res) {
 	var sessionID = req.sessionID;
 
-	delete sessionMap.sessionID;
+	delete sessionMap[sessionID];
 
 	res.send({success: true});
 
@@ -134,7 +133,6 @@ router.post('/garden/auth', function(req,res){
 
 	var sessionID = req.sessionID;
 
-	console.log("Sesh"+sessionID);
 	var request_body = "";
 	request_body += "client_id="+bot_id;
 	request_body += "&client_secret="+bot_secret;
@@ -173,8 +171,8 @@ router.post('/garden/auth', function(req,res){
 		auth_res.on('end',function(){
 			if (JSON.parse(body).access_token){
 				var auth_token = JSON.parse(body).access_token;
-				sessionMap.sessionID = {};
-				sessionMap.sessionID.token = JSON.parse(body).access_token;
+				sessionMap[sessionID] = {};
+				sessionMap[sessionID].token = JSON.parse(body).access_token;
 				https.get({
 					host: 'api.twitch.tv',
 					path: '/kraken/',
@@ -190,7 +188,7 @@ router.post('/garden/auth', function(req,res){
 						var valid = parsed.token.valid;
 						if (valid == true){
 							var user = parsed.token.user_name;
-							sessionMap.sessionID.user = user;
+							sessionMap[sessionID].user = user;
 							db.collection('points').find( {"user":user}).toArray(function(err, cursor){
 								var points;
 								if (err){
