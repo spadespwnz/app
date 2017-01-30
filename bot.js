@@ -29,6 +29,7 @@ var tmi_options = {
 };
 var trivia_on = false;
 var trivia_question_solved = false;
+var trivia_timeout = 3;
 var trivia_answer = "";
 var trivia_categories = [];
 var trivia_clue = "";
@@ -123,7 +124,7 @@ console.log("BOT ON");
 			question();
 		}
 		
-	},1000*60);
+	},1000*60*trivia_timeout);
 
 
 })();
@@ -694,6 +695,20 @@ bot.on("chat", function(channel, userstate, message, self){
 				question();
 			}
 			break;
+
+		case "!trivia_time":
+			if (user == admin || mods.indexOf(user) >= 0){
+				if (message_parts.length >= 2){
+					var t = parseInt(message_parts[1]);
+					if (t > 0 & t < 10){
+						trivia_timeout = t;
+					}
+					bot.say(channel,"Trivia Timeout set to "+t);
+
+				}
+
+			}
+			break;
 		case "!trivia_categories":
 			announce_categories();
 			break;
@@ -1233,21 +1248,7 @@ function decIntel(user, amount){
 	db.collection('points').update( {"user":user}, {$inc: {intel: amount*-1}, $set: {"user":user}},{upsert: true});
 };
 
-function resetPoints(){
-	db.collection('points').find().toArray(function(err, cursor){
-		if (err){
-			res.send("Error loading images");
-		}
-		else{
-			if (cursor){
-				for (var i = 0;i<cursor.length;i++){
-					console.log(cursor[i]);
-				}
-			}
-			
-		}
-	});
-}
+
 
 function findPoints(user, callback){
 
