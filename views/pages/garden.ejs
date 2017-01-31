@@ -114,6 +114,9 @@
 			float: left;
 			
 		}
+		#garden #forms{
+			font-size: 100%;
+		}
 
 
 	</style>
@@ -129,6 +132,57 @@
 				<p>Username: <span id="username_span">null<span></p>
 				<p>Points: <span id="point_span">null<span></p>
 			</div>
+			<div id="forms">
+				Name (7 letters): <input id = "name"><br>
+				Type (0 to 25): <input id = "type"><br>
+				Dark / Hero (-9 to 9): <input id="dark_hero"><br>
+				Run / Power (-9 to 9): <input id="run_power"><br>
+				Swim / Fly (-9 to 9): <input id="swim_fly"><br>
+				Magnitude (0 to 10): <input id="magnitude"><br>
+				Swim grade (0 to 5): <input id="swim_grade"><br>
+				Swim points (0 to 999): <input id="swim_points"><br>
+				Swim level (0 to 99): <input id="swim_level"><br>
+
+				Fly grade (0 to 5): <input id="fly_grade"><br>
+				Fly points (0 to 999): <input id="fly_points"><br>
+				Fly level (0 to 99): <input id="fly_level"><br>
+
+				Run grade (0 to 5): <input id="run_grade"><br>
+				Run points (0 to 999): <input id="run_points"><br>
+				Run level (0 to 99): <input id="run_level"><br>
+
+				Power grade (0 to 5): <input id="power_grade"><br>
+				Power points (0 to 999): <input id="power_points"><br>
+				Power level (0 to 99): <input id="power_level"><br>
+
+				Stamina grade (0 to 5): <input id="stamina_grade"><br>
+				Stamina points (0 to 999): <input id="stamina_points"><br>
+				Stamina level (0 to 99): <input id="stamina_level"><br>
+
+				Base color (0 to 40): <input id="base_color"><br>
+				Texture (0 to 109): <input id="texture"><br>
+				Two Tone (True / False): <input id="two_tone"><br>
+				Shiny (True / False): <input id="shiny"><br>
+
+				Body Type (0 to 4): <input id="body_type"><br>
+				Animal Body (0 to 20): <input id="animal_body"><br>
+
+				Face (0 to 3): <input id="face"><br>
+				Eyes (0 to 12): <input id="eyes"><br>
+				Mouth (0 to 12): <input id="mouth"><br>
+				Ears (0 to 12): <input id="ears"><br>
+				Forehead (0 to 7): <input id="forehead"><br>
+				Horns (0 to 3): <input id="horns"><br>
+				Hat (0 to 15): <input id="hat"><br>
+
+				Arms (0 to 14): <input id="arms"><br>
+				Legs (0 to 17): <input id="legs"><br>
+				Feet (True / False): <input id="feet"><br>
+				Tail (0 to 15): <input id="tail"><br>
+				Wings (0 to 6): <input id="wings"><br>
+			</div>
+
+			<button id="send_to_battle">Battle!</button>
 		
 		</div>
 
@@ -155,7 +209,65 @@
 		$('#tester').click(function(){
 			test();
 		})
+		$('#send_to_battle').click(function(){
+			var name = $('#name').val();
+			var type = $('#type').val();
+			var dark_hero = $('#dark_hero').val();
+			var run_power = $('#run_power').val();
+			var swim_fly = $('#swim_fly').val();
+			var magnitude = $('#magnitude').val();
+			var swim_grade = $('#swim_grade').val();
+			var swim_points = $('#swim_points').val();
+			var swim_level = $('#swim_level').val();
+			var fly_grade = $('#fly_grade').val();
+			var fly_points = $('#fly_points').val();
+			var fly_level = $('#fly_level').val();
+			var run_grade = $('#run_grade').val();
+			var run_points = $('#run_points').val();
+			var run_level = $('#run_level').val();
+			var power_grade = $('#power_grade').val();
+			var power_points = $('#power_points').val();
+			var power_level = $('#power_level').val();
+			var stamina_grade = $('#stamina_grade').val();
+			var stamina_points = $('#stamina_points').val();
+			var stamina_level = $('#stamina_level').val();
+			var base_color = $('#base_color').val();
+			var texture = $('#texture').val();
+			var two_tone = $('#two_tone').val();
+			var shiny = $('#shiny').val();
+			var body_type = $('#body_type').val();
+			var animal_body = $('#animal_body').val();
+			var eyes = $('#eyes').val();
+			var mouth = $('#mouth').val();
+			var feet = $('#feet').val();
+			var arms = $('#arms').val();
+			var ears = $('#ears').val();
+			var forehead = $('#forehead').val();
+			var horns = $('#horns').val();
+			var legs = $('#legs').val();
+			var tail = $('#tail').val();
+			var wings = $('#wings').val();
+			var face = $('#face').val();
+			var hat = $('#hat').val();
+			var chao_stats = {name: name, type: type, dark_hero: dark_hero, run_power: run_power, swim_fly: swim_fly, magnitude: magnitude, swim_grade: swim_grade, swim_points: swim_points, swim_level: swim_level, fly_grade: fly_grade, fly_points: fly_points, fly_level: fly_level, run_grade: run_grade, power_grade:power_grade, power_points: power_points, power_level: power_level, stamina_grade: stamina_grade, stamina_points: stamina_points, stamina_level: stamina_level,
+				base_color: base_color, texture: texture, two_tone: two_tone, shiny: shiny, body_type: body_type, animal_body: animal_body, eyes: eyes, mouth: mouth, feet: feet, arms: arms, ears: ears, forehead: forehead, horns: horns, legs: legs, tail: tail, wings: wings, face: face, hat: hat};
+			$.ajax({
+				type: "POST",
+				url: "../stream/garden/request/add_battle_chao",
+				data: chao_stats,
 
+				success: function(msg){
+
+					if (msg.success == "false"){
+						alert("Battle already full");
+					}
+					else{
+						alert("Ready for battle");
+					}
+				}
+			});
+
+		});
 		if (logged_in == false){
 			$('#needs_login').show();
 			if (user_code == false){

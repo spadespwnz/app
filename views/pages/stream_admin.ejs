@@ -16,6 +16,14 @@
 		.complete_game_form{
 			margin-top: 2%;
 		}
+		.chao_battle{
+			display: inline-block;
+			position:static;
+			right: 10%;
+			top: 20%;
+			float: right;
+
+		}
 	</style>
 	<% include ../partials/stream_top-bar %>
 	<button id="reset_points">RESET POINTS</button>
@@ -26,13 +34,64 @@
 		<input type="textbox" id="desc" placeholder="descripton">
 		<input type="button" value="Complete!" id="complete_game">
 	</div>
+	<div class="chao_battle">
+		<button id="get_state">Get State</button>
+		<button id="clear_chao">Clear Chaos</button>
+		<button id="do_setup">Do Setup</button>
+		<button id="check_setup">Check</button>
+		<span id="battle_state">No state</span>
+	</div>
 	<div class="youtube">
 	<div id="player"></div>
 	</div>
 	<script>
 
 	var tag = document.createElement('script');
+	$('#get_state').click(function(){
+		$.ajax({
+				type: "GET",
+				url: "../stream/request/battle_state",
+		
+				success: function(msg){
+					$('#battle_state').text(msg.len);
 
+				}
+			});
+	});
+	$('#do_setup').click(function(){
+		$.ajax({
+			type: "GET",
+			url: "../stream/request/setup_chao_battle",
+	
+			success: function(msg){
+				$('#battle_state').text(msg.len);
+
+			}
+		});
+	});
+	$('#check_setup').click(function(){
+		$.ajax({
+			type: "GET",
+			url: "../stream/request/check_setup",
+	
+			success: function(msg){
+				alert(JSON.stringify(msg));
+
+			}
+		});
+	});
+
+	$('#clear_chao').click(function(){
+		$.ajax({
+				type: "GET",
+				url: "../stream/request/clear_battle",
+		
+				success: function(msg){
+					
+
+				}
+			});
+	});
 	tag.src = 'https://www.youtube.com/iframe_api';
 	var firstScriptTag = document.getElementsByTagName('script')[0];
 	firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);

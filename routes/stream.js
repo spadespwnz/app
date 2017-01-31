@@ -243,6 +243,41 @@ router.get('/garden/request/test', function(req,res){
 	res.send("ok then");
 
 })
+
+router.post('/garden/request/add_battle_chao', function(req,res){
+	var sessionID = req.sessionID;
+	var db = req.db;
+	db.collection('chao_battle').find({"chao":{$exists: true}}).toArray(function(err, cursor){
+		if (err){
+			res.send({len:"error"});
+		}
+		else{
+			if (cursor){
+				if (cursor.length >= 2){
+					res.send({success:"false", err: "Battle Full"});
+				}
+				else{
+					dbutils.db_upsert(db, 'chao_battle', {"chao":cursor.length}, {stats:req.body}, function(in_push_result){
+						if (in_push_result.fail == true){
+							//Error adding notelist for user
+							
+						}
+						else{
+							
+						}
+					});
+					res.send({success:"true"})
+
+				}
+			}
+			else{
+				res.send({success:"false"});
+			}
+		}
+	});
+
+
+})
 router.get('/gameslist/', function(req, res) {
 	var db = req.db;
 
@@ -334,6 +369,55 @@ router.get('/suggestions/', function(req, res) {
 	});
 
 });
+router.get('/request/check_setup', function(req, res) {
+	var db = req.db;
+	db.collection('chao_battle').find({"setup": true}).toArray(function(err, cursor){
+		if (err){
+			res.send({len:"error"});
+		}
+		else{
+			if (cursor){
+				
+				if (cursor.length > 0){
+					db.collection('chao_battle').find().toArray(function(err, cursor2){
+						if (err){
+							res.send({do_setup: false});
+						}
+						else{
+							db.collection('chao_battle').update({"setup": true},{$set:{"setup": false}}, {upsert: true, multi: false});
+							var chao1;
+							var chao2;
+
+							for (var i = 0; i<cursor2.length;i++){
+								if (cursor2[i].chao || cursor2[i].chao == 0){
+									if (cursor2[i].chao == 0){
+										chao1 = cursor2[i].stats;
+									}
+									if (cursor2[i].chao == 1){
+										chao2 = cursor2[i].stats;
+									}
+								}
+							}
+							
+							res.send({do_setup: true, chao1: chao1, chao2: chao2});
+						}
+					});
+					
+					
+				}
+				else{
+					res.send({do_setup: false});
+				}
+			}
+			else{
+				res.send({do_setup: false});
+			}
+		}
+	});
+	//db.collection('chao_battle').update({"setup": true},{$set:{"setup": false}}, {upsert: true});
+	
+});
+
 
 router.use(function(req,res,next){
 	var token = req.cookies.token || req.body.token || req.query.token || req.headers['x-access-token'];
@@ -463,5 +547,37 @@ router.post('/request/add_game', function(req,res){
 	
 	
 });
+
+
+router.get('/request/battle_state', function(req, res) {
+	var db = req.db;
+
+	db.collection('chao_battle').find().toArray(function(err, cursor){
+		if (err){
+			res.send({len:"error"});
+		}
+		else{
+			if (cursor){
+				res.send({len:cursor.length});
+			}
+			else{
+				res.send({len:0});
+			}
+		}
+	});
+});
+router.get('/request/setup_chao_battle', function(req, res) {
+	var db = req.db;
+	db.collection('chao_battle').update({"setup": true},{$set:{"setup": true}}, {upsert: true, multi: false});
+	
+});
+
+
+router.get('/request/clear_battle', function(req, res) {
+	var db = req.db;
+
+	db.collection('chao_battle').remove();
+});
+
 
 module.exports = router;
