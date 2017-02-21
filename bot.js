@@ -613,6 +613,11 @@ bot.on("chat", function(channel, userstate, message, self){
 			}
 			break;
 
+		case '!resetsongs':
+			if (user == admin){
+				song_client.emit('reset');
+			}
+			break;
 		case '!setsong':
 			if (message_parts[1] == 'help'){
 				bot.say(channel,'http://www.pastebin.com/hKz594S0');

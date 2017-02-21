@@ -24,9 +24,16 @@ module.exports.respond = function(endpoint,socket, db){
 	});
 	*/
 	socket.on('song_change', function(user,song,stage){
-		console.log("Message from bot in sockets");
+	
 		endpoint.emit('set_song',user,song,stage);
-		console.log("Song msg emit");
+
+		//endpoint.to('song_channel').emit('add_song', song);
+	});
+
+	socket.on('reset', function(){
+		
+		endpoint.emit('reset');
+	
 		//endpoint.to('song_channel').emit('add_song', song);
 	});
 
