@@ -618,6 +618,10 @@ bot.on("chat", function(channel, userstate, message, self){
 				bot.say(channel,'http://www.pastebin.com/hKz594S0');
 				return;
 			}
+			if (message_parts.length < 3){
+				bot.say(channel, 'Incorrect Format: !setsong stage song http://www.pastebin.com/hKz594S0');
+				return;
+			}
 			findPoints(user, function(points){
 				if (points >= 5){
 					
