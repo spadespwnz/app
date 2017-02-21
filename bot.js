@@ -7,6 +7,8 @@ var https = require('https');
 var uid = require('mongodb').ObjectID;
 var validator = require('youtube-validator');
 var client = require('socket.io/node_modules/socket.io-client');
+
+var song_client = require('socket.io/node_modules/socket.io-client');
 require('dotenv').config();
 var bot_id = process.env.BOT_ID;
 var bot_secret = process.env.BOT_SECRET;
@@ -128,6 +130,8 @@ console.log("BOT ON");
 
 
 })();
+
+
 
 bot.on("chat", function(channel, userstate, message, self){
 	if (self) return;
@@ -607,6 +611,22 @@ bot.on("chat", function(channel, userstate, message, self){
 
 				client.emit('skip');
 			}
+			break;
+
+		case '!setsong':
+			if (message_parts[1] == 'help'){
+				bot.say(channel,'http://www.pastebin.com/hKz594S0');
+				return;
+			}
+			findPoints(user, function(points){
+				if (points >= 5){
+					
+					song_client.emit('song_change', user, message_parts[2], message_parts[1]);
+				}
+				else{
+					bot.say(channel, "@"+user+" not enough points");
+				}
+			});
 			break;
 		case "!giveall":
 			if (user == admin){
@@ -1388,6 +1408,7 @@ module.exports = {
 		var uri = process.env.SOCKET_URI || "http://localhost:3000";
 		var port = process.env.PORT || 3000;
 		var end_url = uri+'/stream';
+		var end_song_url = uri+'/song';
 		console.log("End Url:"+end_url);
 		client = client.connect(end_url);
 		client.on('connect',function()
@@ -1396,6 +1417,19 @@ module.exports = {
 		});
 		client.on('msg', function(message){
 			console.log('In Bot:'+message);
+		});
+
+
+		song_client = song_client.connect(end_song_url);
+		song_client.on('connect',function()
+		{
+			
+		});
+		song_client.on('res', function(success, user, msg){
+			if (success == true){
+				decPoints(user, 5);
+			}
+			bot.say(channel,'@'+user+' '+msg);
 		});
 	}
 }

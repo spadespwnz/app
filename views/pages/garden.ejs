@@ -1,369 +1,1194 @@
 
-<html>
-	<head>
-		<% include ../partials/head %>
-		<link rel="stylesheet" type="text/css" href="/css/jquery-ui.min.css">
+	<html>
+		<head>
+			<% include ../partials/head %>
+			<link rel="stylesheet" type="text/css" href="/css/jquery-ui.min.css">
 
-		<script src="/scripts/jquery-ui.min.js"></script>
-	</head>
-	
-	<style>
-		#body{
-			background-image: url("/img/chao.jpg");
-			background-size: 100% 100%;
-			background-repeat: no-repeat;
-		}
-		#needs_login{
+			<script src="/scripts/jquery-ui.min.js"></script>
+			<script src="https://js.braintreegateway.com/web/3.6.3/js/paypal.min.js"></script>
+			<script src="https://js.braintreegateway.com/web/3.6.3/js/client.min.js"></script>
+		</head>
+		
+		<style>
+
+
+			/* Style the list */
+			#shop_content{
+				display: none;
+			}
+			#shop{
+				left: 5%;
+				top: 25%;
+			}
+			#shop .shop_item_text{
+				margin: 0;
+				text-align: center;
+				display: inline-block;
+				width: 50%;
+
+			}
+			#shop .shop_item{
+				width: 100%;
+				text-align: center;
+				white-space: nowrap;
+			}
+			#shop .left_button{
+				float: left;
+			}
 			
-			padding: 0;
-			margin: 0;
-			position: relative;
-			display: none;
-			width: 100%;
-			height: 100%;
-
-
-		}
-		#needs_login #enter_garden_button{
-			position: absolute;
-			left: 40%;
-			top: 40%;
-			opacity: .7;
-			width: 20vw;
-			height: 20vh;
-			font-size: 150%;
-			animation: fontcycle 2s infinite;
-			z-index: 1;
-		}
-		#needs_login #right_bg{
-			display: inline-block;
-			position: relative;
-			float: right;
-			padding-left: : 0;
-			padding-right: 0;
-			margin-left: : 0;
-			margin-right: : 0;
-			right: 0%;
-			width: 50%;
-			height: 100%;
-			animation: dooropenright 5s;
-			animation-play-state: paused;
-		}
-		#needs_login #left_bg{
-			display: inline-block;
-			position: relative;
-			padding-left: : 0;
-			padding-right: 0;
-			margin-left: : 0;
-			margin-right: : 0;
-			width: 50%;
-			height: 100%;
-			left: 0;
-			animation: dooropenleft 5s;
-			animation-play-state: paused;
-		}
-
-		@keyframes fontcycle{
-			0%,100% {
-				font-size: 150%;
+			#shop .buy_button{
+				width: 25%;
+				float: right;
+				text-align: center;
 			}
-			50%{
-				font-size: 200%;
-			}
-		}
-		@keyframes dooropenleft {
-			0% {
-				width: 50%;
-				left:0;
-			}
-			100% {
-				width: 0%;
-			}
-		}
-		@keyframes dooropenright {
-			0% {
-				width: 50%;
+			#shop .right_button{
+				float: right;
+				text-align: center;
 				
 			}
-			100% {
-				width: 0%;
+			#shop ul.tab {
+			    list-style-type: none;
+			    margin: 0;
+			    padding: 0;
+			    overflow: hidden;
+			    border: 1px solid #ccc;
+			    background-color: #f1f1f1;
 			}
-		}
+
+			/* Float the list items side by side */
+			#shop ul.tab li {float: left;}
+
+			/* Style the links inside the list items */
+			#shop ul.tab li a {
+			    display: inline-block;
+			    color: black;
+			    text-align: center;
+			    padding: 6px 16px;
+			    text-decoration: none;
+			    transition: 0.3s;
+			    font-size: 17px;
+			}
+
+			/* Change background color of links on hover */
+			#shop ul.tab li a:hover {background-color: #ddd;}
+
+			/* Create an active/current tablink class */
+			#shop ul.tab li a:focus, .active {background-color: #ccc;}
+
+			/* Style the tab content */
+			#shop .shop_tab {
+			    display: none;
+			    padding: 6px 12px;
+			    border: 1px solid #ccc;
+			    border-top: none;
+			}
+			#body{
+				width: 100%;
+				height: 100%;
+				background-image: url("/img/chao.jpg");
+				background-size: 100% 100%;
+				background-repeat: no-repeat;
+			}
+			#needs_login{
+				
+				padding: 0;
+				margin: 0;
+				position: relative;
+				display: none;
+				width: 100%;
+				height: 100%;
 
 
-		#logout{
-			display: inline-block;
-			position: absolute;
-			right: 10%;
-			top: 10%;
-		}
+			}
+			#needs_login #enter_garden_button{
+				position: absolute;
+				left: 40%;
+				top: 40%;
+				opacity: .7;
+				width: 20vw;
+				height: 20vh;
+				font-size: 150%;
+				animation: fontcycle 2s infinite;
+				z-index: 1;
+			}
+			#needs_login #right_bg{
+				display: inline-block;
+				position: relative;
+				float: right;
+				padding-left: : 0;
+				padding-right: 0;
+				margin-left: : 0;
+				margin-right: : 0;
+				right: 0%;
+				width: 50%;
+				height: 100%;
+				animation: dooropenright 5s;
+				animation-play-state: paused;
+			}
+			#needs_login #left_bg{
+				display: inline-block;
+				position: relative;
+				padding-left: : 0;
+				padding-right: 0;
+				margin-left: : 0;
+				margin-right: : 0;
+				width: 50%;
+				height: 100%;
+				left: 0;
+				animation: dooropenleft 5s;
+				animation-play-state: paused;
+			}
 
-
-
-		#garden .ui-item{
-			padding-left: 10px;
-			padding-right: 10px;
-			border-radius: 10px;
-			border-color: black;
-			border-style: solid;
-			border-width: 1px;
-			background-color: white;
-			opacity: .7;
-			display: flex;
-			flex-direction: column;
-			float: left;
-			
-		}
-		#garden #forms{
-			font-size: 100%;
-		}
-
-
-	</style>
-	<body id="body">
-		<div id='needs_login'>
-
-			<button id="enter_garden_button" class="button raised">Enter Garden</button>
-			<img id="left_bg" src='/img/chao_left_door.png'></img><img id="right_bg" src='/img/chao_right_door.png'></img>
-		
-		</div>
-		<div id='garden'>
-			<div id='stats' class='ui-item draggable'>
-				<p>Username: <span id="username_span">null<span></p>
-				<p>Points: <span id="point_span">null<span></p>
-			</div>
-			<div id="forms">
-				Name (7 letters): <input id = "name"><br>
-				Type (0 to 25): <input id = "type"><br>
-				Dark / Hero (-9 to 9): <input id="dark_hero"><br>
-				Run / Power (-9 to 9): <input id="run_power"><br>
-				Swim / Fly (-9 to 9): <input id="swim_fly"><br>
-				Magnitude (0 to 10): <input id="magnitude"><br>
-				Swim grade (0 to 5): <input id="swim_grade"><br>
-				Swim points (0 to 999): <input id="swim_points"><br>
-				Swim level (0 to 99): <input id="swim_level"><br>
-
-				Fly grade (0 to 5): <input id="fly_grade"><br>
-				Fly points (0 to 999): <input id="fly_points"><br>
-				Fly level (0 to 99): <input id="fly_level"><br>
-
-				Run grade (0 to 5): <input id="run_grade"><br>
-				Run points (0 to 999): <input id="run_points"><br>
-				Run level (0 to 99): <input id="run_level"><br>
-
-				Power grade (0 to 5): <input id="power_grade"><br>
-				Power points (0 to 999): <input id="power_points"><br>
-				Power level (0 to 99): <input id="power_level"><br>
-
-				Stamina grade (0 to 5): <input id="stamina_grade"><br>
-				Stamina points (0 to 999): <input id="stamina_points"><br>
-				Stamina level (0 to 99): <input id="stamina_level"><br>
-
-				Base color (0 to 40): <input id="base_color"><br>
-				Texture (0 to 109): <input id="texture"><br>
-				Two Tone (True / False): <input id="two_tone"><br>
-				Shiny (True / False): <input id="shiny"><br>
-
-				Body Type (0 to 4): <input id="body_type"><br>
-				Animal Body (0 to 20): <input id="animal_body"><br>
-
-				Face (0 to 3): <input id="face"><br>
-				Eyes (0 to 12): <input id="eyes"><br>
-				Mouth (0 to 12): <input id="mouth"><br>
-				Ears (0 to 12): <input id="ears"><br>
-				Forehead (0 to 7): <input id="forehead"><br>
-				Horns (0 to 3): <input id="horns"><br>
-				Hat (0 to 15): <input id="hat"><br>
-
-				Arms (0 to 14): <input id="arms"><br>
-				Legs (0 to 17): <input id="legs"><br>
-				Feet (True / False): <input id="feet"><br>
-				Tail (0 to 15): <input id="tail"><br>
-				Wings (0 to 6): <input id="wings"><br>
-			</div>
-
-			<button id="send_to_battle">Battle!</button>
-		
-		</div>
-
-		<div id='logout_div'>
-
-			<button id="logout" class="button raised">Logout</button>
-		</div>
-
-	</body>
-	<script>
-	$(document).ready(function(){
-		$(function(){
-			$('.draggable').draggable();
-		})
-		var user_code = getUrlVar("code");
-		var logged_in = <%-logged_in %>;
-		var user;
-		var points;
-		var url = 'https://api.twitch.tv/kraken/oauth2/authorize?response_type=code';
-		url += '&client_id=' + '<%-client_id %>';
-		url += '&redirect_uri=<%-redirect%>';
-		url += '&scope=';
-		url += '&state=lol';
-		$('#tester').click(function(){
-			test();
-		})
-		$('#send_to_battle').click(function(){
-			var name = $('#name').val();
-			var type = $('#type').val();
-			var dark_hero = $('#dark_hero').val();
-			var run_power = $('#run_power').val();
-			var swim_fly = $('#swim_fly').val();
-			var magnitude = $('#magnitude').val();
-			var swim_grade = $('#swim_grade').val();
-			var swim_points = $('#swim_points').val();
-			var swim_level = $('#swim_level').val();
-			var fly_grade = $('#fly_grade').val();
-			var fly_points = $('#fly_points').val();
-			var fly_level = $('#fly_level').val();
-			var run_grade = $('#run_grade').val();
-			var run_points = $('#run_points').val();
-			var run_level = $('#run_level').val();
-			var power_grade = $('#power_grade').val();
-			var power_points = $('#power_points').val();
-			var power_level = $('#power_level').val();
-			var stamina_grade = $('#stamina_grade').val();
-			var stamina_points = $('#stamina_points').val();
-			var stamina_level = $('#stamina_level').val();
-			var base_color = $('#base_color').val();
-			var texture = $('#texture').val();
-			var two_tone = $('#two_tone').val();
-			var shiny = $('#shiny').val();
-			var body_type = $('#body_type').val();
-			var animal_body = $('#animal_body').val();
-			var eyes = $('#eyes').val();
-			var mouth = $('#mouth').val();
-			var feet = $('#feet').val();
-			var arms = $('#arms').val();
-			var ears = $('#ears').val();
-			var forehead = $('#forehead').val();
-			var horns = $('#horns').val();
-			var legs = $('#legs').val();
-			var tail = $('#tail').val();
-			var wings = $('#wings').val();
-			var face = $('#face').val();
-			var hat = $('#hat').val();
-			var chao_stats = {name: name, type: type, dark_hero: dark_hero, run_power: run_power, swim_fly: swim_fly, magnitude: magnitude, swim_grade: swim_grade, swim_points: swim_points, swim_level: swim_level, fly_grade: fly_grade, fly_points: fly_points, fly_level: fly_level, run_grade: run_grade, power_grade:power_grade, power_points: power_points, power_level: power_level, stamina_grade: stamina_grade, stamina_points: stamina_points, stamina_level: stamina_level,
-				base_color: base_color, texture: texture, two_tone: two_tone, shiny: shiny, body_type: body_type, animal_body: animal_body, eyes: eyes, mouth: mouth, feet: feet, arms: arms, ears: ears, forehead: forehead, horns: horns, legs: legs, tail: tail, wings: wings, face: face, hat: hat};
-			$.ajax({
-				type: "POST",
-				url: "../stream/garden/request/add_battle_chao",
-				data: chao_stats,
-
-				success: function(msg){
-
-					if (msg.success == "false"){
-						alert("Battle already full");
-					}
-					else{
-						alert("Ready for battle");
-					}
+			@keyframes fontcycle{
+				0%,100% {
+					font-size: 150%;
 				}
+				50%{
+					font-size: 200%;
+				}
+			}
+			@keyframes dooropenleft {
+				0% {
+					width: 50%;
+					left:0;
+				}
+				100% {
+					width: 0%;
+				}
+			}
+			@keyframes dooropenright {
+				0% {
+					width: 50%;
+					
+				}
+				100% {
+					width: 0%;
+				}
+			}
+
+
+			#logout_div{
+				display: inline-block;
+				position: absolute;
+				right: 5%;
+				top: 5%;
+			}
+
+
+			#garden{
+				width:100%;
+				height: 100%;
+			}
+			#garden .ui-item{
+				position: absolute;
+				padding-left: 10px;
+				padding-right: 10px;
+				border-radius: 10px;
+				border-color: black;
+				border-style: solid;
+				border-width: 1px;
+				background: rgb(255,255,255);
+
+				background: rgba(255,255,255,.5);
+				display: flex;
+				flex-direction: column;
+				float: left;
+
+			}
+
+			#garden #stats{
+				font-size: 150%;
+				left: 5%;
+				top: 5%;
+			}
+
+			#garden #chao_stats{
+				font-size: 150%;
+				left: 40%;
+				top: 5%;
+			}
+
+			#garden #forms{
+				font-size: 100%;
+				display: none;
+			}
+			#garden #buy_chao_div{
+				top: 40%;
+				left: 40vw;
+				font-size: 300%;
+			}
+			.subtext{
+				font-size: 50%;
+				text-align: center;
+			}
+			#garden #chao_name{
+				padding-bottom: 2px;
+			}
+			#garden #chao_name textarea{
+				text-align: center;
+			}
+			#garden #chao_name input{
+				text-align: center;
+			}
+			#garden .divider{
+				width: 100%;
+				height: 5px;
+				color: black;
+			}
+			#garden #chao_type{
+				margin-top: 10px;
+			}
+			#garden #stat_values{
+				width: 100%;
+				padding-top: 5px;
+			}
+			#garden .stat_line{
+				display: inline-block;
+			}
+			#garden .block{
+				clear: both;
+			}
+			#garden .on_left{
+				display: block;
+				position: relative;
+				float: left;
+				margin-left: 15%;
+		
+			}
+
+			#garden .on_right{
+				display: block;
+				position: relative;
+				float: right;
+				margin-right: 25%;
+
+			}
+			#garden .chao_type_p{
+				margin-bottom: 0;
+				float: left;
+			}
+			#garden .attr_point_p{
+				margin-right: 10px;
+				float: right;
+			}
+
+			#garden #coloring{
+				margin-top: 3px;
+				text-align: center;
+				font-size: 75%;
+			}
+
+			#garden #parts{
+				font-size: 75%;
+				margin-top: 3px;
+				display: flex;
+				flex-direction: row;
+			}
+			#garden #body_shape{
+				width: 49%;
+			}
+			#garden #animal_parts{
+				width: 49%;
+			}
+
+			#garden .center_align{
+				text-align: center;
+				margin: auto;
+				width: 100%;
+				display: block;
+			}
+
+			#garden .stat_button{
+				height: 30%;
+				font-size: 50%;
+				margin: 0;
+				padding: 0;
+				padding-left: 5px;
+				padding-right: 5px;
+				
+			}
+
+			#garden .half{
+				background-image: url("/img/plus.png");
+				background-size: 100% 100%;
+				background-repeat: no-repeat;
+				text-align: center;
+				padding: 10px;
+				font-size: 10%;
+				margin-left: 10px;
+				
+			}
+
+
+		</style>
+		<body id="body">
+			<div id='needs_login'>
+
+				<button id="enter_garden_button" class="button raised">Enter Garden</button>
+				<img id="left_bg" src='/img/chao_left_door.png'></img><img id="right_bg" src='/img/chao_right_door.png'></img>
+			
+			</div>
+			<div id='garden'>
+				<div id='stats' class='ui-item draggable'>
+					<p>Username: <span id="username_span">null</span></p>
+					<p>Coins: <span id="coins_span">null</span><button id='refresh_coins' class="button raised stat_button">Refresh</button></p>
+					<p>Emerals: <span id="emeralds_span">null</span>
+						<button id="crush_emerald" class="button raised stat_button">Crush Emerald (100 Coins)</button>
+					</p>
+				</div>
+
+				<div id='chao_stats' class='ui-item draggable'>
+					<div id='chao_name'>
+						<input type="text", id="chao_name_field" value="" maxlength="0">
+						<span>Max: </span><span id="chao_name_max">0<span>
+					</div>
+					<div class="divider">
+					</div>
+					<div id="chao_type">
+
+						<p class="chao_type_p">Type:</p><br>
+						<p class="attr_point_p">Attribute Points: <span id="attribute_points"></span></p>
+						<p style="float: left; clear: all;font-size: 80%"><span><button onclick="chao_option_left('chao_type')"><</button><span id="chao_chao_type" num=0>0</span><button onclick="chao_option_right('chao_type')">></button></span></p>
+					</div>
+					<div class="divider">
+					</div>
+					<div id='stat_values'>
+						<div class='block'>
+							<p class='stat_line on_left'>Swim: <span id="swim_span"></span><button id="increase_swim" class="btn half">+</button></p><p class='stat_line on_right'>Fly: <span id="fly_span"></span><button id="increase_fly" class="btn half">+</button></p>
+						</div>
+
+						<div class='block'>	
+							<p class='stat_line on_left'>Run: <span id="run_span"></span><button id="increase_run" class="btn half">+</button></p><p class='stat_line on_right'>Power: <span id="power_span"></span><button id="increase_power" class="btn half">+</button></p>
+						</div>
+						<div class='block'>	
+							<p class='stat_line on_left'>Stamina: <span id="stamina_span"></span><button id="increase_stamina" class="btn half">+</button></p></p>
+						</div>
+					</div>
+					<div class="divider">
+					</div>
+					<div id='coloring'>
+						
+							<p style="float: left; clear: all;font-size: 80%"><span><span>Color: </span><button onclick="chao_option_left('color')"><</button><span id="chao_color" num=0>0</span><button onclick="chao_option_right('color')">></button></span></p>
+						<br>
+						<span>Texture: </span><span id="chao_texture">0</span>
+						<br>
+						<span class="on_left" style="margin-left: 2px"><span>Two Tone: </span><span id="chao_two_tone">False</span></span>
+
+						<span class="on_right" style="margin-right: 2px"><span>Shiny: </span><span id="chao_shiny">False</span></span>
+					</div>
+					<div class="divider">
+					</div>
+					<div id="parts">
+						<div id="body_shape">
+							Body Type:
+							<br><span class="center_align"><button onclick="chao_option_left('body_type')"><</button><span id="chao_body_type" num=0>0</span><button onclick="chao_option_right('body_type')">></button></span>
+
+							<span>Animal Body: </span><br><span class="center_align" id="chao_animal_body">0</span>
+							<span>Eyes: </span><br><span class="center_align" id="chao_eyes">0</span>
+							<span>Mouth: </span><br><span class="center_align" id="chao_mouth">0</span>
+							<span>Feet: </span><br><span class="center_align" id="chao_feet">0</span>
+							<span>Arms: </span><br><span class="center_align" id="chao_arms">0</span>
+							<span>Hat: </span><br><span class="center_align" id="chao_hat">0</span>
+
+						
+						</div>
+						<div id="animal_parts">
+							<span>Ears: </span><br><span class="center_align" id="chao_ears">0</span>
+							<span>Forehead: </span><br><span class="center_align" id="chao_forehead">0</span>
+							<span>Horns: </span><br><span class="center_align" id="chao_horns">0</span>
+							<span>Legs: </span><br><span class="center_align" id="chao_legs">0</span>
+							<span>Tail: </span><br><span class="center_align" id="chao_tail">0</span>
+							<span>Wings: </span><br><span class="center_align" id="chao_wings">0</span>
+							<span>Face: </span><br><span class="center_align" id="chao_face">0</span>
+						</div>
+					</div>
+				</div>
+
+				<div id='buy_chao_div' class='ui-item'>
+					<button id="buy_chao">Buy Chao<p class='subtext'>1 coin</p></button>
+				</div>
+
+				<div id="shop" class='ui-item draggable'>
+					<div style="inline-block">
+						<span id="shop_title">
+							Shop
+						</span>
+						<button id="shop_close">
+							X
+						</button>
+					</div>
+					
+					<div id="shop_content">
+						<ul class="tab">
+						 	<li><a href="javascript:void(0)" class="tablinks" onclick="shopTab(event, 'shop_misc')">Misc</a></li>
+						  	<li><a href="javascript:void(0)" class="tablinks" onclick="shopTab(event, 'shop_body')">Body</a></li>
+						  	<li><a href="javascript:void(0)" class="tablinks" onclick="shopTab(event, 'shop_parts')">Parts</a></li>
+						</ul>
+						<div id="shop_misc" class="shop_tab">
+							<div class="shop_item>">
+								<p><span>Buy Attribute Point: </span><button class="buy_button" id='buy_attribute'>25</button></p>
+							</div>
+							<div class="shop_item>">
+								<p><span>Buy Another Letter: </span><button class="buy_button" id='buy_letter'>Cost</button></p>
+							</div>
+							<div class="shop_item>">
+								Type
+								<p><button  class='left_button' onclick="shop_left('chao_type')"><</button><span class='shop_item_text' id="shop_chao_type" num=0>Null</span><button id="shop_chao_type_price"  class='buy_button' onclick="buy('chao_type')">0</button><button  class='right_button' onclick="shop_right('chao_type')">></button></p>
+								Color
+								<p><button  class='left_button' onclick="shop_left('color')"><</button><span class='shop_item_text' id="shop_color" num=0>Null</span><button id="shop_color_price"  class='buy_button' onclick="buy('color')">0</button><button  class='right_button' onclick="shop_right('color')">></button></p>
+								Texture
+								<p><button  class='left_button' onclick="shop_left('texture')"><</button><span class='shop_item_text' id="shop_texture" num=0>Null</span><button id="shop_texture_price"  class='buy_button' onclick="buy('texture')">0</button><button  class='right_button' onclick="shop_right('texture')">></button></p>
+								Hat
+							</div>
+						 	
+						</div>
+
+						<div id="shop_body" class="shop_tab">
+						 	<div class="shop_item>">
+						 		Body Type
+								<p><button class='left_button' onclick="shop_left('body_type')"><</button><span class='shop_item_text' id="shop_body_type" num=0>Null</span><button id="shop_body_type_price"  class='buy_button' onclick="buy('body_type')">0</button><button  class='right_button' onclick="shop_right('body_type')">></button></p>
+								Body
+								Eyes
+								Mouth
+								Feet
+							</div>
+						</div>
+
+						<div id="shop_parts" class="shop_tab">
+							<div class="shop_item>">
+							  	Arms
+							  	Ears
+							  	Forehead
+							  	Horns
+							  	Legs
+							  	Tail
+							  	Wings
+							  	Face
+						  	</div>
+						</div>
+					</div>
+				</div>
+
+			
+			</div>
+
+			<div id='logout_div'>
+
+				<button id="logout" class="button raised">Logout</button>
+
+				<button id="get_coins" class="button raised">Coins!</button>
+
+
+				<button id="get_emeralds" class="button raised">Emeralds!</button>
+
+				<button id="get_token" class="button raised">Buy!</button>
+				<button id="buy_emeralds" style="display: none" class="button raised">10 Emeralds for $3</button>
+			</div>
+
+		</body>
+		<script>
+		var paypal_token=null;
+		var shop;
+		var avail_options;
+		var user_data;
+		var chao;
+		
+		var chao_type = ['Empty','Egg','Child','Good','Bad', 'Neutral / Normal', 'Neutral / Swim', 'Neutral / Fly', 'Neutral / Run',
+						'Neutral / Power', 'Neutral / Chaos', 'Hero / Normal', 'Hero / Swim', 'Hero / Fly', 'Hero / Run',
+						'Hero / Power', 'Hero / Chaos', 'Dark / Normal', 'Dark / Swim', 'Dark / Fly', 'Dark / Run',
+						'Dark / Power', 'Dark / Chaos', 'Amy', 'Knuckles', 'Tails'];
+		var body_type = ['Normal', 'Egg Chao', 'Omochao', 'Animal', 'None'];
+		var color = ['Normal', 'Yellow', 'White', 'Brown', 'Sky Blue', 'Pink', 'Blue', 'Grey', 'Green', 'Red', 'Lime Green',
+					'Purple', 'Orange', 'Black', 'Powder Blue', 'Deep Dark Blue', 'Darker Grey', 'Indian Red','Light Coral',
+					'Salmon', 'Dark Salmon', 'Crimson','Pink','Light Pink','Hot Pink','Medium Violet Red', 'Pale Violet Red',
+					'Light Violet Red', 'Violet Red', 'Pale Goldenrod', 'Plum', 'Violet', 'Orchid', 'Magenta', 'Medium Orchid',
+					'Medium Purple', 'Blue Violet', 'Dark Violet', 'Dark Magenta', 'Transparent Purple', 'Dark Purple',
+					'Dark Slate Blue', 'Slate Blue', 'Green Yellow', 'Lawn Green', 'Pale Lime Green', 'Lime Green', 'Light Pale Green','Pale Green', 'Light Green', 'Pale Spring Green', 'Light Spring Green', 'Spring Green', 'Medium Sea Green',
+					'Sea Green', 'Forest Green','Green','Dark Green','Olive Drab', 'Dark Olive Drab', 'Dark Olive', 'Dark Olive Green', 'Dark Olive Green-Grey', 'Medium Aquamarine', 'Dark Sea Green', 'Pale Turquoise', 'Pale Aquamarine', 'Light Aquamarine', 'Aquamarine', 'Turquoise', 'Medium Turquoise', 'Steel Blue', 'Powder Blue', 'Cornflower Blue',
+					'Navy Blue', 'Wheat', 'Burlywood', 'Tan', 'Rosy Brown', 'Medium Goldenrod', 'Dark Goldenrod', 'Peru', 'Dark Grey'];
+
+		var texture = ['None', 'Jewel Yellow', 'Jewel White', 'Jewel Pink', 'Jewel Blue', 'Jewel Green', 'Jewel Purple', 'Jewel Sky Blue', 'Jewel Red', 'Jewel Black', 'Jewel Lime Green', 'Jewel Orange', 'Pearl', 'Metal 1', 'Metal 2', 'Glass', 'Moon',
+			'Shiny Black', 'Light Pink', 'Red and White', 'Black and White', 'Teeth 1', 'Teeth 2', 'Pink and White', 'Turquoise and White', 'Red Gradient', 'Devil Hands', 'Devil Body', 'Yellow', 'Black and Purple', 'Purple Diamonds', 'Chocolate Cream', 'Blue Gradient', 'Dark/Run body', 'Purple Blend', 'Brown Gradient', 'Copper', 'Black, Red and White', 'Dark Blue and White', 'Yellow and Blue', 'Purple Gradient', 'Turqoise and Black', 'Black and Blue', 'Black and White', 'Spotted Egg', 'Black and Clear', 'Black and White Liquid', 'White and Transparent Pink', 'White and Beige', 'White with Pink Sprinkles', 'Red and White', 'Red and Yellow', 'Red and Orange', 'Partial Green', 'Brown Stripes', 'Black and Clear', 'Grey', 'Silver Stripes', 'Grey Striped', 'Transparent Grey and White', 'Shiny Brown', 'Cardboard', 'Rusty Orange', 'Beige', 'Mustard', 'Medium Brown', 'Watermelon', 'Watermelon Smile', 'Red Wool Beanie', 'Black and Yellow', 'Red', 'Blue Wool Beanie', 'Black and Blue', 'Blue Wave', 'Black Wool Beanie', 'Grey and Clear', 'Charcoal', 'Yellow and Pink Liquid', 'Light Chaos Black', 'Angel Ears', 'Angel Ears', 'White and Light Blue', 'Light Blue', 'Light Green', 'White and Yellow 1', 'White and Yellow 2', 'White and Yellow 3', 'Blue and White', 'Blue and White Stripes', 'Rainbow', 'Pink and White', 'Hot Pink and Orange', 'Orange and Sky Blue', 'Gold and White stripes', 'Orange and Yellow Blend', 'White and Blue', 'White and Yellow 4', 'White and Yellow 5', 'White and Yellow 6', 'White and Yellow 7', 'Green and White 1', 'Green and White 2', 'Blue and Green', 'White and Yellow Stripes', 'Gold and Tan', 'Blue and Light Blue Stripes', 'Blue and Silver Bolts', 'Rust and Orange', 'Blue and Clear with Gold', 'Log Rings', 'Canyon Wall', 'Black and Transparent 1', 'Black and Transparent 2', 'Black and Transparent 3', 'White', 'Grey with Blac Stripes', 'Mustrd wth White', 'White and Yellow 8', 'White and Yellow 9', 'Purple and Black', 'Pretty Grey', 'Omochao X', 'Blue, Red and Yellow', 'Black, Grey and Orange', 'Omochao Arrow'];
+		var char_len_cost = [1,10,20,30, "MAX"];
+		var value_strings = { chao_type: chao_type, body_type: body_type, color: color};
+		$(document).ready(function(){
+			
+			$(function(){
+				$('.draggable').draggable();
+			})
+
+			var user_code = getUrlVar("code");
+			var logged_in = <%-logged_in %>;
+			var user;
+			var points;
+			
+			
+			$('#increase_stamina').click(function(){
+				$.ajax({
+					type: "GET",
+					url: "../stream/garden/request/increase_stamina",
+		
+
+					success: function(msg){
+						if (msg.success == true){
+							$('#stamina_span').text(msg.stamina);
+							setAttributePoints(msg.points);
+							
+
+						}
+						else{
+							alert(msg.err);
+						}
+					}
+				});	
+			});
+			$('#increase_swim').click(function(){
+				$.ajax({
+					type: "GET",
+					url: "../stream/garden/request/increase_swim",
+		
+
+					success: function(msg){
+						if (msg.success == true){
+							$('#swim_span').text(msg.swim);
+							setAttributePoints(msg.points);
+							
+
+						}
+						else{
+							alert(msg.err);
+						}
+					}
+				});	
+			});
+			$('#increase_run').click(function(){
+				$.ajax({
+					type: "GET",
+					url: "../stream/garden/request/increase_run",
+		
+
+					success: function(msg){
+						if (msg.success == true){
+							$('#run_span').text(msg.run);
+							setAttributePoints(msg.points);
+							
+
+						}
+						else{
+							alert(msg.err);
+						}
+					}
+				});	
 			});
 
-		});
-		if (logged_in == false){
-			$('#needs_login').show();
-			if (user_code == false){
-				$('#enter_garden_button').text('Authenticate with Twitch');
-			}
-		}
-		else{
-			points = <%-points%>;
-			user = "<%-user%>";
+			$('#increase_fly').click(function(){
+				$.ajax({
+					type: "GET",
+					url: "../stream/garden/request/increase_fly",
+		
 
-			$('#point_span').text(""+points);
-			$('#username_span').text(""+user);
-		}
+					success: function(msg){
+						if (msg.success == true){
+							$('#fly_span').text(msg.fly);
+							setAttributePoints(msg.points);
+							
 
-		$('#logout').click(function(){
-			$.ajax({
-				type: "GET",
-				url: "../stream/garden/request/logout",
-	
-
-				success: function(msg){
-					window.location.href="<%-redirect%>";
-				}
+						}
+						else{
+							alert(msg.err);
+						}
+					}
+				});	
 			});
-		})
-		$('#enter_garden_button').click(function(){
 
-			setup_garden();
-		})
+			$('#increase_power').click(function(){
+				$.ajax({
+					type: "GET",
+					url: "../stream/garden/request/increase_power",
+		
 
+					success: function(msg){
+						if (msg.success == true){
+							$('#power_span').text(msg.power);
+							setAttributePoints(msg.points);
+							
 
+						}
+						else{
+							alert(msg.err);
+						}
+					}
+				});	
+			});
+			$('#shop_title').click(function(){
+				$('#shop_content').show();
+			});
+			$('#shop_close').click(function(){
+				$('#shop_content').hide();
+			});
 
-		function setup_garden(){
-			//$('body').append("https://api.twitch.tv/kraken?oauth_token="+user_code);
-			if (user_code == false){
-				var url = 'https://api.twitch.tv/kraken/oauth2/authorize?response_type=code';
-				url += '&client_id=' + '<%-client_id %>';
-				url += '&redirect_uri=<%-redirect%>';
-				url += '&scope=';
-				url += '&state=lol';
-				window.location=url;
-
-			}
-			else{
-			
+			$('#send_to_battle').click(function(){
+				var name = $('#name').val();
+				var type = $('#type').val();
+				var dark_hero = $('#dark_hero').val();
+				var run_power = $('#run_power').val();
+				var swim_fly = $('#swim_fly').val();
+				var magnitude = $('#magnitude').val();
+				var swim_grade = $('#swim_grade').val();
+				var swim_points = $('#swim_points').val();
+				var swim_level = $('#swim_level').val();
+				var fly_grade = $('#fly_grade').val();
+				var fly_points = $('#fly_points').val();
+				var fly_level = $('#fly_level').val();
+				var run_grade = $('#run_grade').val();
+				var run_points = $('#run_points').val();
+				var run_level = $('#run_level').val();
+				var power_grade = $('#power_grade').val();
+				var power_points = $('#power_points').val();
+				var power_level = $('#power_level').val();
+				var stamina_grade = $('#stamina_grade').val();
+				var stamina_points = $('#stamina_points').val();
+				var stamina_level = $('#stamina_level').val();
+				var base_color = $('#base_color').val();
+				var texture = $('#texture').val();
+				var two_tone = $('#two_tone').val();
+				var shiny = $('#shiny').val();
+				var body_type = $('#body_type').val();
+				var animal_body = $('#animal_body').val();
+				var eyes = $('#eyes').val();
+				var mouth = $('#mouth').val();
+				var feet = $('#feet').val();
+				var arms = $('#arms').val();
+				var ears = $('#ears').val();
+				var forehead = $('#forehead').val();
+				var horns = $('#horns').val();
+				var legs = $('#legs').val();
+				var tail = $('#tail').val();
+				var wings = $('#wings').val();
+				var face = $('#face').val();
+				var hat = $('#hat').val();
+				var chao_stats = {name: name, type: type, dark_hero: dark_hero, run_power: run_power, swim_fly: swim_fly, magnitude: magnitude, swim_grade: swim_grade, swim_points: swim_points, swim_level: swim_level, fly_grade: fly_grade, fly_points: fly_points, fly_level: fly_level, run_grade: run_grade, power_grade:power_grade, power_points: power_points, power_level: power_level, stamina_grade: stamina_grade, stamina_points: stamina_points, stamina_level: stamina_level,
+					base_color: base_color, texture: texture, two_tone: two_tone, shiny: shiny, body_type: body_type, animal_body: animal_body, eyes: eyes, mouth: mouth, feet: feet, arms: arms, ears: ears, forehead: forehead, horns: horns, legs: legs, tail: tail, wings: wings, face: face, hat: hat};
 				$.ajax({
 					type: "POST",
-					url: "../stream/garden/auth",
-					data: {code: user_code},
+					url: "../stream/garden/request/add_battle_chao",
+					data: chao_stats,
 
 					success: function(msg){
 
 						if (msg.success == "false"){
-
+							alert("Battle already full");
 						}
 						else{
-							user = msg.user;
-							points = msg.points;
-							$('#point_span').text(""+points);
-							$('#username_span').text(""+user);
-							$('#left_bg').css('animation-play-state', 'running');
-							$('#right_bg').css('animation-play-state', 'running');
-							setTimeout(function(){
-								$('#needs_login').hide();
-							}, 4500);
+							alert("Ready for battle");
 						}
 					}
 				});
+
+			});
+			if (logged_in == false){
+				$('#garden').hide();
+				$('#needs_login').show();
+				if (user_code == false){
+					$('#enter_garden_button').text('Authenticate with Twitch');
+				}
 			}
-			//al
-		}
-		function getUrlVar(variable){
-			var query = window.location.search.substring(1);
-			var vars = query.split("&");
-			for (var i = 0;i<vars.length;i++){
-				var pair = vars[i].split("=");
-				if(pair[0]== variable){return pair[1];}
+			else{
+
+				shop =(<%- JSON.stringify(shop)%>);
+				user_data =(<%- JSON.stringify(user_data)%>);
+				$('#coins_span').text(""+user_data.coins);
+				$('#username_span').text(""+user_data.user);
+				$('#emeralds_span').text(""+user_data.emeralds);
+				chao = user_data.chao;
+				avail_options = user_data.chao_options;
+
+				setupShop(shop, avail_options);
+
+
+				if (isEmpty(chao)){
+			
+					$('#chao_stats').hide();
+				}
+				else{
+					setChaoStats(chao, avail_options, user_data.points);
+					$('#buy_chao_div').hide();
+				}
 
 			}
-			return false;
-		}
-		function getCookie(cookie){
-			var name = cookie + "=";
-			var ca = document.cookie.split(';');
-			for (var i = 0; i<ca.length;i++){
-				var c = ca[i];
-				while (c.charAt(0) == ' '){
-					c = c.substring(1);
-				}
-				if (c.indexOf(name) == 0){
-					return c.substring(name.length, c.length)
-				}
-			}
-			return "";
-		}
+
+			$('#logout').click(function(){
+				$.ajax({
+					type: "GET",
+					url: "../stream/garden/request/logout",
 		
-	});
-	</script>
-</html>
+
+					success: function(msg){
+						window.location.href="<%-redirect%>";
+					}
+				});
+			})
+
+
+			$('#crush_emerald').click(function(){
+				$.ajax({
+					type: "GET",
+					url: "../stream/garden/request/crush",
+		
+
+					success: function(msg){
+						if (msg.success == true){
+							var coins = parseInt($('#coins_span').text());
+							$('#coins_span').text(coins+100);
+
+							var emeralds = parseInt($('#emeralds_span').text());
+							$('#emeralds_span').text(emeralds-1);
+
+						}
+						else{
+							alert(msg.err);
+						}
+					}
+				});			
+			});
+			$('#buy_chao').click(function(){
+				$.ajax({
+					type: "GET",
+					url: "../stream/garden/request/buy_chao",
+		
+
+					success: function(msg){
+						if (msg.success == true){
+							$('#buy_chao_div').hide();
+							user_data.coins -= 1;
+							$('#coins_span').text(user_data.coins);
+							setChaoStats(msg.chao, msg.options, msg.points);
+							$('#chao_stats').show();
+						}
+						else{
+							alert(msg.err);
+						}
+					}
+				});
+			});
+
+
+			$('#get_token').click(function(){
+				$.ajax({
+					type: "GET",
+					url: "../stream/garden/request/payment_token",
+					success: function(msg){
+						if (msg.token){
+							$('#buy_emeralds').text('10 Emeralds for $3');
+							paypal_token = msg.token;
+							setup_paypal_button();
+							$('#get_token').hide();
+							$('#buy_emeralds').show();
+						}
+						else{
+							alert("Something went wrong, please reload page");
+						}
+					}
+				});
+			});
+			function setup_paypal_button(){
+				braintree.client.create({
+					authorization: paypal_token
+				}, function(clientErr, clientInstance){
+					if (clientErr){
+						alert("Error, please reload page");
+						return;
+					}
+					braintree.paypal.create({
+						client: clientInstance
+						}, function(err, paypalInstance){
+							if (err){
+								alert("Error, please reload page");
+								return;
+							}
+
+							document.getElementById('buy_emeralds').addEventListener('click', function(){
+								paypalInstance.tokenize({
+									flow: 'checkout',
+									amount: 3.00,
+									currency: 'USD',
+									locale: 'en_US',
+									enableShippingAddress: false,
+
+								}, function(err2, tokenizationPayload){
+									if (err2){
+										alert(err2);
+										return;
+									}
+									$.ajax({
+										type: "POST",
+										url: "../stream/garden/request/checkout",
+										data: {nonce: tokenizationPayload.nonce},
+
+										success: function(msg){
+											if (msg.success){
+												alert("Payment Successful, you gained 10 emeralds.")
+												var emeralds = parseInt($('#emeralds_span').text());
+												$('#emeralds_span').text(emeralds+10);
+											}
+										}
+									});
+								});
+							})
+							
+							
+					})
+					
+				})
+			}
+							
+				
+			$('#buy_letter').click(function(){
+				$.ajax({
+					type: "GET",
+					url: "../stream/garden/request/buy_letter",
+					success: function(msg){
+						if (msg.success){
+							$('#emeralds_span').text(msg.emeralds);
+							$('#chao_name_field').attr('maxlength',msg.slots );
+							$('#chao_name_max').text(msg.slots);
+
+							$('#buy_letter').text(char_len_cost[ msg.slots-3 ]);
+						}
+						else{
+							alert(msg.err);
+						}
+					}
+				});
+			})
+			$('#buy_attribute').click(function(){
+				$.ajax({
+					type: "GET",
+					url: "../stream/garden/request/buy_attribute",
+					success: function(msg){
+						if (msg.success){
+							
+							setAttributePoints(msg.points);
+							$('#coins_span').text(msg.coins);
+							/*$('#emeralds_span').text(msg.emeralds);
+							$('#chao_name_field').attr('maxlength',msg.slots );
+							$('#chao_name_max').text(msg.slots);
+
+							$('#buy_letter').text(char_len_cost[ msg.slots-3 ]);*/
+						}
+						else{
+							alert(msg.err);
+						}
+					}
+				});
+			})
+			$('#refresh_coins').click(function(){
+				$.ajax({
+					type: "GET",
+					url: "../stream/garden/request/refresh_coins",
+		
+
+					success: function(msg){
+						if (msg.success == true){
+							$('#coins_span').text(msg.coins);
+						}
+						else{
+							alert(msg.err)
+						}
+					}
+				});
+			});
+			$('#get_coins').click(function(){
+				$.ajax({
+					type: "GET",
+					url: "../stream/garden/request/free_coins",
+		
+
+					success: function(msg){
+						
+					}
+				});
+			});
+			$('#get_emeralds').click(function(){
+				$.ajax({
+					type: "GET",
+					url: "../stream/garden/request/free_emeralds",
+		
+
+					success: function(msg){
+						
+					}
+				});
+			})
+			$('#enter_garden_button').click(function(){
+
+				setup_garden();
+			})
+
+			function setAttributePoints(n){
+				if (n ==0 ){
+					$('.half').hide();
+				}
+				else{
+					$('.half').show();
+				}
+				$('#attribute_points').text(n);
+			}
+			function setupShop(shop, options){
+
+				$('#buy_letter').text(char_len_cost[ options["name_length"][0]-3 ]);
+				var body_type_low = shop.body_type_range_low;
+				$('#shop_body_type').attr('num',body_type_low);
+				//Body Type
+				$('#shop_body_type').text(value_strings["body_type"][body_type_low]);
+				if (options["body_type"].indexOf(body_type_low) < 0){
+					$('#shop_body_type_price').text(shop["body_type_prices"][body_type_low]);
+
+				}
+				else{
+					$('#shop_body_type_price').text("Owned");
+				}
+
+				//Chao Type
+				var chao_type_low = shop.chao_type_range_low;
+				$('#shop_chao_type').attr('num',chao_type_low);
+				$('#shop_chao_type').text(value_strings["chao_type"][chao_type_low]);
+				if (options["chao_type"].indexOf(chao_type_low) < 0){
+					$('#shop_chao_type_price').text(shop["chao_type_prices"][chao_type_low]);
+
+				}
+				else{
+					$('#shop_chao_type_price').text("Owned");
+				}
+
+				//Color
+
+				var color_low = shop.color_range_low;
+				$('#shop_color').attr('num',color_low);
+				$('#shop_color').text(value_strings["color"][color_low]);
+				if (options["color"].indexOf(color_low) < 0){
+					$('#shop_color_price').text(shop["color_prices"][color_low]);
+
+				}
+				else{
+					$('#shop_color_price').text("Owned");
+				}
+
+			}
+			function setup_garden(){
+				//$('body').append("https://api.twitch.tv/kraken?oauth_token="+user_code);
+				if (user_code == false){
+					var url = 'https://api.twitch.tv/kraken/oauth2/authorize?response_type=code';
+					url += '&client_id=' + '<%-client_id %>';
+					url += '&redirect_uri=<%-redirect%>';
+					url += '&scope=';
+					url += '&state=lol';
+					window.location=url;
+
+				}
+				else{
+				
+					$.ajax({
+						type: "POST",
+						url: "../stream/garden/auth",
+						data: {code: user_code},
+
+						success: function(msg){
+
+							if (msg.success == true){
+
+							
+		
+								$('#point_span').text(""+points);
+								$('#username_span').text(""+user);
+								$('#left_bg').css('animation-play-state', 'running');
+								$('#right_bg').css('animation-play-state', 'running');
+								setTimeout(function(){
+									window.location.href="<%-redirect%>";
+								}, 4500);
+							
+							}
+						}
+					});
+				}
+				//al
+			}
+
+			function setChaoStats(chao, options, attrs){
+				$('#chao_name_field').attr('maxlength',options.name_length[0] );
+				$('#chao_name_max').text(options.name_length[0]);
+				$('#chao_name_field').attr('value',chao.name );
+
+				var chao_type = chao.chao_type;
+				$('#chao_chao_type').text(value_strings['chao_type'][chao.type]);
+				$('#chao_chao_type').attr('num', chao_type);
+				setAttributePoints(attrs);
+				$('#fly_span').text(chao.fly);
+				$('#power_span').text(chao.power);
+				$('#run_span').text(chao.run);
+				$('#swim_span').text(chao.swim);
+				$('#stamina_span').text(chao.stamina);
+
+				var color = chao.color;
+				$('#chao_color').text(value_strings['color'][color]);
+				$('#chao_color').attr('num', color);
+
+				var body_type = chao.body_type;
+				$('#chao_body_type').text(value_strings['body_type'][body_type]);
+
+				$('#chao_body_type').attr('num', body_type);
+			}
+			function getUrlVar(variable){
+				var query = window.location.search.substring(1);
+				var vars = query.split("&");
+				for (var i = 0;i<vars.length;i++){
+					var pair = vars[i].split("=");
+					if(pair[0]== variable){return pair[1];}
+
+				}
+				return false;
+			}
+			function getCookie(cookie){
+				var name = cookie + "=";
+				var ca = document.cookie.split(';');
+				for (var i = 0; i<ca.length;i++){
+					var c = ca[i];
+					while (c.charAt(0) == ' '){
+						c = c.substring(1);
+					}
+					if (c.indexOf(name) == 0){
+						return c.substring(name.length, c.length)
+					}
+				}
+				return "";
+			}
+
+			function isEmpty(obj){
+				for (var key in obj){
+					if (obj.hasOwnProperty(key)) return false;
+				}
+				return true;
+			}
+			
+		});
+
+		
+		function buy(item){
+			var item_div = "#shop_"+item;
+			var part = item;
+			var index = $(item_div).attr('num');
+
+
+			$.ajax({
+				type: "POST",
+				url: "../stream/garden/request/buy",
+				data: {part: part, index: index},
+
+				success: function(msg){
+					if (msg.success == true){
+						$('#coins_span').text(msg.coins);
+
+						$(item_div+"_price").text('Owned');
+						avail_options[item].push(index);
+					}
+					else{
+						alert(msg.err);
+					}
+					
+					//window.location.href="<%-redirect%>";
+				}
+			});
+		}
+
+		function chao_option_left(item){
+			var item_div = "#chao_"+item;
+			var current = parseInt($(item_div).attr('num'));
+			var current_owned_index = avail_options[item].indexOf(current);
+
+			if (current_owned_index > 0){
+				current = avail_options[item][current_owned_index-1];
+			}
+			else{
+				current = avail_options[item][avail_options[item].length-1];
+			}
+			$(item_div).attr('num', current);
+			$(item_div).text(value_strings[item][current]);
+		}
+
+		function chao_option_right(item){
+			var item_div = "#chao_"+item;
+			var current = parseInt($(item_div).attr('num'));
+			var current_owned_index = avail_options[item].indexOf(current);
+
+			if (current_owned_index < avail_options[item].length-1 ){
+
+				current = avail_options[item][current_owned_index+1];
+			}
+			else{
+
+				current=avail_options[item][0];
+			}
+			$(item_div).attr('num', current);
+			$(item_div).text(value_strings[item][current]);
+		}
+
+
+		function shop_left(item){
+			var item_div = '#shop_'+item;
+			var current_index = $(item_div).attr('num');
+			if (current_index > shop[item+"_range_low"]){
+				current_index--;
+			}
+			else{
+				current_index = shop[item+"_range_high"]
+			}
+
+			
+			$(item_div).text(value_strings[item][current_index]);
+			if (avail_options[item].indexOf(current_index) < 0){
+				$(item_div+"_price").text(shop[item+"_prices"][current_index]);
+			}
+			else{
+				$(item_div+"_price").text('Owned');
+			}
+			$(item_div).attr('num', current_index);
+
+		}
+		function shop_right(item){
+			var item_div = '#shop_'+item;
+			var current_index = $(item_div).attr('num');
+			if (current_index < shop[item+"_range_high"]){
+				current_index++;
+			}
+			else{
+				current_index = shop[item+"_range_low"]
+			}
+
+			
+			$(item_div).text(value_strings[item][current_index]);
+			if (avail_options[item].indexOf(current_index) < 0){
+				$(item_div+"_price").text(shop[item+"_prices"][current_index]);
+			}
+			else{
+				$(item_div+"_price").text('Owned');
+			}
+			$(item_div).attr('num', current_index);
+
+		}
+		function shopTab(evt, tabName) {
+
+		    var i, tabcontent, tablinks;
+		    tabcontent = document.getElementsByClassName("shop_tab");
+		    for (i = 0; i < tabcontent.length; i++) {
+		        tabcontent[i].style.display = "none";
+		    }
+
+		    tablinks = document.getElementsByClassName("tablinks");
+		    for (i = 0; i < tablinks.length; i++) {
+		        tablinks[i].className = tablinks[i].className.replace(" active", "");
+		    }
+		    document.getElementById(tabName).style.display = "block";
+		    evt.currentTarget.className += " active";
+		}
+		</script>
+	</html>

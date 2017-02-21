@@ -68,6 +68,7 @@ fs.readdirSync(__dirname+'/routes').forEach(function(file){
 var chat_controller = require('./socket_controllers/chat');
 var stream_controller = require('./socket_controllers/stream');
 var friends_controller = require('./socket_controllers/friends');
+var song_controller = require('./socket_controllers/song');
 bot.socket_connect();
 
 var chat = io
@@ -84,6 +85,14 @@ var stream = io
 		
 		stream_controller.respond(stream, socket, data_base);
 	});
+var song = io
+	.of('/song')
+	.on('connection', function(socket){
+		console.log("Connection in song");
+		
+		song_controller.respond(song, socket);
+	});
+
 
 var friends = io
 	.of('/friends')
