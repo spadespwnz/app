@@ -42,6 +42,13 @@ module.exports.respond = function(endpoint,socket, db){
 
 	});
 
+	socket.on('current_song', function(song){
+		endpoint.emit('current_song', song);
+	});
+	socket.on('request_song', function(){
+		endpoint.emit('request_song');
+	});
+
 
 
 }

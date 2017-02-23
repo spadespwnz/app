@@ -613,6 +613,10 @@ bot.on("chat", function(channel, userstate, message, self){
 			}
 			break;
 
+
+		case '!currentsong':
+			song_client.emit('request_song');
+			break;
 		case '!resetsongs':
 			if (user == admin){
 				song_client.emit('reset');
@@ -1440,5 +1444,9 @@ module.exports = {
 			}
 			bot.say(channel,'@'+user+' '+msg);
 		});
+
+		song_client.on('current_song', function(song){
+			bot.say(channel,'Current Song: '+song);
+		})
 	}
 }
