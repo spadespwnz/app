@@ -26,7 +26,7 @@ var tmi_options = {
 		username: "SPaDeSPwnzBot",
 		password: process.env.BOT_OAUTH
 	},
-	channels: ["#spadespwnzyou"]
+	channels: ["#spades_live"]
 
 };
 var trivia_on = false;
@@ -37,10 +37,10 @@ var trivia_categories = [];
 var trivia_clue = "";
 var already_guessed = [];
 var trivia_choices = true;
-var admin = 'spadespwnzyou';
+var admin = 'spades_live';
 var mods = ['miamiandy513', 'yungtdot'];
 var chatterTypes = ['moderators','staff','admins','global_mods','viewers'];
-var channel = "#spadespwnzyou";
+var channel = "#spades_live";
 var bot = new tmi.client(tmi_options);
 var day = 1;
 var on_msg_cooldown = false;
@@ -1348,7 +1348,7 @@ function suggest(suggestion, user){
 function getViewers(callback){
 	http.get({
 		host: 'tmi.twitch.tv',
-		path: '/group/user/spadespwnzyou/chatters',
+		path: '/group/user/spades_live/chatters',
 	}, function(res){
 		var body = '';
 		res.on('data', function(d){
@@ -1364,7 +1364,7 @@ function getViewers(callback){
 function checkOnline(callback){
 	https.get({
 		host: 'api.twitch.tv',
-		path: '/kraken/streams/spadespwnzyou',
+		path: '/kraken/streams/spades_live',
 		headers: {'Client-ID': 'g9112834cyysblntbe474sc099s00d'}
 	}, function(res){
 		var body = '';
