@@ -628,13 +628,13 @@ bot.on("chat", function(channel, userstate, message, self){
 				return;
 			}
 			if (message_parts.length < 3){
-				bot.say(channel, 'Incorrect Format: !setsong stage song http://www.pastebin.com/hKz594S0');
+				bot.say(channel, 'Incorrect Format: !setsong stage song http://www.pastebin.com/xXrYavVq');
 				return;
 			}
 			findPoints(user, function(points){
-				if (points >= 5){
+				if (points >= 1){
 					
-					song_client.emit('song_change', user, message_parts[2], message_parts[1]);
+					song_client.emit('song_change', user, message_parts.slice(2).join(""), message_parts[1]);
 				}
 				else{
 					bot.say(channel, "@"+user+" not enough points");
@@ -1440,7 +1440,7 @@ module.exports = {
 		});
 		song_client.on('res', function(success, user, msg){
 			if (success == true){
-				decPoints(user, 5);
+				decPoints(user, 1);
 			}
 			bot.say(channel,'@'+user+' '+msg);
 		});
