@@ -49,9 +49,9 @@ var cgss_messages = [
 	'You line yourself up perfectly on the white tile, then your finger twitched and you died',
 	'You spindash at the perfect angle, to bad you missed the jump input',
 	'Wait, what is the camera doing. Oh, Im dead',
-	'You changed your angle too slow, and now your dead',
+	'You changed your angle too slow, and now you're dead',
 	'Everything is going perfect, you made it passed the kill walls. Nevermind, you hit one at the last second',
-	'As your falling to the goal, you held your controlstick at the wrong angle, R I P',
+	'As you're falling to the goal, you held your controlstick at the wrong angle, R I P',
 	'You fall through the perfect spot on the green wall, but miss the visual queue on the space debris. So close and yet so far',
 	'You land on the roof of the goal, as you jump down and homing attack the goal ring, but you miss LOL',
 	'PERFECT spindash, perfect angle, perfect homing attak cancel, you GOT this. j/k you overshoot the goal ring by 2 pixels.',
@@ -61,7 +61,7 @@ var smm_messages = [
 		'You gain 1 point every 20 minutes while watching. Type !points to see your amount',
 		'Type !queue to see how many levels are in the queue',
 		'You can see completed (or failed) viewer levels at http://www.spades.tech/stream/smm',
-		'24H stream at 500 followers! Hit that follow button if your enjoying the stream.',
+		'24H stream at 500 followers! Hit that follow button if you're enjoying the stream.',
 		'Type !submit [CODE] to add your level to the queue',
 
 		'Use !song [YOUTUBE URL] to add a song to the queue',
@@ -73,7 +73,7 @@ var smm_messages = [
 
 var other_messages = [
 		'You gain 1 point every 20 minutes while watching. Type !points to see your amount',
-		'24H stream at 500 followers! Hit that follow button if your enjoying the stream.',
+		'24H stream at 500 followers! Hit that follow button if you're enjoying the stream.',
 		'Tell a friend to come type !ref [YOUR USERNAME] in chat to receive 2 points!',
 		'Gamble your points away with !cgss',
 		'Your points are currently useless, so for 5 points, !suggest [IDEA] me some ideas',
