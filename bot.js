@@ -9,10 +9,12 @@ var validator = require('youtube-validator');
 var client = require('socket.io/node_modules/socket.io-client');
 
 var song_client = require('socket.io/node_modules/socket.io-client');
+
+var overlay_client = require('socket.io/node_modules/socket.io-client');
 require('dotenv').config();
 var bot_id = process.env.BOT_ID;
 var bot_secret = process.env.BOT_SECRET;
-
+var overlay_users = [];
 var db;
 
 var tmi_options = {
@@ -29,6 +31,7 @@ var tmi_options = {
 	channels: ["#spades_live"]
 
 };
+var current_polls = [];
 var trivia_on = false;
 var trivia_question_solved = false;
 var trivia_timeout = 3;
@@ -118,9 +121,76 @@ console.log("BOT ON");
 
 bot.on("chat", function(channel, userstate, message, self) {
 	if (self) return;
+	channel = channel.slice(1);
 	var message_parts = message.split(' ');
 	var user = userstate.username;
 	switch (message_parts[0]) {
+		case "!twitter":
+			if (overlay_users[channel]){
+				db.collection('overlay').find({ 'user': user }).forEach(function (doc){
+					
+
+						overlay_client.emit("msg", {code: overlay_users[channel], msg: {command:"show_social", content: doc.social.twitter}});
+					
+					doc.social.twitter
+				})
+			}
+			break;
+		case "!poll":
+			if (user == admin) {
+				var option_string = message.slice(6)
+				var poll_options = option_string.split(',');
+				var poll = [];
+				for (var i = 0; i < poll_options.length; i++){
+					poll[i] = {option: poll_options[i], votes: 0};
+				}
+				current_polls[channel] = poll;
+				
+
+				if (overlay_users[channel]){
+
+					overlay_client.emit("msg", {code: overlay_users[channel], msg: {command:"poll_start", options: poll_options}});
+				}
+			}
+			break;
+		case "!endpoll":
+			overlay_client.emit("msg", {code: overlay_users[channel], msg: {command:"poll_end"}});
+			var poll = current_polls[channel]
+			poll.id = new uid();
+			dbutils.db_upsert(db,'overlay',{'user':channel},{'polls':poll}, function(res){
+				if (res.fail) {
+					return null;
+				}
+				return;
+			});
+			delete current_polls[channel.slice(1)];
+			break;
+		case "!checkpoll":
+			if (current_polls[channel]){
+				console.log(current_polls[channel]);
+			}
+			else{
+				console.log("No Poll");
+			}
+			break;
+		case "!vote":
+			if (current_polls[channel]){
+				var vote = parseInt(message_parts[1])
+
+				if (vote < current_polls[channel].length+1 && vote > 0){
+
+					current_polls[channel][vote-1].votes += 1;
+					overlay_client.emit("msg", {code: overlay_users[channel], msg:{command:"add_vote", value: vote}})
+
+				}
+			}
+			break;
+		case "!trial":
+			if (user == admin) {
+				console.log(overlay_users)
+				bot.say(channel, ""+JSON.stringify(overlay_users));
+			}
+			break;
 		case "!suggest":
 			findPoints(user, function(points) {
 				if (points > 5) {
@@ -1057,6 +1127,7 @@ function addToSMMFail(type, place, callback) {
 			if (!queue || !queue.level) {
 				callback(false);
 				return;
+			}
 			place = place - 1;
 			if (!queue.level[place]) {
 				callback(false);
@@ -1173,8 +1244,8 @@ function findIntel(user, callback) {
 
 function suggest(suggestion, user) {
 	dbutils.db_upsert(db, 'suggestion', {"type":"suggest_list"}, {"game_suggestions":{game: suggestion, from_user: user}}, function(in_push_result){
-		bot.say(channel, "@"+user+(in_push_result.fail ? ' failed to add suggestion.' : ' your suggestion was added.'));}
-			  });
+		bot.say(channel, "@"+user+(in_push_result.fail ? ' failed to add suggestion.' : ' your suggestion was added.'));
+	});
 }
 
 function getViewers(callback) {
@@ -1242,6 +1313,10 @@ function sendNote() {
 module.exports = {
 	set_db: function(database) {
 		db = database;
+		db.collection('overlay').find({ 'user': {$exists: true} }).forEach(function (doc){
+			overlay_users[doc.user] = doc.url;
+		})
+
 	},
 	socket_connect: function() {
 		var uri = process.env.SOCKET_URI || "http://localhost:3000";
@@ -1269,5 +1344,17 @@ module.exports = {
 		song_client.on('current_song', function(song) {
 			bot.say(channel,'Current Song: '+song);
 		})
+
+
+
+		overlay_client = overlay_client.connect(uri +'/overlay')
+		overlay_client.on('connect', function(){
+
+
+		});
+
+
+
+
 	}
 }

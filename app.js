@@ -69,6 +69,7 @@ var chat_controller = require('./socket_controllers/chat');
 var stream_controller = require('./socket_controllers/stream');
 var friends_controller = require('./socket_controllers/friends');
 var song_controller = require('./socket_controllers/song');
+var overlay_controller = require('./socket_controllers/overlay');
 bot.socket_connect();
 
 var chat = io
@@ -100,6 +101,15 @@ var friends = io
 
 		friends_controller.respond(friends, socket, data_base, io);
 	});
+
+
+var overlay = io
+	.of('/overlay')
+	.on('connection', function(socket){
+
+		overlay_controller.respond(overlay, socket, data_base, io);
+	});
+
 
 
 

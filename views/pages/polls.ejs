@@ -1,0 +1,85 @@
+<html>
+	<head>
+		<% include ../partials/head %>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.js"></script>
+	</head>
+	<style>
+		#polls{
+			margin: auto;
+			width: 900px;
+		}
+		.poll{
+			display: inline-block;
+			padding: 50;
+		}
+		canvas{
+			display:inline-block;
+		}
+
+	</style>
+	<body>
+	<div id='polls'>
+
+	</div>
+	</body>
+	<script>
+		$(document).ready(function(){
+			var ctx;
+			var prettyColors = [['red'],['red','blue'],['red','blue','green'],['red','blue','green','teal'],['red','blue','green','teal','orange'],['red','blue','green','teal','orange','purple'],['red','blue','green','teal','orange','purple','pink'],['red','blue','green','teal','orange','purple','pink'],['red','blue','green','teal','orange','purple','pink','brown'],['red','blue','green','teal','orange','purple','pink','brown','lightblue'],['red','blue','green','teal','orange','purple','pink','brown','lightblue','gold']]
+
+			var chartOptions = {
+				
+				title:{
+					display: false,
+				},
+				legend:{
+					labels:{
+						fontSize: 10
+					},
+					display: true
+				},
+				responsive: false,
+				maintainAspectRatio: true
+						
+			}
+			var polls = <%- JSON.stringify(polls) %>
+			var i = 0;
+			for (var poll in polls){
+				/*var appendString = '<div class=poll>';
+				for (var option in polls[poll]){
+					appendString += '<span>Option: '+polls[poll][option].option+', Votes: '+polls[poll][option].votes+'</span>';
+				}
+
+				appendString += '</div>'
+				$('#polls').append(appendString);
+				*/
+
+				$('#polls').prepend('<div class=poll><canvas id="myChart'+i+'" width="300" height="300"></canvas></div>')
+				ctx = document.getElementById("myChart"+i).getContext('2d');
+				//ctx.canvas.width = 500;
+				//ctx.canvas.height = 500;
+				var data = [];
+				var labels = [];
+				for (var j = 0;j<polls[poll].length;j++){
+					data.push(polls[poll][j].votes);
+					labels.push(polls[poll][j].option);
+				}
+				myChart = new Chart(ctx, {
+					type: 'pie',
+					data:{
+						labels: labels,
+						datasets:[{
+							label: "Votes",
+							backgroundColor:prettyColors[data.length],
+							data: data
+						}]
+					},
+					options:chartOptions
+				});
+				i++;
+
+			}
+		});
+	</script>
+
+</html>

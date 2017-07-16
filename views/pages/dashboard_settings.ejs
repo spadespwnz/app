@@ -1,0 +1,71 @@
+<html>
+	<head>
+		<% include ../partials/head %>
+	</head>
+	<style>
+		#twitter_uneditable{
+			display: inline-block;
+		}
+		.hidden{
+			display: none;
+		}
+		#twitter_editable{
+			display:inline-block;
+		}
+
+	</style>
+
+		twitter: 
+		<input type="text" readonly id="twitter_field"></input>
+		<div id="twitter_uneditable">
+			<button id="edit_twitter">Edit</button>
+		</div>
+		<div id="twitter_editable" class="hidden">
+			<button id="save_twitter">Save</button>
+			<button id="cancel_twitter">Cancel</button>
+		</div>
+
+	<script>
+		$(document).ready(function(){
+			var social = <%- JSON.stringify(social) %>
+			$('#twitter_field').val(social.twitter);
+			$('#edit_twitter').click(function(){
+
+				$('#twitter_uneditable').addClass('hidden');
+				$('#twitter_editable').removeClass('hidden');
+				$('#twitter_field').prop('readonly', false);
+			});
+			$('#cancel_twitter').click(function(){
+				$('#twitter_uneditable').removeClass('hidden');
+				$('#twitter_editable').addClass('hidden');
+				$('#twitter_field').prop('readonly', true);
+			});
+			$('#save_twitter').click(function(){
+				alert("clicked")
+				var twitter = document.getElementById("twitter_field").value;
+				$.ajax({
+					type: "POST",
+					url: "../../overlay/dashboard/set_twitter",
+					data: {twitter: twitter},
+
+					success: function(msg){
+
+						if (msg.success == true){
+
+							
+							alert("SET")
+							
+
+						
+						}
+						else{
+							alert("FAILED")
+						}
+					}
+				});
+			})
+		});
+
+	</script>
+</html>
+

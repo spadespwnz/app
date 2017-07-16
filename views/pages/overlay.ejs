@@ -1,0 +1,96 @@
+<html>
+	<head>
+		<% include ../partials/head %>
+	</head>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.js"></script>
+	<script src="/scripts/socket.io.js"></script>
+	<style>
+		.canvas_holder{
+			max-width: 600px;
+			max-height: 600px;
+		}
+		#social_popup{
+			position: fixed;
+			left: 20%;
+			top: 10%;
+			font-size: 150;
+			display:none;
+		}
+	</style>
+	<div id="canvas_holder">
+		<canvas id="myChart" width="600" height="600"></canvas>
+	</div>
+	<div id="social_popup">
+		<span id="social_text"></span>
+	</div>
+	<script>
+		var prettyColors = [['red'],['red','blue'],['red','blue','green'],['red','blue','green','teal'],['red','blue','green','teal','orange'],['red','blue','green','teal','orange','purple'],['red','blue','green','teal','orange','purple','pink'],['red','blue','green','teal','orange','purple','pink'],['red','blue','green','teal','orange','purple','pink','brown'],['red','blue','green','teal','orange','purple','pink','brown','lightblue'],['red','blue','green','teal','orange','purple','pink','brown','lightblue','gold']]
+		var myChart
+		var chartOptions = {
+			
+			title:{
+				display: false,
+			},
+			legend:{
+				labels:{
+					fontSize: 20
+				},
+				display: true
+			},
+			responsive: false,
+			maintainAspectRatio: true
+					
+		}
+
+		var ctx = document.getElementById("myChart").getContext('2d');
+		socket = io('/overlay');
+
+		socket.on('connect',function()
+		{
+			socket.emit('setup', "<%- code %>");
+		});
+
+		socket.on("client_message", function(msg){
+			if (msg.command == "poll_start"){
+				ctx.canvas.width = 600;
+				ctx.canvas.height = 600;
+				myChart = new Chart(ctx, {
+					type: 'pie',
+					data:{
+						labels: msg.options,
+						datasets:[{
+							label: "Votes",
+							backgroundColor:prettyColors[msg.options.length],
+							data: Array.apply(null, Array(msg.options.length)).map(Number.prototype.valueOf,0)
+						}]
+					},
+					options:chartOptions
+				});
+				
+			}
+
+			if (msg.command == "add_vote"){
+				console.log(myChart);
+				myChart.data.datasets[0].data[msg.value-1] = myChart.data.datasets[0].data[msg.value-1]+1;
+				//myChart.segments[msg.value-1].value = myChart.segments[msg.value-1].value+1;
+				myChart.update();
+			}
+
+			if (msg.command == "poll_end"){
+				myChart.destroy();
+			}
+			if (msg.command == "show_social"){
+				$('#social_text').text(msg.content)
+				$('#social_popup').show();
+				setTimeout(function(){
+					$('#social_popup').hide();
+				}, 5000)
+			}
+
+		})
+
+
+
+
+	</script>
+</html>
