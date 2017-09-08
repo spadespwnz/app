@@ -35,8 +35,8 @@ app.use(session({
 //app.use('/images', express.static(__dirname + '/images'));
 //app.use('/images', expressDirectory(__dirname + '/images'));
 app.use(express.static(__dirname + '/public'));
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+app.use(bodyParser.json({limit: '50mb'}))
 app.use(cookieParser())
 app.set('view engine', 'ejs');
 app.set('views', __dirname + '/views');
@@ -83,14 +83,14 @@ var stream = io
 	.of('/stream')
 	.on('connection', function(socket){
 		console.log("Connection in stream");
-		
+
 		stream_controller.respond(stream, socket, data_base);
 	});
 var song = io
 	.of('/song')
 	.on('connection', function(socket){
 		console.log("Connection in song");
-		
+
 		song_controller.respond(song, socket);
 	});
 
@@ -222,11 +222,11 @@ function addIdsToComments(){
 			if (listItem.comments){
 				listItem.comments.forEach(function (comment){
 
-					comment.id = new uid(); 
+					comment.id = new uid();
 					console.log(comment);
 				})
 			}
-			
+
 		});
 		data_base.collection('lists').save(doc, function(err, record){
 			console.log("Error:"+err)

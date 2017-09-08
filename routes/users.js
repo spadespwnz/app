@@ -49,7 +49,7 @@ router.post('/request/login', function(req, res) {
 						expiresIn: '72h'
 					});
 					res.cookie('token', token);
-					res.send({"login":"success"});
+					res.send({"login":"success", "token": token});
 
 				}
 				else{
@@ -73,7 +73,7 @@ router.get('/u/:username/images',function(req,res){
 
 		url = url + '/';
 		return res.redirect(301,url);
-		
+
 	}
 	db.collection('user:'+user).find( {"type":"image_uploads"}).toArray(function(err, cursor){
 		if (err){
@@ -128,7 +128,7 @@ router.get('/u/:username/images/:image', function(req,res){
 				res.send("File not found");
 			}
 		}
-		
+
 	});
 });
 
@@ -178,11 +178,11 @@ router.post('/request/signup', function(req, res) {
 router.use(function(req,res,next){
 	var token = req.cookies.token || req.body.token || req.query.token || req.headers['x-access-token'];
 	if (token){
-		jwt.verify(token, app.get('jwt_secret'), function(err, decoded) {      
+		jwt.verify(token, app.get('jwt_secret'), function(err, decoded) {
 		    if (err) {
-		        return res.redirect('/users/login');    
+		        return res.redirect('/users/login');
 		    } else {
-		        req.decoded = decoded;    
+		        req.decoded = decoded;
 		        next();
 		    }
 		});
