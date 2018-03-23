@@ -18,6 +18,7 @@
     "hjs": "0.0.6",
     "jsonwebtoken": "^7.1.9",
     "mongodb": "^2.2.30",
+    "prompt": "1.0.0",
     "querystring": "^0.2.0",
     "request": "^2.81.0",
     "serve-index": "^1.8.0",
