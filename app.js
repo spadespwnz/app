@@ -4,7 +4,6 @@ app = express();
 require('dotenv').config();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-var easyrtc = require('easyrtc');
 var fs = require('fs');
 var expressDirectory = require('serve-index');
 var bodyParser = require('body-parser');
