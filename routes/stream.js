@@ -177,7 +177,7 @@ router.post('/garden/auth', function(req,res){
 
 	
 	var options = {
-		host: 'id.twitch.tv',
+		host: 'api.twitch.tv',
 		path: '/oauth2/token',
 		method: 'POST',
 		headers:{
