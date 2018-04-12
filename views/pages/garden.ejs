@@ -978,7 +978,7 @@
 			function setup_garden(){
 				//$('body').append("https://api.twitch.tv/kraken?oauth_token="+user_code);
 				if (user_code == false){
-					var url = 'https://api.twitch.tv/kraken/oauth2/authorize?response_type=code';
+					var url = 'https://id.twitch.tv/oauth2/authorize?response_type=code';
 					url += '&client_id=' + '<%-client_id %>';
 					url += '&redirect_uri=<%-redirect%>';
 					url += '&scope=';
