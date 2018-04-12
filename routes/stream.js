@@ -10,6 +10,7 @@ var https = require('https');
 var querystring = require('querystring');
 var sessionMap = [];
 var braintree = require('braintree');
+var qs = require('querystring');
 var gateway = braintree.connect({
 	accessToken: process.env.BRAINTREE_TOKEN,
 });
