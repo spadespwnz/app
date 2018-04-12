@@ -172,7 +172,7 @@ router.post('/garden/auth', function(req,res){
 		'state':'lol'
 
 	});
-	post_data_json = { 'client_id': bot_id, 'client_secret': bot_secret, 'grant_type': "authorization_code", 'redirect_uri': process.env.REDIRECT_URL, 'code': code, 'state': "lol"};
+	//post_data_json = { client_id: bot_id, 'client_secret': bot_secret, 'grant_type': "authorization_code", 'redirect_uri': process.env.REDIRECT_URL, 'code': code, 'state': "lol"};
 
 
 	
@@ -251,7 +251,7 @@ router.post('/garden/auth', function(req,res){
 
 
 	});
-	auth_req.write(querystring.stringify(post_data_json));
+	auth_req.write(post_data);
 	auth_req.end();
 
 })
