@@ -179,7 +179,11 @@ router.post('/garden/auth', function(req,res){
 	var options = {
 		host: 'id.twitch.tv',
 		path: '/oauth2/token',
-		method: 'POST'
+		method: 'POST',
+		headers:{
+			'Content-Type':'application/x-www-form-urlencoded',
+			'Content-Length':post_data.length
+		}
 	};
 	var body = "";
 	var auth_req = https.request(options, function(auth_res){
