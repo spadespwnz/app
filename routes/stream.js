@@ -10,7 +10,6 @@ var https = require('https');
 var querystring = require('querystring');
 var sessionMap = [];
 var braintree = require('braintree');
-var qs = require('querystring');
 var gateway = braintree.connect({
 	accessToken: process.env.BRAINTREE_TOKEN,
 });
@@ -256,7 +255,7 @@ router.post('/garden/auth', function(req,res){
 
 
 	});
-	auth_req.write(JSON.stringify(post_data_json));
+	auth_req.write(querystring.stringify(post_data_json));
 	auth_req.end();
 
 })
