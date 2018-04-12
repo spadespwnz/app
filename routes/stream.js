@@ -191,6 +191,7 @@ router.post('/garden/auth', function(req,res){
 			body += chunk;
 		});
 		auth_res.on('end',function(){
+			console.log("Body: "+body);
 			if (JSON.parse(body).access_token){
 				var auth_token = JSON.parse(body).access_token;
 				sessionMap[sessionID] = {};
