@@ -181,8 +181,7 @@ router.post('/garden/auth', function(req,res){
 		path: '/oauth2/token',
 		method: 'POST',
 		headers:{
-			'Content-Type':'application/json',
-			'Client-ID':bot_id,
+			'Content-Type':'application/json'
 		}
 	};
 	var body = "";
