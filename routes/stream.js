@@ -177,8 +177,8 @@ router.post('/garden/auth', function(req,res){
 
 	
 	var options = {
-		host: 'api.twitch.tv',
-		path: '/kraken/oauth2/token',
+		host: 'id.twitch.tv',
+		path: '/oauth2/token',
 		method: 'POST',
 		headers:{
 			'Content-Type':'application/json',
