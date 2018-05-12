@@ -258,7 +258,7 @@ router.post('/signup/check', function(req, res) {
         console.log("data file exists:"+__dirname+ '/../lang/eng/eng.traineddata');
       }
       Tesseract.recognize(data, {
-          lang: path.resolve(__dirname, '../lang/eng/eng')
+          lang: __dirname+ '/../lang/eng/eng';
         })
         .then(function(result) {
           console.log(result.text);
