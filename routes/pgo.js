@@ -243,6 +243,9 @@ router.post('/signup/check', function(req, res) {
     })
   });
   req.busboy.on('finish', function() {
+    if (fs.existsSync(fname)){
+      console.log("Image file exists:"+fname);
+    }
     fs.readFile(fname, function(err, data) {
       if (err) {
         res.send({
@@ -250,6 +253,9 @@ router.post('/signup/check', function(req, res) {
           "err": "Server failed to read image."
         });
         return;
+      }
+      if (fs.existsSync(__dirname+ '/../lang/eng/eng.traineddata')){
+        console.log("data file exists:"+__dirname+ '/../lang/eng/eng.traineddata');
       }
       Tesseract.recognize(data, {
           lang: path.resolve(__dirname, '../lang/eng/eng')
@@ -294,11 +300,7 @@ router.post('/signup/check', function(req, res) {
                 return;
               }
             }
-
-
-
           }
-
           res.send({
             "success": "false",
             "err": "Could not find Account Name on image."
