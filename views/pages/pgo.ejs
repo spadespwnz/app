@@ -1,0 +1,154 @@
+<html>
+
+  <style>
+    .top_bar {
+      width: 100%;
+      height: 100px;
+      background-color: grey;
+    }
+    .logged_in{
+      display: none;
+    }
+    .logged_out{
+      display: none;
+    }
+    .top_bar button{
+      float: right;
+      margin-right: 5%;
+      margin-top: 10px;
+      height: 80px;
+      width: 10%;
+    }
+    .top_bar span{
+      overflow: hidden;
+      position: relative;
+      float: right;
+      margin-right: 5%;
+      margin-top: 10px;
+      height: 80px;
+      font-size: 400%;
+    }
+    #addGym{
+      position: fixed;
+      right: 10px;
+      bottom: 100px;
+
+    }
+
+  </style>
+  <head>
+    <script  src="https://code.jquery.com/jquery-3.1.0.min.js"   integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s="   crossorigin="anonymous"></script>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+  </head>
+  <body>
+    <div class="top_bar">
+      <div class="logged_out">
+        <button id="login_button">login</button>
+      </div>
+      <div class="logged_in">
+        <span id="acc_name_span">...loading...</span>
+      </div>
+    </div>
+
+    <form id="addGym"class="logged_in"
+      enctype="multipart/form-data"
+      action="javascript:void(0);">
+      <label for="gymImage" class="btn-file">
+        Gym Image
+      </label>
+      <input id="gymImage" type="file", name="userImage" />
+      <span id="status"></span>
+    </form>
+  </body>
+
+</html>
+
+<script>
+  $(document).ready(function() {
+    var my_url = String(window.location)
+    if (my_url.slice(-1) != '/'){
+      my_url += '/';
+      window.history.replaceState(null, document.title, my_url);
+    }
+
+
+    if (document.cookie.indexOf("token")>=0){
+      $('.logged_in').show();
+      $('.logged_out').hide();
+      $.ajax({
+        url:'./getAccountName',
+        type:'GET',
+        method: 'GET',
+        success: function(res){
+          if (res.success == "true"){
+
+            $('#acc_name_span').text(res.account);
+          } else{
+            $('.logged_in').hide();
+            $('.logged_out').show();
+          }
+
+        }
+      });
+
+    } else{
+      $('.logged_in').hide();
+      $('.logged_out').show();
+    }
+
+     $('#login_button').click(function(){
+       location.href="./login"
+     });
+     $('#gymImage').change(function() {
+
+       var file = $("#gymImage")[0].files[0];
+       var data = new FormData();
+       data.append("file", file);
+
+        $("#status").empty().text("File is uploading...");
+        $.ajax({
+          url:'./add',
+          type:'POST',
+          method: 'POST',
+          data: data,
+          enctype: 'multipart/form-data',
+          cache: false,
+          contentType: false,
+          processData: false,
+          success: function(res){
+            if (res.success == "true"){
+              alert("Gym Added")
+              location.reload();
+            } else{
+              alert(res.err)
+            }
+
+          }
+        })
+    });
+
+    loadPage();
+  });
+
+  function loadPage(){
+    $.ajax({
+      url:'./gyms',
+      type:'GET',
+      method: 'GET',
+      success: function(res){
+
+
+      }
+    });
+  }
+
+</script>

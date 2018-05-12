@@ -95,7 +95,7 @@ console.log("BOT ON");
 					for (var type = 0; type<chatterTypes.length;type++) {
 						for (var i = 0; i< parsed.chatters[chatterTypes[type]].length;i++) {
 							addPoints(parsed.chatters[chatterTypes[type]][i], 1);
-							
+
 						}
 					}
 				});
@@ -115,7 +115,7 @@ console.log("BOT ON");
 				}
 			}
 			question();
-		}	
+		}
 	},1000*60*trivia_timeout);
 })();
 
@@ -128,10 +128,10 @@ bot.on("chat", function(channel, userstate, message, self) {
 		case "!twitter":
 			if (overlay_users[channel]){
 				db.collection('overlay').find({ 'user': user }).forEach(function (doc){
-					
+
 
 						overlay_client.emit("msg", {code: overlay_users[channel], msg: {command:"show_social", content: doc.social.twitter}});
-					
+
 					doc.social.twitter
 				})
 			}
@@ -145,7 +145,7 @@ bot.on("chat", function(channel, userstate, message, self) {
 					poll[i] = {option: poll_options[i], votes: 0};
 				}
 				current_polls[channel] = poll;
-				
+
 
 				if (overlay_users[channel]){
 
@@ -570,7 +570,7 @@ bot.on("chat", function(channel, userstate, message, self) {
 			}
 			if (useUrl.indexOf('&list=') > 0) {
 				useUrl = useUrl.substring(0,useUrl.indexOf('&list='));
-			
+
 			}
 			validSong(useUrl, function(success) {
 				if (success) {
@@ -617,7 +617,7 @@ bot.on("chat", function(channel, userstate, message, self) {
 					for (var type = 0; type<chatterTypes.length;type++) {
 						for (var i = 0; i< parsed.chatters[chatterTypes[type]].length;i++) {
 							addPoints(parsed.chatters[chatterTypes[type]][i], amount);
-							
+
 						}
 					}
 					bot.say(channel,"Points Given");
@@ -651,7 +651,7 @@ bot.on("chat", function(channel, userstate, message, self) {
 					})
 				}
 			}
-			break;	
+			break;
 		case "!triviaon":
 			if (user == admin || mods.indexOf(user) >= 0 ) {
 				trivia_on = true;
@@ -764,21 +764,21 @@ function question() {
 						var choose_q = parseInt(Math.floor(Math.random() * (count + 1)));
 						var t_question = cursor[0].questions[choose_q].question;
 						trivia_clue = t_question.substring(t_question.indexOf('[')).toLowerCase();
-					
+
 						if (!trivia_choices) {
 							t_question = t_question.substring(0, t_question.indexOf('['));
 						}
 						bot.say(channel,'['+trivia_categories[choose_cat]+'] '+t_question)
 						trivia_answer = cursor[0].questions[choose_q].answer.toLowerCase();
-						
+
 					}
 					else{
-						
+
 						bot.say(channel, "Whoever coded me is bad");
 					}
 				}
 				else{
-					
+
 					bot.say(channel, "Whoever coded me is bad");
 				}
 			}
@@ -798,10 +798,10 @@ function announce_categories() {
 			if (cursor[0]) {
 				if (cursor[0].categories) {
 					bot.say(channel,""+cursor[0].categories);
-					
+
 				}
 				else{
-					
+
 					bot.say(channel,"None");
 				}
 			}
@@ -827,7 +827,7 @@ function add_trivia_category(cat) {
 					}
 				}
 				else{
-					
+
 					bot.say(channel,"Category Not Found");
 				}
 			}
@@ -843,7 +843,7 @@ function remove_trivia_category(cat) {
 	if (spot > -1) {
 		trivia_categories.splice(spot,1);
 	}
-	
+
 	bot.say(channel,"Category Removed");
 };
 
@@ -994,7 +994,7 @@ function deleteFromQueue(type, place, callback) {
 				return;
 			}
 			var level = queue.level[place];
-	
+
 			dbutils.db_pull(db, 'SMM', {"type":"queue"}, {"level": {code: level.code}}, function(res) {
 				callback(true)
 			});
@@ -1080,7 +1080,7 @@ function addToSMMComplete(type, place, callback) {
 					dbutils.db_pull(db, 'SMM', {"type":"prio_queue"}, {"level": {code: level.code}}, function(res) {
 						callback(true)
 					});
-				
+
 				}
 			});
 		});
@@ -1116,7 +1116,7 @@ function addToSMMFail(type, place, callback) {
 					dbutils.db_pull(db, 'SMM', {"type":"queue"}, {"level": {code: level.code}}, function(res) {
 						callback(true)
 					});
-				
+
 				}
 			});
 		});
@@ -1259,7 +1259,7 @@ function getViewers(callback) {
 		});
 		res.on('end', function() {
 			var parsed = JSON.parse(body);
-			callback(parsed);			
+			callback(parsed);
 		});
 	})
 }
@@ -1283,7 +1283,7 @@ function checkOnline(callback) {
 
 function pingSite() {
 		http.get({
-		host: 'www.spades.tech',
+		host: 'www.spades.cloud',
 		path: '/',
 	}, function(res) {
 		var body = '';
@@ -1326,14 +1326,14 @@ module.exports = {
 		console.log("End Url:"+end_url);
 		client = client.connect(end_url);
 		client.on('connect',function()
-		{	
+		{
 		});
 		client.on('msg', function(message) {
 			console.log('In Bot:'+message);
 		});
 		song_client = song_client.connect(end_song_url);
 		song_client.on('connect',function()
-		{	
+		{
 		});
 		song_client.on('res', function(success, user, msg) {
 			if (success) {
