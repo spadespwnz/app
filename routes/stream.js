@@ -10,9 +10,14 @@ var https = require('https');
 var querystring = require('querystring');
 var sessionMap = [];
 var braintree = require('braintree');
-var gateway = braintree.connect({
-	accessToken: process.env.BRAINTREE_TOKEN,
-});
+try{
+	var gateway = braintree.connect({
+		accessToken: process.env.BRAINTREE_TOKEN,
+	});
+}
+catch(err){
+	console.error(err);
+}
 
 
 require('dotenv').config();
@@ -23,7 +28,7 @@ var bot_secret = process.env.BOT_SECRET;
 var default_options = {"name_length": [3],"chao_type": [2],"color":[0], "texture":[0],
 "two_tone": [0], "shiny": [0], "body_type": [0], "animal_body": [0],
 "eyes": [0], "mouth": [0], "feet": [1], "arms":[0], "ears":[0],
-"forehead":[0], "horns":[0], "legs":[0], "tail":[0], 
+"forehead":[0], "horns":[0], "legs":[0], "tail":[0],
 "wings":[0],"face":[0], "hat":[0]};
 
 var shop = { char_slot: [1,10,20,30], attribute_point_price: 25, body_type_range_low: 0, body_type_range_high: 3, body_type_prices: [0,300,1000,500],
@@ -35,7 +40,7 @@ color_range_low: 0, color_range_high: 82, color_prices: [0,25,25,25,25,25,25,25,
 "chao_options.name_length": 1,"chao_options.type": 2,"chao_options.color":0, "chao_options.texture":0,
 							"chao_options.two_tone": 0, "chao_options.shiny": 0, "chao_options.body_type": 0, "chao_options.animal_body": 0,
 							"chao_options.eyes": 0, "chao_options.mouth": 0, "chao_options.feet": 1, "chao_options.arms":0, "chao_options.ears":0,
-							"chao_options.forehead":0, "chao_options.horns":0, "chao_options.legs":0, "chao_options.tail":0, 
+							"chao_options.forehead":0, "chao_options.horns":0, "chao_options.legs":0, "chao_options.tail":0,
 							"chao_options.wings":0,"chao_options.face":0, "chao_options.hat":0
 */
 
@@ -93,7 +98,7 @@ router.get('/gameslist/:console', function(req, res) {
 });
 
 router.get('/next', function(req, res) {
-	
+
 	var code = req.param.code;
 
 	res.render('pages/stream_next', {client_id: bot_id, code: code});
@@ -114,11 +119,11 @@ router.get('/garden', function(req, res) {
 		db.collection('chao_garden').find( {"user":user}).toArray(function(err, cursor){
 			var user_data = {};;
 			if (err){
-				
-				
+
+
 			}
 			else{
-				
+
 				if (cursor[0]){
 					user_data = cursor[0];
 				}
@@ -126,19 +131,19 @@ router.get('/garden', function(req, res) {
 					user_data = {"user":user, coins:0, emeralds: 0, points: 0,chao:{}, chao_options: default_options};
 					db.collection('chao_garden').insert(user_data);
 					//dbutils.db_upsert(db, 'chao_garden', {user:user}, {coins:0, emeralds: 0, chao:{}, chao_options: {}}, function(in_push_result){});
-					
+
 				}
 			}
-			
+
 			res.render('pages/garden', {client_id: bot_id, logged_in: 'true', shop: shop,user_data: user_data, redirect: process.env.REDIRECT_URL});
 		});
-		
-		
-	
-		
+
+
+
+
 		return;
 	}
-	
+
 	res.render('pages/garden', {client_id: bot_id,code: code, logged_in: 'false', shop: {}, user_data: {}, redirect: process.env.REDIRECT_URL});
 });
 router.get('/garden/request/logout', function(req, res) {
@@ -172,17 +177,17 @@ router.post('/garden/auth', function(req,res){
 		'state':'lol'
 
 	});
-	post_data_json = { client_id: bot_id, client_secret: bot_secret, grant_type: "authorization_code", redirect_uri: process.env.REDIRECT_URL, code: code, state: "lol"};
+	//post_data_json = { client_id: bot_id, 'client_secret': bot_secret, 'grant_type': "authorization_code", 'redirect_uri': process.env.REDIRECT_URL, 'code': code, 'state': "lol"};
 
 
-	
+
 	var options = {
-		host: 'api.twitch.tv',
-		path: '/kraken/oauth2/token',
+		host: 'id.twitch.tv',
+		path: '/oauth2/token',
 		method: 'POST',
 		headers:{
-			'Content-Type':'application/json',
-			'Client-ID':bot_id,
+			'Content-Type':'application/x-www-form-urlencoded',
+			'Content-Length':post_data.length
 		}
 	};
 	var body = "";
@@ -191,6 +196,7 @@ router.post('/garden/auth', function(req,res){
 			body += chunk;
 		});
 		auth_res.on('end',function(){
+			console.log("Body: "+body);
 			if (JSON.parse(body).access_token){
 				var auth_token = JSON.parse(body).access_token;
 				sessionMap[sessionID] = {};
@@ -217,7 +223,7 @@ router.post('/garden/auth', function(req,res){
 									points = 0;
 								}
 								else{
-									
+
 									if (cursor[0]){
 										if (cursor[0].points){
 											points = cursor[0].points;
@@ -230,22 +236,22 @@ router.post('/garden/auth', function(req,res){
 									else{
 
 										points = 0;
-										
+
 									}
 								}
 								res.send({success: true, user: user , points: points});
-		
+
 							});*/
 							res.send({success: true});
-							
-							
+
+
 						}
 						else{
 							res.send({success: false});
 						}
 					});
 				})
-				
+
 			}
 			else{
 				res.send({success: false});
@@ -254,7 +260,7 @@ router.post('/garden/auth', function(req,res){
 
 
 	});
-	auth_req.write(JSON.stringify(post_data_json));
+	auth_req.write(post_data);
 	auth_req.end();
 
 })
@@ -277,7 +283,7 @@ router.post('/garden/request/buy', function(req,res){
 		user = sessionMap[sessionID].user;
 		index = parseInt(index);
 		if (!shop[part+'_prices']){
-			
+
 			res.send({success: false, err: "Item not found"});
 			return;
 		}
@@ -323,9 +329,9 @@ router.post('/garden/request/buy', function(req,res){
 				res.send({success: false, err: "Reload page"});
 				return;
 			}
-			
+
 		});
-		
+
 		//res.send({success: true});
 	}
 	else{
@@ -343,7 +349,7 @@ router.get('/garden/request/buy_attribute', function(req,res){
 			if (cursor){
 				if (cursor[0]){
 
-					
+
 					findCoins(user, db,function(coins){
 						if (coins < shop['attribute_point_price']){
 
@@ -359,7 +365,7 @@ router.get('/garden/request/buy_attribute', function(req,res){
 
 						}
 					})
-					
+
 				}
 				else{
 
@@ -371,9 +377,9 @@ router.get('/garden/request/buy_attribute', function(req,res){
 				res.send({success: false, err: "Reload page"});
 				return;
 			}
-			
+
 		});
-		
+
 		//res.send({success: true});
 	}
 	else{
@@ -424,9 +430,9 @@ router.get('/garden/request/buy_letter', function(req,res){
 				res.send({success: false, err: "Reload page"});
 				return;
 			}
-			
+
 		});
-		
+
 		//res.send({success: true});
 	}
 	else{
@@ -448,7 +454,7 @@ router.get('/garden/request/refresh_coins', function(req,res){
 					findCoins(user, db,function(coins){
 						res.send({success: true, coins: coins})
 					})
-				
+
 				}
 				else{
 
@@ -460,9 +466,9 @@ router.get('/garden/request/refresh_coins', function(req,res){
 				res.send({success: false, err: "Reload page"});
 				return;
 			}
-			
+
 		});
-		
+
 		//res.send({success: true});
 	}
 	else{
@@ -507,7 +513,7 @@ router.post('/garden/request/checkout', function(req,res){
 
 router.get('/garden/request/payment_token', function(req,res){
 	gateway.clientToken.generate({}, function (err, response){
-		
+
 		res.send({token: response.clientToken});
 	});
 });
@@ -543,7 +549,7 @@ router.get('/garden/request/increase_stamina', function(req,res){
 			if (cursor){
 				if (cursor[0]){
 
-					
+
 					if (cursor[0].points <= 0){
 						res.send({success: false, err: "No Points to spend"});
 					}
@@ -558,7 +564,7 @@ router.get('/garden/request/increase_stamina', function(req,res){
 
 						res.send({success: true, stamina: cursor[0].chao.stamina+1, points: cursor[0].points-1});
 					}
-					
+
 				}
 				else{
 
@@ -570,9 +576,9 @@ router.get('/garden/request/increase_stamina', function(req,res){
 				res.send({success: false, err: "Reload page"});
 				return;
 			}
-			
+
 		});
-		
+
 		//res.send({success: true});
 	}
 	else{
@@ -590,7 +596,7 @@ router.get('/garden/request/increase_swim', function(req,res){
 			if (cursor){
 				if (cursor[0]){
 
-					
+
 					if (cursor[0].points <= 0){
 						res.send({success: false, err: "No Points to spend"});
 					}
@@ -605,7 +611,7 @@ router.get('/garden/request/increase_swim', function(req,res){
 
 						res.send({success: true, swim: cursor[0].chao.swim+1, points: cursor[0].points-1});
 					}
-					
+
 				}
 				else{
 
@@ -617,9 +623,9 @@ router.get('/garden/request/increase_swim', function(req,res){
 				res.send({success: false, err: "Reload page"});
 				return;
 			}
-			
+
 		});
-		
+
 		//res.send({success: true});
 	}
 	else{
@@ -637,7 +643,7 @@ router.get('/garden/request/increase_run', function(req,res){
 			if (cursor){
 				if (cursor[0]){
 
-					
+
 					if (cursor[0].points <= 0){
 						res.send({success: false, err: "No Points to spend"});
 					}
@@ -652,7 +658,7 @@ router.get('/garden/request/increase_run', function(req,res){
 
 						res.send({success: true, run: cursor[0].chao.run+1, points: cursor[0].points-1});
 					}
-					
+
 				}
 				else{
 
@@ -664,9 +670,9 @@ router.get('/garden/request/increase_run', function(req,res){
 				res.send({success: false, err: "Reload page"});
 				return;
 			}
-			
+
 		});
-		
+
 		//res.send({success: true});
 	}
 	else{
@@ -684,7 +690,7 @@ router.get('/garden/request/increase_fly', function(req,res){
 			if (cursor){
 				if (cursor[0]){
 
-					
+
 					if (cursor[0].points <= 0){
 						res.send({success: false, err: "No Points to spend"});
 					}
@@ -699,7 +705,7 @@ router.get('/garden/request/increase_fly', function(req,res){
 
 						res.send({success: true, fly: cursor[0].chao.fly+1, points: cursor[0].points-1});
 					}
-					
+
 				}
 				else{
 
@@ -711,9 +717,9 @@ router.get('/garden/request/increase_fly', function(req,res){
 				res.send({success: false, err: "Reload page"});
 				return;
 			}
-			
+
 		});
-		
+
 		//res.send({success: true});
 	}
 	else{
@@ -731,7 +737,7 @@ router.get('/garden/request/increase_power', function(req,res){
 			if (cursor){
 				if (cursor[0]){
 
-					
+
 					if (cursor[0].points <= 0){
 						res.send({success: false, err: "No Points to spend"});
 					}
@@ -746,7 +752,7 @@ router.get('/garden/request/increase_power', function(req,res){
 
 						res.send({success: true, power: cursor[0].chao.power+1, points: cursor[0].points-1});
 					}
-					
+
 				}
 				else{
 
@@ -758,9 +764,9 @@ router.get('/garden/request/increase_power', function(req,res){
 				res.send({success: false, err: "Reload page"});
 				return;
 			}
-			
+
 		});
-		
+
 		//res.send({success: true});
 	}
 	else{
@@ -785,7 +791,7 @@ router.get('/garden/request/free_coins', function(req,res){
 router.get('/garden/request/free_emeralds', function(req,res){
 	var db = req.db;
 
-	
+
 	var sessionID = req.sessionID;
 
 	db.collection('chao_garden').find().toArray(function(err, cursor){
@@ -807,10 +813,10 @@ router.get('/garden/request/free_emeralds', function(req,res){
 router.get('/garden/request/buy_chao', function(req,res){
 	var db = req.db;
 	var default_chao = {name:"",type: 2, swim: 0, fly: 0, run: 0, power: 0, stamina: 0, int: 0, luck: 0, color: 0, texture: 0,
-						two_tone: false, shiny: false, body_type: 0, animal_body: 0, eyes: 0, mouth: 0, feet: true, 
+						two_tone: false, shiny: false, body_type: 0, animal_body: 0, eyes: 0, mouth: 0, feet: true,
 						arms: 0, ears: 0, forehead: 0, horns: 0, legs: 0, tail: 0, wings: 0, face: 0, hat: 0 };
 	var options = {name_length: [1], type: [2]}
-	
+
 	var sessionID = req.sessionID;
 	if (sessionMap[sessionID]){
 		user = sessionMap[sessionID].user;
@@ -822,7 +828,7 @@ router.get('/garden/request/buy_chao', function(req,res){
 							"chao_options.name_length": 3,"chao_options.type": 2,"chao_options.color":0, "chao_options.texture":0,
 							"chao_options.two_tone": 0, "chao_options.shiny": 0, "chao_options.body_type": 0, "chao_options.animal_body": 0,
 							"chao_options.eyes": 0, "chao_options.mouth": 0, "chao_options.feet": 1, "chao_options.arms":0, "chao_options.ears":0,
-							"chao_options.forehead":0, "chao_options.horns":0, "chao_options.legs":0, "chao_options.tail":0, 
+							"chao_options.forehead":0, "chao_options.horns":0, "chao_options.legs":0, "chao_options.tail":0,
 							"chao_options.wings":0,"chao_options.face":0, "chao_options.hat":0
 						}*/
 					});
@@ -854,10 +860,10 @@ router.post('/garden/request/add_battle_chao', function(req,res){
 					dbutils.db_upsert(db, 'chao_battle', {"chao":cursor.length}, {stats:req.body}, function(in_push_result){
 						if (in_push_result.fail == true){
 							//Error adding notelist for user
-							
+
 						}
 						else{
-							
+
 						}
 					});
 					res.send({success:"true"})
@@ -919,7 +925,7 @@ router.get('/points', function(req,res){
 	var db=req.db;
 
 	var db = req.db;
-	
+
 	db.collection('points').find().toArray(function(err, cursor){
 		if (err){
 			res.send("Error loading");
@@ -931,12 +937,12 @@ router.get('/points', function(req,res){
 			else{
 				res.send("No Points Found");
 			}
-			
+
 		}
 	});
-	
 
-	
+
+
 });
 
 
@@ -971,7 +977,7 @@ router.get('/request/check_setup', function(req, res) {
 		}
 		else{
 			if (cursor){
-				
+
 				if (cursor.length > 0){
 					db.collection('chao_battle').find().toArray(function(err, cursor2){
 						if (err){
@@ -992,12 +998,12 @@ router.get('/request/check_setup', function(req, res) {
 									}
 								}
 							}
-							
+
 							res.send({do_setup: true, chao1: chao1, chao2: chao2});
 						}
 					});
-					
-					
+
+
 				}
 				else{
 					res.send({do_setup: false});
@@ -1009,7 +1015,7 @@ router.get('/request/check_setup', function(req, res) {
 		}
 	});
 	//db.collection('chao_battle').update({"setup": true},{$set:{"setup": false}}, {upsert: true});
-	
+
 });
 
 
@@ -1017,9 +1023,9 @@ router.use(function(req,res,next){
 	var token = req.cookies.token || req.body.token || req.query.token || req.headers['x-access-token'];
 	var db = req.db;
 	if (token){
-		jwt.verify(token, app.get('jwt_secret'), function(err, decoded) {      
+		jwt.verify(token, app.get('jwt_secret'), function(err, decoded) {
 		    if (err) {
-		        res.redirect('/stream');  
+		        res.redirect('/stream');
 		    } else {
 		    	dbutils.db_find(db, 'admin', {"type":'admin_list'},function(find_result){
 					if (find_result.fail == true){
@@ -1040,7 +1046,7 @@ router.use(function(req,res,next){
 								res.send({"request":"fail","error":"you are not an admin"});
 							}
 							else{
-								req.decoded = decoded; 
+								req.decoded = decoded;
 	        					next();
 							}
 						}
@@ -1070,7 +1076,7 @@ router.post('/request/reset_points', function(req,res){
 	var db=req.db;
 
 	var db = req.db;
-	
+
 	db.collection('points').find().toArray(function(err, cursor){
 		if (err){
 			res.send("Error loading images");
@@ -1082,12 +1088,12 @@ router.post('/request/reset_points', function(req,res){
 					db.collection('points').update( {"user":user}, {$set: {points: 0}});
 				}
 			}
-			
+
 		}
 	});
 	res.send("lol");
 
-	
+
 });
 router.post('/request/complete_game', function(req,res){
 	var db=req.db;
@@ -1098,8 +1104,8 @@ router.post('/request/complete_game', function(req,res){
 
 	var db = req.db;
 	db.collection('stream_games').update({'games.game': game}, {$set: {'games.$.complete': true, 'games.$.time': time, 'games.$.desc': desc}});
-	
-	
+
+
 });
 router.post('/request/remove_console', function(req,res){
 	var db=req.db;
@@ -1110,8 +1116,8 @@ router.post('/request/remove_console', function(req,res){
 	var db = req.db;
 	db.collection('stream_games').remove({"type":console});
 	db.collection('stream_games').update({"type":"console_list"}, {$pull:{consoles:console}});
-	
-	
+
+
 });
 router.post('/request/add_game', function(req,res){
 	var db=req.db;
@@ -1123,23 +1129,23 @@ router.post('/request/add_game', function(req,res){
 	dbutils.db_upsert(db, 'stream_games', {"type":"console_list"}, {"consoles":console}, function(in_push_result){
 		if (in_push_result.fail == true){
 			//Error adding notelist for user
-			
+
 		}
 		else{
-			
+
 		}
 	});
 	dbutils.db_upsert(db, 'stream_games', {"type":console}, {"games":{game: game, experience: exp}}, function(in_push_result){
 		if (in_push_result.fail == true){
 			//Error adding notelist for user
-			res.send({'success': 'false', "error":'failed to add to db'});	
+			res.send({'success': 'false', "error":'failed to add to db'});
 		}
 		else{
 			res.send({'success': 'true'});
 		}
 	});
-	
-	
+
+
 });
 
 
@@ -1163,7 +1169,7 @@ router.get('/request/battle_state', function(req, res) {
 router.get('/request/setup_chao_battle', function(req, res) {
 	var db = req.db;
 	db.collection('chao_battle').update({"setup": true},{$set:{"setup": true}}, {upsert: true, multi: false});
-	
+
 });
 
 
@@ -1178,7 +1184,7 @@ function findCoins(user,db, callback){
 
 	db.collection('chao_garden').find( {user:user}).toArray(function(err, cursor){
 		if (err){
-			
+
 		}
 		else{
 			if (cursor[0]){
@@ -1186,14 +1192,14 @@ function findCoins(user,db, callback){
 					callback(cursor[0].coins);
 				}
 				else{
-					
+
 					callback(0);
 				}
 			}
 			else{
 
 				callback(0);
-				
+
 			}
 		}
 	});
@@ -1203,7 +1209,7 @@ function findEmeralds(user,db, callback){
 
 	db.collection('chao_garden').find( {user:user}).toArray(function(err, cursor){
 		if (err){
-			
+
 		}
 		else{
 			if (cursor[0]){
@@ -1211,14 +1217,14 @@ function findEmeralds(user,db, callback){
 					callback(cursor[0].emeralds);
 				}
 				else{
-					
+
 					callback(0);
 				}
 			}
 			else{
 
 				callback(0);
-				
+
 			}
 		}
 	});

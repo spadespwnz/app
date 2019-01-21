@@ -1,0 +1,129 @@
+<html>
+  <style>
+    html, body, div{
+      height: 100%;
+      width: 100%;
+
+  }
+  .login_area {
+    position: relative;
+    vertical-align: top;
+    text-align: center;
+    padding: 0;
+    margin: 2% 0 0 5%;
+    display: inline-block;
+    height: 40%;
+    width: 90%;
+    box-shadow: 0px 0 5px black;
+  }
+
+  input[type="file"]{
+    display: none;
+  }
+  .btn-file{
+    background-color: grey;
+    font-size: 400%;
+    vertical-align: middle;
+    display: absolute;
+    display:table-cell;
+    margin-top: 50px;
+    padding-top: 50%;
+    height: 50%;
+    width: 75%;
+    border: 1px solid #ccc;
+    display: inline-block;
+    padding: 70px 12px;
+    cursor: pointer;
+    text-align:center;
+
+  }
+
+  </style>
+  <head>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <script  src="https://code.jquery.com/jquery-3.1.0.min.js"   integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s="   crossorigin="anonymous"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+  </head>
+  <body>
+    <div class="login_area">
+      <input type="text" class="form-control" placeholder="Username" aria-describedby="basic-addon1">
+      <input type="text" class="form-control" placeholder="Password" aria-describedby="basic-addon1">
+    </div>
+
+    <div class="login_area">
+      <label for="image-select" class="btn-file">
+        Settings Image
+      </label>
+      <form id="image" enctype="multipart/form-data" action="javascript:void(0);">
+        <input id="image-select" class="file_sel_button" type="file"/ style="display: none;">
+      </form>
+    </div>
+
+  </body>
+
+</html>
+
+<script>
+  $(document).ready(function() {
+
+      var my_url = String(window.location)
+
+      $('#image-select').change(function(){
+
+        var file = this.files[0];
+        console.log(file);
+        var data = new FormData();
+        data.append("file", file);
+
+        console.log(data);
+        $.ajax({
+          url:'../signup/check',
+          type:'POST',
+          method: 'POST',
+          data: data,
+          enctype: 'multipart/form-data',
+          cache: false,
+          contentType: false,
+          processData: false,
+          success: function(res){
+            if (res.success == "true"){
+              window.location.href = '../';
+            } else{
+              alert(res.err);
+            }
+
+          }
+        })
+      });
+
+      if (my_url.slice(-1) != '/'){
+        my_url += '/';
+        window.history.replaceState(null, document.title, my_url);
+      }
+      /*
+       $('#uploadForm').submit(function() {
+          $("#status").empty().text("File is uploading...");
+          $(this).ajaxSubmit({
+            error: function(xhr) {
+              status('Error: ' + xhr.status);
+            },
+
+            success: function(response) {
+
+              $("#status").empty().text(response);
+              console.log(response);
+
+            }
+          });
+          return false;
+      });
+      */
+  });
+
+</script>
