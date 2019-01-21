@@ -217,7 +217,6 @@ function addIdsToTitles(){
 }
 function addIdsToComments(){
 	data_base.collection('lists').find({}).forEach(function (doc){
-
 		doc.content.forEach(function (listItem){
 			if (listItem.comments){
 				listItem.comments.forEach(function (comment){
