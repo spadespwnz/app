@@ -28,7 +28,7 @@ var tmi_options = {
 		username: "SPaDeSPwnzBot",
 		password: process.env.BOT_OAUTH
 	},
-	channels: ["#spades_live"]
+	channels: ["#spades_mk2"]
 
 };
 var current_polls = [];
@@ -40,7 +40,7 @@ var trivia_categories = [];
 var trivia_clue = "";
 var already_guessed = [];
 var trivia_choices = true;
-var admin = 'spades_live';
+var admin = 'spades_mk2';
 var mods = ['miamiandy513', 'yungtdot'];
 var chatterTypes = ['moderators','staff','admins','global_mods','viewers'];
 var channel = "#spades_live";
