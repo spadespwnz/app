@@ -1,0 +1,496 @@
+<html>
+  <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <style>
+      #grid_parent {
+         width: 50%;
+         float: left;
+         overflow:hidden;
+      }
+      .grid_square {
+        margin: 0;
+        padding: 0;
+        min-width: 0px;
+        width: 9%;
+        height: 9%;
+        background: white;
+        border: 2px solid;
+        float: left;
+        margin-top:-2px;
+        margin-left:-2px;
+      }
+      #properties{
+        width:50%;
+        height: 100%;
+        float: right;
+
+      }
+      #level-props{
+        width: 100%;
+        height: 15%;
+        outline-color: grey;
+        outline-style: solid
+      }
+      #tile-props{
+        width: 100%;
+        height: 60%;
+        outline-color: grey;
+        outline-style: solid
+      }
+      #xml{
+        width: 100%;
+        height: 20%;
+        outline-color: grey;
+        outline-style: solid
+      }
+      #xml textarea{
+        margin:2%;
+        width:90%;
+        height:90%;
+      }
+      .phase{
+        margin-bottom: 10px;
+        display:inline-block;
+        margin-left: 10px;
+        width: 20%;
+        height: 25%;
+        outline-color: black;
+        outline-style: dotted;
+      }
+      .phase p{
+
+        font-size: 75%;
+      }
+      .phase input{
+        width: 50%;
+        float: right;
+        clear: both;
+      }
+      .anim{
+        -webkit-transition: background-color 200ms linear;
+        -moz-transition: background-color 200ms linear;
+        -o-transition: background-color 200ms linear;
+        -ms-transition: background-color 200ms linear;
+        transition: background-color 200ms linear;
+
+      }
+
+    </style>
+
+  </head>
+  <body>
+    <div id="grid_parent"></div>
+    <div id="properties">
+      <div id="level-props">
+        <p>BPM: <input id="bpm"></input></p>
+        <p>Total Beats: <input id="beats"></input></p>
+        <p>
+          Explosion Set: <input id="explosion" value=1></input>
+          Game mode: <input id="mode" value = 2></input>
+        </p>
+        <button id="export">Export</button>
+      </div>
+      <div id="tile-props">
+        <p>Phases: <input id="phase-count"></input><button id="add_phase">+</button></p>
+        <div id="phases">
+        </div>
+        <p>Offset: <input id="offset"></input></p>
+        <p>Attach Start: <input id="start"></input></p>
+        <p>Attach End: <input id="end"></input></p>
+        <button id="save">Save</button>
+      </div>
+      <div id="xml">
+        <textarea id="xml_text"></textarea>
+      </div>
+    </div>
+  </body>
+
+  <script>
+    var ctrlDown = false,
+        ctrlKey = 17,
+        cmdKey = 91,
+        vKey = 86,
+        cKey = 67;
+    var multiSelected = [];
+    var copiedBlock = null;
+    var playing = false;
+    var selected = -1;
+    var bpm = 0;
+    var bps = 0;
+    var cycleTime = 0
+    var beats = 0;
+    var active = [];
+    var toLoad = [];
+    var refreshRate = 20;
+    var restart = false;
+    var gameMode = 2;
+    var explosionSet = 1;
+    function gameLoop(){
+      setTimeout(gameLoop, refreshRate);
+      bps = (bpm*1.0) / 60.0;
+      cycleTime = (beats/bps)*1000;
+      if (restart){
+        for (var i = 0;i<100;i++){
+          $("#div"+i).css("background-color", "white");
+        }
+        restart = false;
+        active = toLoad;
+        for (var i = 0; i<active.length;i++){
+          active[i].currentPhase = 0;
+          active[i].currentTime = cycleTime * (active[i].offset/100)
+          if (active[i].phases[0].safe == 1){
+            active[i].square.css("background-color", "green");
+          } else{
+            active[i].square.css("background-color", getColor(active[i].phases[0].mod));
+
+
+          }
+          for (var phaseIndex=0;phaseIndex<active[i].phases.length;phaseIndex++){
+            active[i].phases[phaseIndex].len_time = (active[i].phases[phaseIndex].len/100) * cycleTime
+            active[i].phases[phaseIndex].delay_end_time = (active[i].phases[phaseIndex].delay_end/100) * cycleTime
+            active[i].phases[phaseIndex].early_start_time = (active[i].phases[phaseIndex].early_start/100) * cycleTime
+          }
+        }
+      } else{
+        for (var i = 0; i<active.length;i++){
+          active[i].currentTime += refreshRate;
+        }
+      }
+      for (var i = 0; i<active.length;i++){
+        while (active[i].currentTime > active[i].phases[active[i].currentPhase].len_time
+        +active[i].phases[active[i].currentPhase].delay_end_time
+        -active[i].phases[nextPhaseIndex(active[i].currentPhase, active[i].phases)].early_start_time){
+          active[i].currentTime -= active[i].phases[active[i].currentPhase].len_time
+          active[i].currentPhase = nextPhaseIndex(active[i].currentPhase, active[i].phases)
+          if (active[i].phases[active[i].currentPhase].safe == 1){
+            active[i].square.css("background-color","green");
+          } else{
+            active[i].square.css("background-color",getColor(active[i].phases[active[i].currentPhase].mod)).delay(100).queue(function(){
+              $(this).css("background-color","green");
+              $(this).addClass("anim");
+              $(this).dequeue();
+            });
+
+          }
+        }
+      }
+
+    }
+    function getColor(mod){
+      if (mod == 1){
+        return "red";
+      }
+      if (mod == 2){
+        return "blue"
+      }
+      if (mod == 3){
+        return "purple";
+      }
+      return "red"
+    }
+    function nextPhaseIndex(n, phases){
+      if (n >= phases.length - 1){
+        return 0;
+      }
+      return n+1;
+    }
+    function getPhases(s){
+      var return_array = [];
+      phase_array = s.substring(0, s.length-1).split(",")
+
+
+      for (var i=0;i*5<phase_array.length;i++){
+        var temp_phase ={};
+        temp_phase.len = phase_array[i*5+0]
+        temp_phase.delay_end = phase_array[i*5+1]
+        temp_phase.early_start = phase_array[i*5+2]
+        temp_phase.safe = phase_array[i*5+3]
+        temp_phase.mod = phase_array[i*5+4]
+        return_array.push(temp_phase);
+      }
+      return return_array;
+    }
+    function play(){
+      if (bpm == 0 || beats == 0){
+        alert("Invalid BPM or Beats")
+        return;
+      }
+      toLoad = []
+      for (var i = 0;i<100;i++){
+        var temp = $("#div"+i);
+        if (temp.attr("phases") && temp.attr("phases").length>0){
+          var data = {square:temp, phases:getPhases(temp.attr("phases")), offset:temp.attr("offset")}
+          if (temp.attr("attach-start")){
+            data.attachStart = temp.attr("attach-start");
+          }
+          if (temp.attr("attach-end")){
+            data.attachEnd = temp.attr("attach-end");
+          }
+          toLoad.push(data);
+        }
+      }
+      restart = true;
+
+    }
+    function save(){
+      var square = $("#div"+selected);
+      var phases = $("#phases");
+      var phaseString = "";
+      var lenSum = 0;
+      for (var i = 0; i<phases.children().length; i++){
+        lenSum += Number(phases.children().eq(i).find(".len").val());
+        phaseString+=Number(phases.children().eq(i).find(".len").val())+","
+        phaseString+=Number(phases.children().eq(i).find(".delay-end").val())+","
+        phaseString+=Number(phases.children().eq(i).find(".early-start").val())+","
+        phaseString+=Number(phases.children().eq(i).find(".safe").val())+","
+        phaseString+=Number(phases.children().eq(i).find(".mod").val())+","
+      }
+      if (lenSum < 10 && phases.children().length > 0){
+        alert("Length Too Short")
+        return;
+      }
+      $("#div"+selected).attr("phases",phaseString);
+      $("#div"+selected).attr("offset",Number($("#offset").val()));
+      $("#div"+selected).attr("attach-start",$("#start").val());
+      $("#div"+selected).attr("attach-end",$("#end").val());
+      play();
+    }
+
+    function copy(){
+      copiedBlock = $("#div"+selected);
+    }
+    function paste(){
+      if (copiedBlock == null){
+        return;
+      }
+
+      var square = copiedBlock;
+      var phases = square.attr("phases")
+
+      if (phases){
+        phase_array = phases.substring(0, phases.length-1).split(",")
+        $("#phase-count").val(  phase_array.length/5);
+        $("#phase-count").trigger('input');
+        phase_divs = $("#phases").children();
+        for (var i=0;i*5<phase_array.length;i++){
+          phase_divs.eq(i).find(".len").val(phase_array[i*5+0])
+          phase_divs.eq(i).find(".delay-end").val(phase_array[i*5+1])
+          phase_divs.eq(i).find(".early-start").val(phase_array[i*5+2])
+          phase_divs.eq(i).find(".safe").val(phase_array[i*5+3])
+          phase_divs.eq(i).find(".mod").val(phase_array[i*5+4])
+        }
+      } else{
+        $("#phase-count").val( 0);
+        $("#phase-count").trigger('input');
+      }
+      $("#offset").val(square.attr("offset"))
+      $("#start").val(square.attr("attach-start"))
+      $("#end").val(square.attr("attach-end"))
+      save();
+    }
+    function load(){
+      var square = $("#div"+selected);
+      var phases = square.attr("phases")
+      if (phases){
+        phase_array = phases.substring(0, phases.length-1).split(",")
+        $("#phase-count").val(  phase_array.length/5);
+        $("#phase-count").trigger('input');
+        phase_divs = $("#phases").children();
+        for (var i=0;i*5<phase_array.length;i++){
+          phase_divs.eq(i).find(".len").val(phase_array[i*5+0])
+          phase_divs.eq(i).find(".delay-end").val(phase_array[i*5+1])
+          phase_divs.eq(i).find(".early-start").val(phase_array[i*5+2])
+          phase_divs.eq(i).find(".safe").val(phase_array[i*5+3])
+          phase_divs.eq(i).find(".mod").val(phase_array[i*5+4])
+        }
+      } else{
+        $("#phase-count").val( 0);
+        $("#phase-count").trigger('input');
+      }
+      $("#offset").val(square.attr("offset"))
+      $("#start").val(square.attr("attach-start"))
+      $("#end").val(square.attr("attach-end"))
+    }
+
+    function exportXML(){
+      var minRow = null;
+      var minCol = null;
+      for (var i = 0; i < active.length; i++){
+        var id = Number(active[i].square.attr("id").substring(3));
+        var row = (Math.trunc(id / 10) - 9)*-1
+        var col = id % 10;
+        if (row < minRow || minRow == null){
+          minRow = row;
+        }
+        if (col < minCol || minCol == null){
+          minCol = col;
+        }
+      }
+      var xml = "";
+      xml += "<level>\n";
+      xml += "\t<bpm>"+$("#bpm").val()+"</bpm>\n";
+      xml += "\t<beats>"+$("#beats").val()+"</beats>\n";
+      xml += "\t<mode>"+$("#mode").val()+"</mode>\n";
+      xml += "\t<explosion>"+$("#explosion").val()+"</explosion>\n";
+      for (var i = 0; i < active.length; i++){
+        xml += "\t<block>\n"
+        var id = Number(active[i].square.attr("id").substring(3));
+        var row = ((Math.trunc(id / 10) - 9)*-1) - minRow;
+        var col = (id % 10) - minCol;
+        xml += "\t\t<row>"+row+"</row>\n";
+        xml += "\t\t<col>"+col+"</col>\n";
+        xml += "\t\t<offset>"+active[i].offset+"</offset>\n";
+        xml += "\t\t<phases>\n";
+        for (var p = 0; p<active[i].phases.length; p++){
+          xml += "\t\t\t<phase>\n"
+          xml += "\t\t\t\t<length>"+active[i].phases[p].len+"</length>\n";
+          xml += "\t\t\t\t<delay-end>"+active[i].phases[p].delay_end+"</delay-end>\n";
+          xml += "\t\t\t\t<early-start>"+active[i].phases[p].early_start+"</early-start>\n";
+          xml += "\t\t\t\t<mod>"+active[i].phases[p].mod+"</mod>\n";
+          var safe = false;
+          if (active[i].phases[p].safe == 1){
+            safe = true
+          }
+          xml += "\t\t\t\t<safe>"+safe+"</safe>\n";
+          xml += "\t\t\t</phase>\n"
+        }
+        xml += "\t\t</phases>\n";
+        if (active[i].attachStart){
+          xml += "\t\t<attach-start>"+active[i].attachStart+"</attach-start>\n";
+        }
+        if (active[i].attachEnd){
+          xml += "\t\t<attach-end>"+active[i].attachEnd+"</attach-end>\n";
+        }
+        xml += "\t</block>\n";
+      }
+      xml += "</level>";
+      $("#xml_text").text(xml);
+    }
+
+    $(document).ready(function() {
+      $(document).keydown(function(e) {
+        if (e.keyCode == ctrlKey || e.keyCode == cmdKey) ctrlDown = true;
+      }).keyup(function(e) {
+        if (e.keyCode == ctrlKey || e.keyCode == cmdKey) ctrlDown = false;
+      });
+
+       $(document).keydown(function(e) {
+           if (ctrlDown && (e.keyCode == vKey || e.keyCode == cKey)){
+             if (e.keyCode == vKey){
+               paste();
+               return;
+             }
+             copy();
+             return;
+           }
+
+       });
+      $("body").on(
+          "transitionend MSTransitionEnd webkitTransitionEnd oTransitionEnd", ".grid_square",
+          function() {
+
+              //alert($(this).attr("class"))
+
+            $(this).removeClass("anim");
+          }
+      );
+      $("#export").click(function(){
+        exportXML();
+      });
+      $("#save").click(function(){
+        save();
+      })
+      $("#add_phase").click(function(){
+        $("#phase-count").val(  Number($("#phase-count").val())+1);
+        $("#phase-count").trigger('input');
+      })
+      $("#bpm").on('input', function(){
+        var b = Number($(this).val());
+        if (typeof b == 'number' && b % 1 == 0 && b >= 0){
+          bpm = b;
+        } else{
+          $("#bpm").val("Positive Integers Only");
+          bpm = 0;
+        }
+      })
+      $("#beats").on('input', function(){
+        var b = Number($(this).val());
+        if (typeof b == 'number' && b % 1 == 0 && b >= 0){
+          beats = b;
+        } else{
+          $("#beats").val("Positive Integers Only");
+          beats = 0;
+        }
+      })
+      $("#mode").on('input', function(){
+        var b = Number($(this).val());
+        if (typeof b == 'number' && b % 1 == 0 && b >= 0){
+          gameMode = b;
+        } else{
+          $("#mode").val("Positive Integers Only");
+          gameMode = 2;
+        }
+      })
+      $("#explosion").on('input', function(){
+        var b = Number($(this).val());
+        if (typeof b == 'number' && b % 1 == 0 && b >= 0){
+          explosionSet = b;
+        } else{
+          $("#explosion").val("Positive Integers Only");
+          explosionSet = 1;
+        }
+      })
+      $("#phase-count").on('input', function(){
+        val = Number($(this).val());
+        if (typeof val == 'number' && val % 1 == 0 && val >= 0 && val <= 8){
+          var curLen = $("#phases").children().length;
+          if (val > curLen){
+            for (var i = 0; i<(val-curLen); i++){
+              var new_phase = $('<div class="phase" phase='+curLen+i+'></div>');
+              new_phase.append('<p>Len (%): <input class="len"></input></p>')
+              new_phase.append('<p>Delay (%): <input class="delay-end"></input></p>')
+              new_phase.append('<p>Early (%): <input class="early-start"></input></p>')
+              new_phase.append('<p>Safe (0,1): <input class="safe"></input></p>')
+              new_phase.append('<p>mod: <input class="mod" value=1></input></p>')
+              $("#phases").append(new_phase);
+            }
+          } else{
+
+            for (var i = 0; i<curLen-val;i++){
+
+              $("#phases").children().eq(curLen-(i+1)).remove();
+            }
+          }
+        } else{
+          $("#phase-count").val("Invalid Number, [0-8]");
+        }
+      })
+      for (var i = 0; i < 100; i++) {
+        var square = $('<div class="grid_square" id="div'+ i +'" /> ')
+        square.click(function(){
+
+
+          $("#div"+selected).css("outline", "none")
+
+          /*
+          if (ctrlDown){
+            selected = -1
+          } else{
+            multiSelected = [];
+          }
+          */
+          selected = $(this).prop('id').substring(3);
+          $(this).prop("in-use", false)
+          $(this).css("outline-color", "blue");
+          $(this).css("outline-style", "solid");
+          $(this).css("outline-offset", "-5px");
+          load();
+        })
+        $('#grid_parent').append(square);
+      }
+      gameLoop();
+    });
+
+
+  </script>
+</html>

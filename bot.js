@@ -28,7 +28,7 @@ var tmi_options = {
 		username: "SPaDeSPwnzBot",
 		password: process.env.BOT_OAUTH
 	},
-	channels: ["#spades_live"]
+	channels: ["#spades_mk2"]
 
 };
 var current_polls = [];
@@ -40,10 +40,10 @@ var trivia_categories = [];
 var trivia_clue = "";
 var already_guessed = [];
 var trivia_choices = true;
-var admin = 'spades_live';
+var admin = 'spades_mk2';
 var mods = ['miamiandy513', 'yungtdot'];
 var chatterTypes = ['moderators','staff','admins','global_mods','viewers'];
-var channel = "#spades_live";
+var channel = "#spades_mk2";
 var bot = new tmi.client(tmi_options);
 var day = 1;
 var on_msg_cooldown = false;
@@ -1032,7 +1032,8 @@ function addToSMMComplete(type, place, callback) {
 	if (type == "queue") {
 		getSMMQueue(function (queue) {
 			queue = queue[0];
-			if (!queue || queue.level) {
+			if (!queue || !queue.level) {
+
 				callback(false);
 				return;
 			}
@@ -1045,6 +1046,7 @@ function addToSMMComplete(type, place, callback) {
 			dbutils.db_upsert(db, 'SMM', {"type":"completed"}, {"level":level}, function(in_push_result) {
 				if (in_push_result.fail) {
 					//Error adding notelist for user
+
 					callback(false)
 				} else {
 					dbutils.db_pull(db, 'SMM', {"type":"queue"}, {"level": {code: level.code}}, function(res) {
