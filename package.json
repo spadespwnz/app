@@ -17,6 +17,7 @@
     "express": "^4.10.2",
     "express-session": "^1.15.0",
     "fs": "0.0.2",
+    "gm": "^1.23.1",
     "hjs": "0.0.6",
     "jsonwebtoken": "^7.1.9",
     "mongodb": "^2.2.30",
