@@ -6,7 +6,7 @@
     "angular-route": "^1.5.8",
     "aws-sdk": "2.213.1",
     "body-parser": "~1.10.1",
-    "bootstrap": "^3.3.7",
+    "bootstrap": "^3.4.1",
     "braintree": "2.8.0",
     "connect-busboy": "0.0.2",
     "connect-form": "^0.2.1",
